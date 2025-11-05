@@ -1,0 +1,34 @@
+# Allow access to this directory
+<IfModule mod_authz_core.c>
+    Require all granted
+</IfModule>
+
+# Allow access in older Apache versions
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Allow from all
+</IfModule>
+
+# Set index.html as directory index
+DirectoryIndex index.html
+
+# Ensure proper MIME types
+<IfModule mod_mime.c>
+    AddType text/html .html
+    AddType text/css .css
+    AddType application/javascript .js
+</IfModule>
+
+# Disable directory listing
+Options -Indexes
+
+# Enable symlinks
+Options +FollowSymLinks
+
+# Process .html files as PHP
+RemoveHandler .html
+RemoveType .html
+AddType text/html .html
+
+# Handle 404 errors
+ErrorDocument 404 /main/orderinformation_module/precosting_app/index.html

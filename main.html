@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weaving Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+            --container-bg: #252525;
+            --card-bg: #353535;
+            --card-hover-bg: #454545;
+            --text-color: #e0e0e0;
+            --accent-color: #00c4ff;
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            --btn-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            --border-glow: rgba(0, 196, 255, 0.3);
+        }
+
+        body {
+            background: var(--primary-bg);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            height: 100vh;
+            overflow: hidden;
+            background-attachment: fixed;
+        }
+
+        .main-container {
+            background: var(--container-bg);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border: 1px solid #3a3a3a;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 196, 255, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 196, 255, 0.03) 0%, transparent 20%);
+        }
+
+        .main-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.03) 50%, transparent 51%);
+            background-size: 10px 10px;
+            pointer-events: none;
+        }
+
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 15px;
+            border-radius: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: visible; /* Changed from hidden to visible to allow dropdowns to show */
+        }
+
+        .header-controls::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 15%;
+            width: 70%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        }
+
+        .header-controls h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-color);
+            text-shadow: var(--text-shadow);
+            margin: 0;
+            background: linear-gradient(45deg, #e0e0e0, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .header-controls h1::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 40%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-color), transparent);
+            border-radius: 3px;
+        }
+
+        .header-controls .btn-group {
+            display: flex;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+
+        .header-controls .btn {
+            border-radius: 10px;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: none;
+            color: #fff;
+            box-shadow: var(--btn-shadow);
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            font-weight: 600;
+            white-space: nowrap;
+            margin-left: 8px;
+        }
+
+        .header-controls .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: all 0.5s ease;
+            z-index: -1;
+        }
+
+        .header-controls .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        .header-controls .btn:hover::before {
+            left: 100%;
+        }
+
+        .header-controls .btn i {
+            margin-right: 6px;
+            font-size: 0.9em;
+        }
+
+        .kanban-board {
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+            gap: 6px;
+            flex-grow: 1;
+            overflow: auto;
+            padding: 5px;
+            max-height: calc(100vh - 100px);
+            position: relative;
+            z-index: 1; /* Lower z-index than dropdowns */
+        }
+
+        .kanban-column {
+            flex: 0 0 180px;
+            min-width: 180px;
+            background: rgba(48, 48, 48, 0.7);
+            border-radius: 15px;
+            padding: 12px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            max-height: 100%;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .kanban-column:hover {
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-glow);
+            border-color: rgba(0, 196, 255, 0.2);
+        }
+
+        .kanban-column::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .kanban-column::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .kanban-column::-webkit-scrollbar-thumb {
+            background: rgba(0, 196, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .kanban-column h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--accent-color);
+            text-align: center;
+            flex-shrink: 0;
+            text-shadow: var(--text-shadow);
+            position: relative;
+            padding-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .kanban-column h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 25%;
+            width: 50%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            border-radius: 2px;
+        }
+
+        .kanban-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            cursor: pointer;
+            flex-shrink: 0;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            perspective: 950px;
+        }
+
+        .kanban-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .kanban-card:hover:not(.disabled) {
+            transform: translateY(-3px) rotateX(5deg);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            background: var(--card-hover-bg);
+            border-color: rgba(0, 196, 255, 0.2);
+        }
+
+        .kanban-card:hover:not(.disabled)::before {
+            transform: scaleX(1);
+        }
+
+        .kanban-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none; /* This prevents all pointer events on disabled cards */
+        }
+
+        .kanban-card a {
+            color: var(--text-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            font-size: 0.8rem;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* This style is for disabled links */
+        .kanban-card.disabled a {
+            pointer-events: none; /* Prevent clicks */
+            color: #808080; /* Grayed out text */
+        }
+
+        .kanban-card i {
+            margin-right: 8px;
+            color: var(--accent-color);
+            font-size: 1em;
+            text-shadow: 0 0 5px rgba(0, 196, 255, 0.5);
+            transition: all 0.3s ease;
+            min-width: 16px;
+        }
+
+        .kanban-card:hover:not(.disabled) i {
+            transform: scale(1.2);
+            color: #ffffff;
+        }
+
+        .modal-content {
+            border-radius: 20px;
+            background: #252525;
+            border: 1px solid #3a3a3a;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            background: linear-gradient(90deg, #007bff, #00c4ff);
+            color: #ffffff;
+            border-radius: 20px 20px 0 0;
+            border-bottom: none;
+            padding: 15px 20px;
+        }
+
+        .modal-header .modal-title {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-shadow: var(--text-shadow);
+        }
+
+        .modal-body {
+            background: #303030;
+            color: var(--text-color);
+            padding: 20px;
+        }
+
+        .modal-footer {
+            background: rgba(0, 0, 0, 0.2);
+            border-top: none;
+        }
+
+        .modal-footer .btn {
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: none;
+            color: #fff;
+            box-shadow: var(--btn-shadow);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-footer .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-control, .form-select {
+            background-color: #404040;
+            border: 1px solid #505050;
+            color: var(--text-color);
+            border-radius: 10px;
+            padding: 10px 15px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #454545;
+            color: var(--text-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(0, 196, 255, 0.25);
+        }
+
+        .form-label {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        #userStatus {
+            background: linear-gradient(90deg, #007bff, #00c4ff);
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+            box-shadow: var(--btn-shadow);
+            border: none;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        /* Hide horizontal scrollbar for the kanban board */
+        .kanban-board::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .kanban-board::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .kanban-board::-webkit-scrollbar-thumb {
+            background: rgba(0, 196, 255, 0.3);
+            border-radius: 8px;
+        }
+        
+        /* Add styles for the user display */
+        #currentUserDisplay {
+            background: linear-gradient(90deg, #00c4ff, #007bff);
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            font-size: 0.9rem;
+            box-shadow: var(--btn-shadow);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        #currentUserDisplay:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .active-user-item {
+            padding: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .active-user-item:last-child {
+            border-bottom: none;
+        }
+        
+        /* CRITICAL FIX FOR DROPDOWN */
+        /* Custom dropdown styling to override Bootstrap */
+        .custom-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .custom-dropdown-menu {
+            display: none;
+            position: fixed !important; /* Using fixed positioning */
+            background: #303030;
+            border: 1px solid rgba(0, 196, 255, 0.2);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            min-width: 220px;
+            border-radius: 10px;
+            padding: 10px;
+            z-index: 99999 !important; /* Extremely high z-index */
+        }
+        
+        .custom-dropdown-menu.show {
+            display: block;
+        }
+        
+        .custom-dropdown-header {
+            color: var(--accent-color);
+            font-weight: 600;
+            border-bottom: 1px solid rgba(0, 196, 255, 0.2);
+            padding: 5px 0;
+            margin-bottom: 8px;
+        }
+        
+        .custom-dropdown-toggle {
+            cursor: pointer;
+        }
+
+        /* No-access tooltip style */
+        .no-access-tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .no-access-tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .no-access-tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        @media (max-width: 1400px) {
+            .header-controls .btn {
+                padding: 5px 10px;
+                font-size: 0.8rem;
+            }
+            
+            .header-controls h1 {
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .kanban-column {
+                flex: 0 0 170px;
+                min-width: 170px;
+            }
+            
+            .header-controls h1 {
+                font-size: 1.2rem;
+            }
+            
+            .header-controls .btn {
+                font-size: 0.75rem;
+                padding: 5px 8px;
+                margin-left: 5px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .header-controls {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .header-controls .btn-group {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .header-controls .btn {
+                margin-left: 0;
+                margin-right: 5px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 8px;
+            }
+            
+            .main-container {
+                padding: 10px;
+            }
+            
+            .kanban-column {
+                flex: 0 0 160px;
+                min-width: 160px;
+                padding: 10px;
+            }
+            
+            .header-controls {
+                padding: 8px 12px;
+            }
+            
+            .header-controls h1 {
+                font-size: 1.1rem;
+            }
+            
+            .header-controls .btn {
+                font-size: 0.7rem;
+                padding: 4px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container" style="display: none;" id="mainContainer">
+        <div class="header-controls">
+            <h1>Weaving Management</h1>
+             <div class="d-flex align-items-center flex-wrap">
+                <!-- Current user display -->
+                <span id="currentUserDisplay" class="badge me-2" style="background: linear-gradient(90deg, #00c4ff, #007bff); padding: 8px 15px; border-radius: 10px; font-weight: 600; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);">
+                    <i class="fas fa-user"></i> Guest
+                </span>
+                
+                <!-- Active users display (Custom Dropdown) -->
+                <div class="custom-dropdown me-2">
+                    <span id="userStatus" class="badge custom-dropdown-toggle" style="background: linear-gradient(90deg, #007bff, #00c4ff); padding: 8px 15px; border-radius: 10px; font-weight: 600; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);">
+                        <i class="fas fa-users"></i> Active Users: 0
+                    </span>
+                    <div id="customDropdownMenu" class="custom-dropdown-menu">
+                        <h6 class="custom-dropdown-header">Currently Active Users</h6>
+                        <div id="activeUsersList" style="max-height: 200px; overflow-y: auto;">
+                            <!-- Users will be listed here -->
+                            <div class="text-center text-muted">No active users</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Buttons -->
+                <button class="btn btn-warning" id="userPrivilegeBtn"><i class="fas fa-user-shield"></i> User Privilege</button>
+                <a href="/reportgenerator_app/" class="btn btn-secondary"><i class="fas fa-file-alt"></i> Report Generator</a>
+                <a href="/sql_database/" class="btn btn-info"><i class="fas fa-database"></i> SQL Database</a>
+                <button class="btn btn-danger" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </div>
+        <!-- Access Denied Modal -->
+<div class="modal fade" id="accessDeniedModal" tabindex="-1" aria-labelledby="accessDeniedModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #dc3545;">
+                <h5 class="modal-title text-white" id="accessDeniedModalLabel">Access Denied</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>You do not have permission to access this module.</p>
+                <p>Please contact your administrator if you need access to this feature.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+        <div class="kanban-board">
+            <!-- MIS Module -->
+            <div class="kanban-column">
+                <h3>MIS MODULE</h3>
+                <div class="kanban-card" data-module="mis_module" data-sub-ui="orderfollowup_app">
+                    <a href="/mis_module/orderfollowup_app/"><i class="fas fa-tasks"></i> Order Follow Up</a>
+                </div>
+                <div class="kanban-card" data-module="mis_module" data-sub-ui="floorposition_app">
+                    <a href="/main/mis_module/floorposition_app/"><i class="fas fa-map-marker-alt"></i> Floor Position Entry Form</a>
+                </div>
+                <div class="kanban-card" data-module="mis_module" data-sub-ui="logreport_app">
+                    <a href="/main/mis_module/logreport_app/"><i class="fas fa-clipboard-list"></i> LOG Report</a>
+                </div>
+                <div class="kanban-card" data-module="mis_module" data-sub-ui="mainplan_app">
+                    <a href="/main/mis_module/mainplan_app/"><i class="fas fa-calendar-alt"></i> Main Plan</a>
+                </div>
+            </div>
+            <!-- Order Information Module -->
+            <div class="kanban-column">
+                <h3>ORDER INFORMATION MODULE</h3>
+                <div class="kanban-card" data-module="orderinformation_module" data-sub-ui="precosting_app">
+                    <a href="/main/orderinformation_module/precosting_app/" target="_blank">
+                        <i class="fas fa-calculator"></i> Pre-Costing Form
+                    </a>
+                </div>
+                <div class="kanban-card" data-module="orderinformation_module" data-sub-ui="poentry_app">
+                    <a href="/main/orderinformation_module/poentry_app/" target="_blank"><i class="fas fa-file-invoice"></i> PO Entry Form</a>
+                </div>
+                <div class="kanban-card" data-module="orderinformation_module" data-sub-ui="dispocreate_app">
+                    <a href="/main/orderinformation_module/dispocreate_app/" target="_blank"><i class="fas fa-file-alt"></i> Dispo Create Form</a>
+                </div>
+            </div>
+            <!-- Yarn Module -->
+            <div class="kanban-column">
+                <h3>YARN MODULE</h3>
+                <div class="kanban-card" data-module="yarn_module" data-sub-ui="greigeyarnreceive_app">
+                    <a href="/main/yarn_module/greigeyarnreceive_app/" target="_blank"><i class="fas fa-box-open"></i> Greige Yarn Receive Form</a>
+                </div>
+                <div class="kanban-card" data-module="yarn_module" data-sub-ui="greigeyarnissue_app">
+                    <a href="/main/yarn_module/greigeyarnissue_app/" target="_blank"><i class="fas fa-sign-out-alt"></i> Greige Yarn Issue Form</a>
+                </div>
+                <div class="kanban-card" data-module="yarn_module" data-sub-ui="greigeyarnstock_app">
+                    <a href="/main/yarn_module/greigeyarnstock_app/" target="_blank"><i class="fas fa-warehouse"></i> Greige Yarn Stock Report</a>
+                </div>
+                <div class="kanban-card" data-module="yarn_module" data-sub-ui="dyedyarnreceive_app">
+                    <a href="/main/yarn_module/dyedyarnreceive_app/" target="_blank"><i class="fas fa-box-open"></i> Dyed Yarn Receive Form</a>
+                </div>
+                <div class="kanban-card" data-module="yarn_module" data-sub-ui="dyedyarnissue_app">
+                    <a href="/main/yarn_module/dyedyarnissue_app/" target="_blank"><i class="fas fa-sign-out-alt"></i> Dyed Yarn Issue Form</a>
+                </div>
+                <div class="kanban-card" data-module="yarn_module" data-sub-ui="dyedyarnstock_app">
+                    <a href="/main/yarn_module/dyedyarnstock_app/" target="_blank"><i class="fas fa-warehouse"></i> Dyed Yarn Stock Report</a>
+                </div>
+            </div>
+            <!-- Preparatory Module -->
+            <div class="kanban-column">
+                <h3>PREPARATORY MODULE</h3>
+                <div class="kanban-card" data-module="preparatory_module" data-sub-ui="warpingentry_app">
+                    <a href="/main/preparatory_module/warpingentry_app/" target="_blank"><i class="fas fa-cogs"></i> Warping Entry Form</a>
+                </div>
+                <div class="kanban-card" data-module="preparatory_module" data-sub-ui="sizingentry_app">
+                    <a href="/main/preparatory_module/sizingentry_app/" target="_blank"><i class="fas fa-ruler"></i> Sizing Entry Form</a>
+                </div>
+            </div>
+            <!-- Loom Production Module -->
+            <div class="kanban-column">
+                <h3>LOOM PRODUCTION MODULE</h3>
+                <div class="kanban-card" data-module="loomproduction_module" data-sub-ui="loomproductionentry_app">
+                    <a href="/main/loomproduction_module/loomproductionentry_app/" target="_blank"><i class="fas fa-industry"></i> Loom Production Entry Form</a>
+                </div>
+            </div>
+            <!-- Greige Fabric Module -->
+            <div class="kanban-column">
+                <h3>GREIGE FABRIC MODULE</h3>
+                <div class="kanban-card" data-module="greigefabric_module" data-sub-ui="foldingproduction_app">
+                    <a href="/main/greigefabric_module/foldingproduction_app/" target="_blank"><i class="fas fa-folder"></i> Folding Production Entry Form</a>
+                </div>
+                <div class="kanban-card" data-module="greigefabric_module" data-sub-ui="greigedelivery_app">
+                    <a href="/main/greigefabric_module/greigedelivery_app/" target="_blank"><i class="fas fa-truck"></i> Greige Delivery Form</a>
+                </div>
+                <div class="kanban-card" data-module="greigefabric_module" data-sub-ui="greigefabricstock_app">
+                    <a href="/main/greigefabric_module/greigefabricstock_app/" target="_blank"><i class="fas fa-warehouse"></i> Greige Fabric Stock</a>
+                </div>
+            </div>
+            <!-- Finish Fabric Module -->
+            <div class="kanban-column">
+                <h3>FINISH FABRIC MODULE</h3>
+                <div class="kanban-card" data-module="finishfabric_module" data-sub-ui="finishfabricreceive_app">
+                    <a href="/main/finishfabric_module/finishfabricreceive_app/" target="_blank"><i class="fas fa-box-open"></i> Finish Fabric Receive Entry Form</a>
+                </div>
+                <div class="kanban-card" data-module="finishfabric_module" data-sub-ui="finishfabricdelivery_app">
+                    <a href="/main/finishfabric_module/finishfabricdelivery_app/" target="_blank"><i class="fas fa-truck"></i> Finish Fabric Delivery Entry Form</a>
+                </div>
+                <div class="kanban-card" data-module="finishfabric_module" data-sub-ui="finishfabricstock_app">
+                    <a href="/main/finishfabric_module/finishfabricstock_app/" target="_blank"><i class="fas fa-warehouse"></i> Finish Fabric Stock Report</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Login to Pre-Costing Database</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="loginUsername" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="loginUsername" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="loginPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="loginPassword" required>
+                    </div>
+                    <div class="text-end">
+                        <a href="#" id="showRegisterModal" class="text-info">New user? Register here</a>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="loginBtn">Login</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="registerModalLabel">Register New User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="registerUsername" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="registerUsername" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="registerPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="registerPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirmPassword" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="registerBtn">Register</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Privilege Modal -->
+    <div class="modal fade" id="userPrivilegeModal" tabindex="-1" aria-labelledby="userPrivilegeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userPrivilegeModalLabel">Manage User Privileges</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="userSelect" class="form-label">Select User</label>
+                        <select class="form-select" id="userSelect">
+                            <option value="">Select a user</option>
+                        </select>
+                    </div>
+                    <div id="privilegesList">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="savePrivilegesBtn">Save Privileges</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Access Denied Modal -->
+    <div class="modal fade" id="accessDeniedModal" tabindex="-1" aria-labelledby="accessDeniedModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title text-white" id="accessDeniedModalLabel">Access Denied</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>You do not have permission to access this module.</p>
+                    <p>Please contact your administrator if you need access to this feature.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="main.js"></script>
+    <script src="rbac-fix.js"></script>
+    
+</body>
+</html>

@@ -1,0 +1,1974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yarn Issue Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+            --container-bg: #252525;
+            --text-color: #e0e0e0;
+            --accent-color: #00c4ff;
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            --btn-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            --border-glow: rgba(0, 196, 255, 0.3);
+        }
+
+        body {
+            background: var(--primary-bg);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            height: 100vh;
+            overflow: auto;
+            background-attachment: fixed;
+        }
+
+        .main-container {
+            background: var(--container-bg);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border: 2px solid #3a3a3a;
+            height: auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 196, 255, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 196, 255, 0.03) 0%, transparent 20%);
+        }
+
+        .main-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.03) 50%, transparent 51%);
+            background-size: 10px 10px;
+            pointer-events: none;
+        }
+
+        .header-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 18px 15px;
+            border-radius: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 1050;
+            overflow: visible;
+        }
+
+        .header-title {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .header-controls::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 15%;
+            width: 70%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        }
+
+        .header-controls h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--text-color);
+            text-shadow: var(--text-shadow);
+            margin: 0;
+            background: linear-gradient(45deg, #FFA500, #FFD580);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .header-controls h1::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-color), transparent);
+            border-radius: 3px;
+            margin-bottom: 20px;
+        }
+
+        .header-controls .btn, .header-controls .btn.dropdown-toggle {
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: none;
+            color: #fff;
+            box-shadow: var(--btn-shadow);
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            font-weight: 600;
+            white-space: nowrap;
+            min-width: 140px;
+            text-align: center;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #0d8991, #3bbcc4, #4fb4db) !important;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107, #fd7e14) !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0a3a57, #0c8731, #09ad92) !important;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #1e3954, #3b80db) !important;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #991509, #e83e8c) !important;
+        }
+        
+        .btn-tertiary {
+            background: linear-gradient(125deg, #090669, #394f99) !important;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057) !important;
+        }
+
+        .header-controls .btn::before, .header-controls .btn.dropdown-toggle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.5s ease;
+            z-index: -1;
+        }
+
+        .header-controls .btn:hover, .header-controls .btn.dropdown-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.6);
+        }
+
+        .header-controls .btn:hover::before, .header-controls .btn.dropdown-toggle:hover::before {
+            left: 100%;
+        }
+
+        .header-controls .btn i {
+            margin-right: 6px;
+        }
+
+        .dropdown-menu {
+            background: #303030;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            z-index: 1051;
+        }
+
+        .dropdown-item {
+            color: var(--text-color);
+            font-size: 0.85rem;
+            padding: 8px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background: #404040;
+            color: #ffffff;
+        }
+
+        .form-container {
+            background: #252525;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .form-container:hover {
+            background: #2D2D2D;
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-glow);
+            border-color: rgba(0, 196, 255, 0.2);
+        }
+
+        .form-label {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 0;
+            font-size: 0.8rem;
+            width: 40%;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .form-control, .form-select {
+            background-color: #404040;
+            border: 1px solid #505050;
+            color: var(--text-color);
+            border-radius: 10px;
+            padding: 6px 10px;
+            height: 35px;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            width: 60%;
+        }
+
+        .form-group i.fa-calendar-alt,
+        .form-group i.fa-calendar-check {
+            color: var(--accent-color) !important;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #454545;
+            color: var(--text-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(0, 196, 255, 0.25);
+        }
+
+        .form-control:hover, .form-select:hover {
+            border-color: var(--accent-color);
+        }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 10px;
+            position: relative;
+        }
+
+        .form-group i {
+            position: absolute;
+            right: 10px;
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .form-group .form-control, .form-group .form-select {
+            padding-right: 30px;
+        }
+
+        .form-group .form-control:focus ~ i,
+        .form-group .form-select:focus ~ i {
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+
+        .result-field {
+            background-color: #d68733 !important;
+            border: none;
+            color: #000 !important;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+        }
+
+        .breakdown-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid #3a3a3a;
+            border-radius: 15px;
+            padding: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .collapsible-toggle {
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+            width: 100%;
+            padding: 14px 0;
+        }
+
+        .collapsible-toggle:hover {
+            background: rgba(0, 196, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .breakdown-title {
+            color: var(--accent-color);
+            font-size: 1.4rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 15px;
+            text-shadow: var(--text-shadow);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .breakdown-title i {
+            position: absolute;
+            right: 0;
+        }
+
+        .collapsible-section {
+            display: none;
+        }
+
+        .vertical-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .form-group textarea.form-control {
+            width: 60%;
+            height: auto;
+            min-height: 35px;
+            resize: vertical;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 15px;
+        }
+
+        .table-dark {
+            --bs-table-bg: #2D2D2D;
+            --bs-table-border-color: #505050;
+        }
+
+        .table th, .table td {
+            vertical-align: middle;
+            white-space: nowrap;
+            padding: 4px;
+            font-size: 0.85rem;
+        }
+
+        .table th {
+            background-color: #252525;
+            color: var(--accent-color);
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .date-column {
+            width: 10%;
+        }
+
+        .quantity-column {
+            width: 10%;
+        }
+
+        .dispo-column {
+            width: 50%;
+        }
+
+        .purpose-column {
+            width: 30%;
+        }
+
+        .table-input-sm .form-control {
+            padding: 2px 4px;
+            font-size: 0.9rem;
+            height: 30px;
+            text-align: center;
+            background-color: #404040;
+            border: 1px solid #505050;
+            color: var(--text-color);
+        }
+
+        .date-column .form-control {
+            width: 85%;
+        }
+
+        .quantity-column .form-control {
+            width: 85%;
+        }
+
+        .dispo-column .form-select {
+            width: 100%;
+            padding: 2px 4px;
+            font-size: 0.85rem;
+            height: 30px;
+            background-color: #404040;
+            border: 1px solid #505050;
+            color: var(--text-color);
+        }
+
+        .purpose-column .form-control {
+            width: 95%;
+        }
+
+        .table-input-sm .result-field {
+            background-color: #d68733;
+            color: #000;
+            font-weight: 600;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 0.78rem;
+        }
+
+        @media (max-width: 1200px) {
+            .button-row {
+                justify-content: center;
+                gap: 6px;
+            }
+            
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+                min-width: 120px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .button-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                width: 100%;
+                max-width: 200px;
+                margin: 0 auto;
+            }
+
+            .vertical-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 5px;
+            }
+
+            .form-label {
+                width: 100%;
+            }
+
+            .form-control, .form-select, .form-group textarea.form-control {
+                width: 100%;
+            }
+
+            .form-group i {
+                position: absolute;
+                right: 10px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                font-size: 0.75rem;
+                padding: 6px 10px;
+                min-width: 100px;
+            }
+
+            .form-label {
+                font-size: 0.75rem;
+            }
+
+            .form-control, .form-select {
+                font-size: 0.8rem;
+                padding: 5px 8px;
+                height: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header-controls">
+            <div class="header-title">
+                <h1>Yarn Issue Form</h1>
+            </div>
+            <div class="header-buttons">
+                <!-- First Row -->
+                <div class="button-row">
+                    
+                    <div class="dropdown">
+                        <button class="btn btn-info dropdown-toggle" type="button" id="searchYarnLotDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-search"></i> Search Yarn Lot
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="searchYarnLotDropdown">
+                        </ul>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-info dropdown-toggle" type="button" id="searchDispoDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-search"></i> Search Dispo Number
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="searchDispoDropdown">
+                        </ul>
+                    </div>
+                   
+                    <button class="btn btn-warning" id="clearFormBtn"><i class="fas fa-eraser"></i> Clear Form</button>
+                </div>
+                
+                <!-- Second Row -->
+                <div class="button-row">
+                    <button class="btn btn-primary btn-submit" id="saveToMySQLBtn"><i class="fas fa-save"></i> Save to MySQL</button>
+                    <button class="btn btn-primary btn-submit" id="updateToMySQLBtn"><i class="fas fa-refresh"></i> Update MySQL Data</button>
+                    <button class="btn btn-success" id="saveToExcelBtn"><i class="fas fa-file-excel"></i> Export to Excel</button>
+                    <button class="btn btn-tertiary" id="savedIssuesBtn"><i class="fas fa-list"></i> Saved Issue Records</button>
+                    <button class="btn btn-danger" id="deleteIssueBtn"><i class="fas fa-trash-alt"></i> Delete Record</button>
+                    <a href="#" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+                </div>
+            </div>
+        </div>
+
+        <form id="yarnIssueForm">
+            <!-- Yarn Issue Breakdown - Collapsible Section -->
+            <div class="breakdown-card">
+                <div class="collapsible-toggle" id="breakdownToggle">
+                    <div class="breakdown-title">
+                        Yarn Issue Breakdown
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+                <div class="collapsible-section" id="yarnIssueBreakdownContent">
+                    <!-- Search Section -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="searchYarnLotBreakdown" class="form-label">Search Yarn Lot</label>
+                                <select class="form-select" id="searchYarnLotBreakdown" name="search_yarn_lot_breakdown">
+                                </select>
+                                <i class="fas fa-search"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="totalIssued" class="form-label">Total Yarn Issued (Kgs)</label>
+                                <input type="number" step="0.01" class="form-control result-field" id="totalIssued" name="total_issued" value="" readonly>
+                                <i class="fas fa-sum"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Issue Details Table -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="text-info mb-2">Yarn Issue & Receive Details</h6>
+                            <div class="table-responsive">
+                                <table class="table table-dark table-bordered table-input-sm" id="yarnIssueTable">
+                                    <thead>
+                                        <tr>
+                                             <th class="date-column">Yarn Receive Date</th>
+                                            <th class="quantity-column">Receive Quantity (Kgs)</th>
+                                            <th class="date-column">Yarn Issue Date</th>
+                                            <th class="quantity-column">Issued Quantity (Kgs)</th>
+                                           
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                           <td class="date-column"><input type="date" class="form-control" name="receive_date[]" value=""></td>
+                                            <td class="quantity-column"><input type="number" step="0.01" class="form-control" name="receive_quantity[]" value=""></td>
+                                            <td class="date-column"><input type="date" class="form-control" name="issue_date[]" value=""></td>
+                                            <td class="quantity-column"><input type="number" step="0.01" class="form-control" name="issued_quantity[]" value=""></td>
+                                           
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td class="date-column"><strong>Total</strong></td>
+                                            <td class="quantity-column"><span id="totalYarnReceived" class="result-field">0</span></td>
+                                            <td class="date-column"><strong>Total</strong></td>
+                                            <td class="quantity-column"><span id="totalYarnIssued" class="result-field">0</span></td>
+                                           
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-success btn-sm" id="addIssueRowBtn">
+                                        <i class="fas fa-plus"></i> Add Row
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm" id="deleteIssueRowBtn">
+                                        <i class="fas fa-trash"></i> Delete Row
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Fields in Horizontal Layout -->
+            <div class="form-container">
+                <div class="vertical-layout">
+                    <!-- Left Column -->
+                    <div class="column">
+                        
+                        <div class="form-group">
+                            <label for="yarnCount" class="form-label">Yarn Count</label>
+                            <input type="text" class="form-control" id="yarnCount" name="yarn_count" value="">
+                            <i class="fas fa-sort-numeric-up"></i>
+                        </div>
+                       <div class="form-group">
+                            <label for="yarnPly" class="form-label">Number of Ply</label>
+                            <input type="number" class="form-control" id="yarnPly" name="yarn_ply" value="">
+                            <i class="fas fa-random"></i>
+                        </div>
+                        <div class="form-group">
+                            <label for="lcNo" class="form-label">L/C Number</label>
+                            <input type="text" class="form-control" id="lcNo" name="lc_no" value="">
+                            <i class="fas fa-file-contract"></i>
+                        </div>
+                        <div class="form-group">
+                            <label for="lcDate" class="form-label">L/C Date</label>
+                            <input type="date" class="form-control" id="lcDate" name="lc_date" value="">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="form-group">
+                            <label for="beneficiaryFactory" class="form-label">Beneficiary Factory</label>
+                            <input type="text" class="form-control" id="beneficiaryFactory" name="beneficiary_factory" value="">
+                            <i class="fas fa-industry"></i>
+                        </div>
+                        <div class="form-group">
+    <label for="receivedAgainstPONo" class="form-label">Received Against PO NO</label>
+    <select class="form-select result-field" id="receivedAgainstPONo" name="received_against_po_no" enabled>
+        
+    </select>
+</div>
+
+                       <div class="form-group">
+                            <label for="receivedAgainstDispoNos" class="form-label">Received Against Dispo NO</label>
+                            <select class="form-select result-field" id="receivedAgainstDispoNos" name="received_against_dispo_nos" enabled>
+                                
+                                
+                            </select>
+                            
+                        </div>
+                         <div class="form-group">
+                            <label for="piNo" class="form-label">PI NO</label>
+                            <input type="text" class="form-control" id="piNo" name="pi_no" value="">
+                            <i class="fas fa-file-invoice"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="receivedStartDate" class="form-label">Received Start Date</label>
+                            <input type="date" class="form-control" id="receivedStartDate" name="received_start_date" value="">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lastReceivedDate" class="form-label">Last Received Date</label>
+                            <input type="date" class="form-control" id="lastReceivedDate" name="last_received_date" value="">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label for="yarnLot" class="form-label">Yarn Lot</label>
+                            <input type="text" class="form-control" id="yarnLot" name="yarn_lot">
+                                
+                            <i class="fas fa-boxes-stacked"></i>
+                        </div>
+
+                        
+
+                        
+
+                        <div class="form-group">
+                            <label for="yarnBrand" class="form-label">Yarn Brand</label>
+                            <input type="text" class="form-control" id="yarnBrand" name="yarn_brand" value="">
+                            <i class="fas fa-tags"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="yarnType" class="form-label">Yarn Type</label>
+                            <input type="text" class="form-control" id="yarnType" name="yarn_type" value="">
+                            <i class="fas fa-certificate"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="yarnComposition" class="form-label">Yarn Composition</label>
+                            <input type="text" class="form-control" id="yarnComposition" name="yarn_composition" value="">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <div class="form-group">
+                            <label for="piLcRate" class="form-label">PI/LC Rate (USD)</label>
+                            <input type="number" step="0.01" class="form-control" id="piLcRate" name="pi_lc_rate" value="">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        
+
+                       
+                           <div class="form-group">
+                            <label for="rateCostSheet" class="form-label">Rate(Kgs) as per Cost sheet(USD)</label>
+                            <input type="number" step="0.01" class="form-control" id="rateCostSheet" name="rate_cost_sheet" value="">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+
+                        
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="column">
+                        <div class="form-group">
+                            <label for="issuedTo" class="form-label">Issued To / Delivery Place</label>
+                            <input type="text" class="form-control" id="issuedTo" name="issued_to" value="">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="form-group">
+                            <label for="countryOfOrigin" class="form-label">Country of Origin</label>
+                            <input type="text" class="form-control" id="countryOfOrigin" name="country_of_origin" value="">
+                            <i class="fas fa-globe"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="importLocalSource" class="form-label">Import/Local Source</label>
+                            <input type="text" class="form-control" id="importLocalSource" name="import_local_source" value="">
+                            <i class="fas fa-shipping-fast"></i>
+                        </div>
+
+
+                       <div class="form-group">
+                            <label for="receiveChallanNo" class="form-label">Receive Challan Number</label>
+                            <input type="text" class="form-control" id="receiveChallanNo" name="receive_challan_no" value="">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="issueChallanNo" class="form-label">Issue Challan Number</label>
+                            <input type="text" class="form-control" id="issueChallanNo" name="issue_challan_no" value="">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div class="form-group">
+                            <label for="issueDate" class="form-label">Issue Date</label>
+                            <input type="date" class="form-control" id="issueDate" name="issue_date" value="">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        
+
+                        <div class="form-group">
+                            <label for="issueType" class="form-label">Issue Type</label>
+                            <select class="form-select" id="issueType" name="issue_type">
+                                <option value="">Select Issue Type</option>
+                                <option value="Production">Production</option>
+                                <option value="Sample">Sample</option>
+                                <option value="Trial">Trial</option>
+                                <option value="Replacement">Replacement</option>
+                                <option value="Return">Return</option>
+                            </select>
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="outsideIssue" class="form-label">Total Outside Yarn Issue (kgs)</label>
+                            <input type="number" class="form-control" id="totalOutsideIssue" name="outside_issue_kg" value="">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <div class="form-group">
+                            <label for="toalWarpIssue" class="form-label">Total Warp yarn Issue (kgs)</label>
+                            <input type="number" class="form-control" id="toalWarpIssue" name="total_warp_issue_kgs" value="">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <div class="form-group">
+                            <label for="toalWeftIssue" class="form-label">Total Weft yarn Issue (kgs)</label>
+                            <input type="number" class="form-control" id="toalWeftIssue" name="total_weft_issue_kgs" value="">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <div class="form-group">
+                            <label for="warpYarnPrice" class="form-label">Warp yarn Price (Tk)</label>
+                            <input type="number" class="form-control" id="warpYarnPrice" name="warp_yarn_price" value="">
+                            <i class="fas">৳</i>
+                        </div>
+                        <div class="form-group">
+                            <label for="weftYarnPrice" class="form-label">Weft yarn Price (Tk)</label>
+                            <input type="number" class="form-control" id="weftYarnPrice" name="weft_yarn_price" value="">
+                            <i class="fas">৳</i>
+                        </div>
+                        <div class="form-group">
+                            <label for="totalReceivedQuantity" class="form-label">Total Received Quantity (Kgs)</label>
+                            <input type="number" step="0.01" class="form-control result-field" id="total_received_kg" name_="totalReceivedQuantity" value="" readonly>
+                            <i class="fas fa-warehouse"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="totalIssuedQuantity" class="form-label">Total Issued Quantity (Kgs)</label>
+                            <input type="number" step="0.01" class="form-control result-field" id="totalIssuedQuantity" name="total_issued_kg" value="" readonly>
+                            <i class="fas fa-weight"></i>
+                        </div>
+                        <div class="form-group">
+                            <label for="remainingQuantity" class="form-label">Remaining Yarn Quantity (Kgs)</label>
+                            <input type="number" step="0.01" class="form-control result-field" id="remainingQuantity" name="remaining_stock_kg" value="" readonly>
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="remarks" class="form-label">Remarks</label>
+                            <textarea class="form-control" id="remarks" name="remarks" rows="2" placeholder="Enter remarks..."></textarea>
+                            <i class="fas fa-sticky-note"></i>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+  <script>
+// Global variable to track current record ID for updates
+let currentRecordId = null;
+
+// GLOBAL FUNCTIONS
+function calculateTotalReceived() {
+    let total = 0;
+    const quantityInputs = document.querySelectorAll('input[name="receive_quantity[]"]');
+    
+    quantityInputs.forEach(input => {
+        total += parseFloat(input.value) || 0;
+    });
+    
+    const totalEl = document.getElementById('totalYarnReceived');
+    const totalReceivedEl = document.getElementById('total_received_kg');
+    
+    if (totalEl) totalEl.textContent = total.toFixed(2);
+    if (totalReceivedEl) totalReceivedEl.value = total.toFixed(2);
+    
+    updateRemainingQuantity();
+}
+
+function calculateTotalIssued() {
+    let total = 0;
+    const quantityInputs = document.querySelectorAll('input[name="issued_quantity[]"]');
+    
+    quantityInputs.forEach(input => {
+        total += parseFloat(input.value) || 0;
+    });
+    
+    const totalEl = document.getElementById('totalYarnIssued');
+    const issuedQuantityEl = document.getElementById('totalIssuedQuantity');
+    
+    if (totalEl) totalEl.textContent = total.toFixed(2);
+    if (issuedQuantityEl) issuedQuantityEl.value = total.toFixed(2);
+    
+    updateRemainingQuantity();
+}
+
+function updateRemainingQuantity() {
+    const totalReceived = parseFloat(document.getElementById('total_received_kg')?.value) || 0;
+    const totalIssued = parseFloat(document.getElementById('totalIssuedQuantity')?.value) || 0;
+    const remaining = totalReceived - totalIssued;
+    
+    const remainingEl = document.getElementById('remainingQuantity');
+    if (remainingEl) {
+        remainingEl.value = remaining.toFixed(2);
+    }
+}
+
+function formatDateForInput(dateString) {
+    if (!dateString) return '';
+    
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return '';
+        
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}`;
+    } catch (e) {
+        console.error('Date formatting error:', e);
+        return '';
+    }
+}
+
+function initializeFormFromTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    
+    setTimeout(() => {
+        const firstField = document.getElementById('issueDate');
+        if (firstField) {
+            firstField.focus();
+        }
+    }, 500);
+}
+
+function setupKeyboardNavigation() {
+    const formFields = [
+        'yarnCount', 'yarnPly', 'lcNo', 'lcDate', 'beneficiaryFactory',
+        'receivedAgainstPONo', 'receivedAgainstDispoNos', 'piNo', 'receivedStartDate',
+        'lastReceivedDate', 'yarnLot', 'yarnBrand', 'yarnType', 'yarnComposition',
+        'piLcRate', 'rateCostSheet', 'issuedTo', 'countryOfOrigin', 'importLocalSource',
+        'receiveChallanNo', 'issueChallanNo', 'issueDate', 'issueType', 'totalOutsideIssue',
+        'toalWarpIssue', 'toalWeftIssue', 'warpYarnPrice', 'weftYarnPrice', 'remarks'
+    ];
+
+    formFields.forEach((fieldId, index) => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowDown' || (e.key === 'Tab' && !e.shiftKey)) {
+                    e.preventDefault();
+                    const nextIndex = (index + 1) % formFields.length;
+                    const nextField = document.getElementById(formFields[nextIndex]);
+                    if (nextField) {
+                        nextField.focus();
+                        if (nextField.type === 'text' || nextField.type === 'number') {
+                            nextField.select();
+                        }
+                    }
+                } else if (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) {
+                    e.preventDefault();
+                    const prevIndex = index === 0 ? formFields.length - 1 : index - 1;
+                    const prevField = document.getElementById(formFields[prevIndex]);
+                    if (prevField) {
+                        prevField.focus();
+                        if (prevField.type === 'text' || prevField.type === 'number') {
+                            prevField.select();
+                        }
+                    }
+                }
+            });
+        }
+    });
+}
+
+// Fetch dispo numbers for Search Dispo dropdown
+async function fetchDispoNumbersForSearch() {
+    try {
+        // Fetch from YARN ISSUE form table
+        const response = await fetch('/main/api/yarn-issue/dispo-numbers', { 
+            method: 'GET', 
+            credentials: 'include' 
+        });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        
+        const dispoData = await response.json();
+        populateSearchDispoDropdown(dispoData);
+        
+        // Also populate the regular dispo dropdown from dispo form
+        const dispoResponse = await fetch('/main/api/dispo/numbers', { 
+            method: 'GET', 
+            credentials: 'include' 
+        });
+        if (dispoResponse.ok) {
+            const dispoNumbers = await dispoResponse.json();
+            populateReceivedAgainstDispoDropdown(dispoNumbers);
+        }
+        
+    } catch (error) {
+        console.error('Failed to load dispo numbers:', error);
+    }
+}
+
+function populateSearchDispoDropdown(dispoData) {
+    const searchDispoDropdown = document.querySelector('ul[aria-labelledby="searchDispoDropdown"]');
+    
+    if (searchDispoDropdown) {
+        if (dispoData.length === 0) {
+            searchDispoDropdown.innerHTML = '<li><a class="dropdown-item disabled" href="#">No dispo records in issues</a></li>';
+        } else {
+            searchDispoDropdown.innerHTML = dispoData.map(item => {
+                return `<li><a class="dropdown-item" href="#" data-dispo-no="${item.dispo_no}" data-record-id="${item.data.id}" data-dispo-data='${JSON.stringify(item.data)}'>${item.display}</a></li>`;
+            }).join('');
+        }
+        
+        attachSearchDispoDropdownListeners();
+    }
+}
+
+
+function attachSearchDispoDropdownListeners() {
+    document.querySelectorAll('ul[aria-labelledby="searchDispoDropdown"] .dropdown-item').forEach(item => {
+        const newItem = item.cloneNode(true);
+        item.parentNode.replaceChild(newItem, item);
+        
+        newItem.addEventListener('click', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const dispoNo = this.getAttribute('data-dispo-no');
+            const recordId = this.getAttribute('data-record-id');
+            
+            if (dispoNo && !this.classList.contains('disabled')) {
+                const searchButton = document.getElementById('searchDispoDropdown');
+                if (searchButton) {
+                    searchButton.innerHTML = `<i class="fas fa-search"></i> Dispo: ${dispoNo}`;
+                    
+                    const dropdown = bootstrap.Dropdown.getInstance(searchButton);
+                    if (dropdown) dropdown.hide();
+                }
+                
+                // Load the issue record by ID
+                await fetchYarnIssueRecordById(recordId);
+            }
+        });
+    });
+}
+
+function populateFormFromDispoData(data) {
+    if (data.warp_count_1) document.getElementById('yarnCount').value = data.warp_count_1;
+    if (data.warp_ply_1) document.getElementById('yarnPly').value = data.warp_ply_1;
+    if (data.lc_no) document.getElementById('lcNo').value = data.lc_no;
+    if (data.lc_date) document.getElementById('lcDate').value = formatDateForInput(data.lc_date);
+    if (data.beneficiary_factory) document.getElementById('beneficiaryFactory').value = data.beneficiary_factory;
+    if (data.received_against_po_no) document.getElementById('receivedAgainstPONo').value = data.received_against_po_no;
+    if (data.dispo_number) document.getElementById('receivedAgainstDispoNos').value = data.dispo_number;
+    if (data.pi_no) document.getElementById('piNo').value = data.pi_no;
+    if (data.received_start_date) document.getElementById('receivedStartDate').value = formatDateForInput(data.received_start_date);
+    if (data.last_received_date) document.getElementById('lastReceivedDate').value = formatDateForInput(data.last_received_date);
+    if (data.yarn_lot) document.getElementById('yarnLot').value = data.yarn_lot;
+    if (data.yarn_brand) document.getElementById('yarnBrand').value = data.yarn_brand;
+    if (data.yarn_type) document.getElementById('yarnType').value = data.yarn_type;
+    if (data.yarn_composition) document.getElementById('yarnComposition').value = data.yarn_composition;
+    if (data.pi_lc_rate) document.getElementById('piLcRate').value = data.pi_lc_rate;
+    if (data.rate_cost_sheet) document.getElementById('rateCostSheet').value = data.rate_cost_sheet;
+    if (data.country_of_origin) document.getElementById('countryOfOrigin').value = data.country_of_origin;
+    if (data.import_local_source) document.getElementById('importLocalSource').value = data.import_local_source;
+    if (data.receive_challan_no) document.getElementById('receiveChallanNo').value = data.receive_challan_no;
+}
+
+function populateReceivedAgainstDispoDropdown(dispoNumbers) {
+    const receivedAgainstDispoSelect = document.getElementById('receivedAgainstDispoNos');
+    if (receivedAgainstDispoSelect) {
+        const currentValue = receivedAgainstDispoSelect.value;
+        receivedAgainstDispoSelect.innerHTML = '<option value="">Select Dispo</option>';
+        
+        dispoNumbers.forEach(dispoNo => {
+            const option = document.createElement('option');
+            option.value = dispoNo;
+            option.textContent = dispoNo;
+            if (dispoNo === currentValue) {
+                option.selected = true;
+            }
+            receivedAgainstDispoSelect.appendChild(option);
+        });
+    }
+}
+
+async function fetchPONumbers() {
+    try {
+        const response = await fetch('/main/api/po/numbers', { 
+            method: 'GET', 
+            credentials: 'include' 
+        });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        
+        const poNumbers = await response.json();
+        populatePOField(poNumbers);
+    } catch (error) {
+        console.error('Failed to load PO numbers:', error);
+    }
+}
+
+function populatePOField(poNumbers) {
+    const receivedAgainstPOField = document.getElementById('receivedAgainstPONo');
+    if (receivedAgainstPOField) {
+        receivedAgainstPOField.innerHTML = '<option value="">Select PO</option>';
+        poNumbers.forEach(poNo => {
+            const option = document.createElement('option');
+            option.value = poNo;
+            option.textContent = poNo;
+            receivedAgainstPOField.appendChild(option);
+        });
+    }
+}
+
+async function fetchYarnLots() {
+    try {
+        // Fetch from YARN ISSUE form table, not yarn receive form
+        const response = await fetch('/main/api/yarn-issue/yarn-lots', { 
+            method: 'GET', 
+            credentials: 'include' 
+        });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        
+        const yarnLots = await response.json();
+        populateYarnLotDropdowns(yarnLots);
+        
+    } catch (error) {
+        console.error('Failed to load yarn issue lots:', error);
+    }
+}
+
+function populateYarnLotDropdowns(yarnLots) {
+    const yarnLotSelect = document.getElementById('yarnLot');
+    const searchYarnLotSelect = document.getElementById('searchYarnLotBreakdown');
+    const searchYarnLotDropdown = document.querySelector('ul[aria-labelledby="searchYarnLotDropdown"]');
+    
+    if (yarnLotSelect) {
+        yarnLotSelect.innerHTML = '<option value="">Select Yarn Lot</option>';
+        yarnLots.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.yarn_lot;
+            option.textContent = item.display;
+            option.setAttribute('data-yarn-data', JSON.stringify(item.data));
+            yarnLotSelect.appendChild(option);
+        });
+    }
+    
+    if (searchYarnLotSelect) {
+        searchYarnLotSelect.innerHTML = '<option value="">Select Yarn Lot</option>';
+        yarnLots.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.yarn_lot;
+            option.textContent = item.display;
+            option.setAttribute('data-yarn-data', JSON.stringify(item.data));
+            searchYarnLotSelect.appendChild(option);
+        });
+    }
+    
+    if (searchYarnLotDropdown) {
+        searchYarnLotDropdown.innerHTML = yarnLots.length === 0 
+            ? '<li><a class="dropdown-item disabled" href="#">No yarn lots available</a></li>'
+            : yarnLots.map(item => `<li><a class="dropdown-item" href="#" data-yarn-lot="${item.yarn_lot}" data-record-id="${item.data.id}" data-yarn-data='${JSON.stringify(item.data)}'>${item.display}</a></li>`).join('');
+        
+        attachYarnLotDropdownListeners();
+    }
+}
+
+function attachYarnLotDropdownListeners() {
+    document.querySelectorAll('ul[aria-labelledby="searchYarnLotDropdown"] .dropdown-item').forEach(item => {
+        const newItem = item.cloneNode(true);
+        item.parentNode.replaceChild(newItem, item);
+        
+        newItem.addEventListener('click', async function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const yarnLot = this.getAttribute('data-yarn-lot');
+            const recordId = this.getAttribute('data-record-id');
+            
+            if (yarnLot && !this.classList.contains('disabled')) {
+                const searchButton = document.getElementById('searchYarnLotDropdown');
+                if (searchButton) {
+                    searchButton.innerHTML = `<i class="fas fa-search"></i> Lot: ${yarnLot}`;
+                    
+                    const dropdown = bootstrap.Dropdown.getInstance(searchButton);
+                    if (dropdown) dropdown.hide();
+                }
+                // Load the issue record for editing
+                await fetchYarnIssueRecordById(recordId);
+            }
+        });
+    });
+}
+
+// New helper function to fetch and populate totals
+async function fetchAndPopulateTotals(poNo, dispoNo, yarnLot) {
+    try {
+        let totalReceived = 0;
+        let totalIssued = 0;
+        
+        // If yarn lot is available, use it (most accurate)
+        if (yarnLot && yarnLot.trim() !== '') {
+            const lotResponse = await fetch(`/main/api/yarn/totals-by-lot/${encodeURIComponent(yarnLot)}`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            
+            if (lotResponse.ok) {
+                const lotData = await lotResponse.json();
+                totalReceived = lotData.total_received || 0;
+                totalIssued = lotData.total_issued || 0;
+            }
+        } else {
+            // Otherwise, try PO and Dispo
+            if (poNo && poNo.trim() !== '') {
+                const receivedPoResponse = await fetch(`/main/api/yarn/total-received-by-po/${encodeURIComponent(poNo)}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const issuedPoResponse = await fetch(`/main/api/yarn-issue/total-issued-by-po/${encodeURIComponent(poNo)}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                if (receivedPoResponse.ok) {
+                    const receivedData = await receivedPoResponse.json();
+                    totalReceived += receivedData.total_received || 0;
+                }
+                
+                if (issuedPoResponse.ok) {
+                    const issuedData = await issuedPoResponse.json();
+                    totalIssued += issuedData.total_issued || 0;
+                }
+            }
+            
+            if (dispoNo && dispoNo.trim() !== '') {
+                const receivedDispoResponse = await fetch(`/main/api/yarn/total-received-by-dispo/${encodeURIComponent(dispoNo)}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                const issuedDispoResponse = await fetch(`/main/api/yarn-issue/total-issued-by-dispo/${encodeURIComponent(dispoNo)}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                if (receivedDispoResponse.ok) {
+                    const receivedData = await receivedDispoResponse.json();
+                    totalReceived = Math.max(totalReceived, receivedData.total_received || 0);
+                }
+                
+                if (issuedDispoResponse.ok) {
+                    const issuedData = await issuedDispoResponse.json();
+                    totalIssued = Math.max(totalIssued, issuedData.total_issued || 0);
+                }
+            }
+        }
+        
+        // Calculate remaining
+        const remaining = totalReceived - totalIssued;
+        
+        // Populate the fields
+        const totalReceivedField = document.getElementById('total_received_kg');
+        const totalIssuedField = document.getElementById('totalIssuedQuantity');
+        const remainingField = document.getElementById('remainingQuantity');
+        
+        if (totalReceivedField) totalReceivedField.value = totalReceived.toFixed(2);
+        if (totalIssuedField) totalIssuedField.value = totalIssued.toFixed(2);
+        if (remainingField) remainingField.value = remaining.toFixed(2);
+        
+        console.log('Totals populated:', { totalReceived, totalIssued, remaining });
+        
+    } catch (error) {
+        console.error('Error fetching totals:', error);
+    }
+}
+
+// Updated fetchYarnIssueRecordById function
+async function fetchYarnIssueRecordById(recordId) {
+    try {
+        const response = await fetch(`/main/api/yarn-issue/fetch-by-id/${recordId}`, { 
+            method: 'GET', 
+            credentials: 'include' 
+        });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        
+        const data = await response.json();
+        console.log('Fetched yarn issue record:', data);
+        
+        currentRecordId = data.id;
+        populateFormWithIssueData(data);
+        
+        // Fetch and populate totals based on PO, Dispo, and Yarn Lot
+        await fetchAndPopulateTotals(
+            data.received_against_po_no,
+            data.received_against_dispo_nos,
+            data.yarn_lot
+        );
+        
+    } catch (error) {
+        console.error('Fetch yarn issue record error:', error);
+        alert('Failed to load yarn issue record: ' + error.message);
+    }
+}
+
+async function fetchYarnLotForIssue(recordId, yarnLot) {
+    try {
+        const response = await fetch(`/main/api/yarn/fetch-by-id/${recordId}`, { 
+            method: 'GET', 
+            credentials: 'include' 
+        });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        
+        const data = await response.json();
+        console.log('Fetched yarn lot data for issue:', data);
+        populateFormWithYarnData(data);
+    } catch (error) {
+        console.error('Fetch yarn lot error:', error);
+        alert('Failed to load yarn lot data: ' + error.message);
+    }
+}
+
+function populateFormWithIssueData(data) {
+    // Populate main form fields
+    if (data.yarn_count) document.getElementById('yarnCount').value = data.yarn_count;
+    if (data.yarn_ply) document.getElementById('yarnPly').value = data.yarn_ply;
+    if (data.lc_no) document.getElementById('lcNo').value = data.lc_no;
+    if (data.lc_date) document.getElementById('lcDate').value = formatDateForInput(data.lc_date);
+    if (data.beneficiary_factory) document.getElementById('beneficiaryFactory').value = data.beneficiary_factory;
+    if (data.received_against_po_no) document.getElementById('receivedAgainstPONo').value = data.received_against_po_no;
+    if (data.received_against_dispo_nos) document.getElementById('receivedAgainstDispoNos').value = data.received_against_dispo_nos;
+    if (data.pi_no) document.getElementById('piNo').value = data.pi_no;
+    if (data.received_start_date) document.getElementById('receivedStartDate').value = formatDateForInput(data.received_start_date);
+    if (data.last_received_date) document.getElementById('lastReceivedDate').value = formatDateForInput(data.last_received_date);
+    if (data.yarn_lot) document.getElementById('yarnLot').value = data.yarn_lot;
+    if (data.yarn_brand) document.getElementById('yarnBrand').value = data.yarn_brand;
+    if (data.yarn_type) document.getElementById('yarnType').value = data.yarn_type;
+    if (data.yarn_composition) document.getElementById('yarnComposition').value = data.yarn_composition;
+    if (data.pi_lc_rate) document.getElementById('piLcRate').value = data.pi_lc_rate;
+    if (data.rate_cost_sheet) document.getElementById('rateCostSheet').value = data.rate_cost_sheet;
+    if (data.issued_to) document.getElementById('issuedTo').value = data.issued_to;
+    if (data.country_of_origin) document.getElementById('countryOfOrigin').value = data.country_of_origin;
+    if (data.import_local_source) document.getElementById('importLocalSource').value = data.import_local_source;
+    if (data.receive_challan_no) document.getElementById('receiveChallanNo').value = data.receive_challan_no;
+    if (data.issue_challan_no) document.getElementById('issueChallanNo').value = data.issue_challan_no;
+    if (data.issue_date) document.getElementById('issueDate').value = formatDateForInput(data.issue_date);
+    if (data.issue_type) document.getElementById('issueType').value = data.issue_type;
+    if (data.outside_issue_kg) document.getElementById('totalOutsideIssue').value = data.outside_issue_kg;
+    if (data.total_warp_issue_kgs) document.getElementById('toalWarpIssue').value = data.total_warp_issue_kgs;
+    if (data.total_weft_issue_kgs) document.getElementById('toalWeftIssue').value = data.total_weft_issue_kgs;
+    if (data.warp_yarn_price) document.getElementById('warpYarnPrice').value = data.warp_yarn_price;
+    if (data.weft_yarn_price) document.getElementById('weftYarnPrice').value = data.weft_yarn_price;
+    if (data.total_received_kg) document.getElementById('total_received_kg').value = data.total_received_kg;
+    if (data.total_issued_kg) document.getElementById('totalIssuedQuantity').value = data.total_issued_kg;
+    if (data.remaining_stock_kg) document.getElementById('remainingQuantity').value = data.remaining_stock_kg;
+    if (data.remarks) document.getElementById('remarks').value = data.remarks;
+    
+    // Populate breakdown table if issue_details exist
+    if (data.issue_details && data.issue_details.length > 0) {
+        populateIssueDetailsTable(data.issue_details);
+    }
+    
+    // Fetch fresh totals after form population
+    setTimeout(() => {
+        fetchAndPopulateTotals(
+            data.received_against_po_no,
+            data.received_against_dispo_nos,
+            data.yarn_lot
+        );
+    }, 100);
+    
+    updateRemainingQuantity();
+}
+
+function populateIssueDetailsTable(details) {
+    const tbody = document.querySelector('#yarnIssueTable tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    details.forEach((detail, index) => {
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td class="date-column"><input type="date" class="form-control" name="receive_date[]" value="${formatDateForInput(detail.receive_date)}"></td>
+            <td class="quantity-column"><input type="number" step="0.01" class="form-control" name="receive_quantity[]" value="${detail.receive_quantity || 0}"></td>
+            <td class="date-column"><input type="date" class="form-control" name="issue_date[]" value="${formatDateForInput(detail.issue_date)}"></td>
+            <td class="quantity-column"><input type="number" step="0.01" class="form-control" name="issued_quantity[]" value="${detail.issued_quantity || 0}"></td>
+        `;
+        tbody.appendChild(newRow);
+        
+        const receiveQuantityInput = newRow.querySelector('input[name="receive_quantity[]"]');
+        if (receiveQuantityInput) {
+            receiveQuantityInput.addEventListener('input', calculateTotalReceived);
+        }
+        
+        const issueQuantityInput = newRow.querySelector('input[name="issued_quantity[]"]');
+        if (issueQuantityInput) {
+            issueQuantityInput.addEventListener('input', calculateTotalIssued);
+        }
+    });
+    
+    if (details.length === 0) {
+        addDefaultIssueRow();
+    }
+    
+    calculateTotalReceived();
+    calculateTotalIssued();
+}
+
+function collectFormData() {
+    const form = document.getElementById('yarnIssueForm');
+    const formData = new FormData(form);
+    const data = {};
+    
+    for (let [key, value] of formData.entries()) {
+        if (!key.includes('[]')) {
+            data[key] = value;
+        }
+    }
+    
+    return data;
+}
+
+function collectIssueDetails() {
+    const receiveDates = document.querySelectorAll('input[name="receive_date[]"]');
+    const receiveQuantities = document.querySelectorAll('input[name="receive_quantity[]"]');
+    const issueDates = document.querySelectorAll('input[name="issue_date[]"]');
+    const issuedQuantities = document.querySelectorAll('input[name="issued_quantity[]"]');
+    const details = [];
+    
+    receiveDates.forEach((receiveDateInput, index) => {
+        if (receiveDateInput.value || receiveQuantities[index]?.value || 
+            issueDates[index]?.value || issuedQuantities[index]?.value) {
+            details.push({
+                receive_date: receiveDateInput.value || null,
+                receive_quantity: parseFloat(receiveQuantities[index]?.value) || 0,
+                issue_date: issueDates[index]?.value || null,
+                issued_quantity: parseFloat(issuedQuantities[index]?.value) || 0
+            });
+        }
+    });
+    
+    return details;
+}
+
+async function generateNextIssueNo() {
+    try {
+        const response = await fetch('/main/api/yarn-issue/next-issue-no', {
+            method: 'GET',
+            credentials: 'include'
+        });
+        
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        
+        const data = await response.json();
+        const issueChallanNoField = document.getElementById('issueChallanNo');
+        if (issueChallanNoField) {
+            issueChallanNoField.value = data.issue_no;
+        }
+    } catch (error) {
+        console.error('Error generating issue number:', error);
+    }
+}
+
+function addDefaultIssueRow() {
+    const tbody = document.querySelector('#yarnIssueTable tbody');
+    if (!tbody) return;
+    
+    const newRow = document.createElement('tr');
+    newRow.innerHTML = `
+        <td class="date-column"><input type="date" class="form-control" name="receive_date[]"></td>
+        <td class="quantity-column"><input type="number" step="0.01" class="form-control" name="receive_quantity[]" value="0"></td>
+        <td class="date-column"><input type="date" class="form-control" name="issue_date[]"></td>
+        <td class="quantity-column"><input type="number" step="0.01" class="form-control" name="issued_quantity[]" value="0"></td>
+    `;
+    tbody.appendChild(newRow);
+    
+    const receiveQuantityInput = newRow.querySelector('input[name="receive_quantity[]"]');
+    if (receiveQuantityInput) {
+        receiveQuantityInput.addEventListener('input', calculateTotalReceived);
+    }
+    
+    const issueQuantityInput = newRow.querySelector('input[name="issued_quantity[]"]');
+    if (issueQuantityInput) {
+        issueQuantityInput.addEventListener('input', calculateTotalIssued);
+    }
+}
+
+function clearBreakdownTable() {
+    const tbody = document.querySelector('#yarnIssueTable tbody');
+    if (tbody) {
+        tbody.innerHTML = '';
+        addDefaultIssueRow();
+    }
+    
+    const totalReceived = document.getElementById('totalYarnReceived');
+    const totalIssued = document.getElementById('totalYarnIssued');
+    if (totalReceived) totalReceived.textContent = '0';
+    if (totalIssued) totalIssued.textContent = '0';
+}
+
+function toggleCollapsible() {
+    const collapsibleSection = document.getElementById('yarnIssueBreakdownContent');
+    const chevronIcon = document.querySelector('.breakdown-title i');
+    
+    if (!collapsibleSection) return;
+    
+    const isCurrentlyHidden = collapsibleSection.style.display === 'none' || collapsibleSection.style.display === '';
+    collapsibleSection.style.display = isCurrentlyHidden ? 'block' : 'none';
+    
+    if (chevronIcon) {
+        chevronIcon.classList.toggle('fa-chevron-down', !isCurrentlyHidden);
+        chevronIcon.classList.toggle('fa-chevron-up', isCurrentlyHidden);
+    }
+}
+
+function displaySavedRecords(records) {
+    const modalHTML = `
+        <div class="modal fade" id="savedRecordsModal" tabindex="-1" aria-labelledby="savedRecordsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content" style="background-color: #252525; color: #e0e0e0;">
+                    <div class="modal-header" style="border-bottom: 1px solid #3a3a3a;">
+                        <h5 class="modal-title" id="savedRecordsModalLabel">Saved Yarn Issue Records</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Yarn Lot</th>
+                                        <th>Yarn Count/Ply</th>
+                                        <th>Issued To</th>
+                                        <th>Issue Date</th>
+                                        <th>Issue Type</th>
+                                        <th>Total Issued (Kgs)</th>
+                                        <th>Total Received (Kgs)</th>
+                                        <th>Remaining (Kgs)</th>
+                                        <th>Created At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${records.map(record => `
+                                        <tr>
+                                            <td>${record.id}</td>
+                                            <td>${record.yarn_lot || 'N/A'}</td>
+                                            <td>${record.yarn_count}/${record.yarn_ply}</td>
+                                            <td>${record.issued_to || 'N/A'}</td>
+                                            <td>${record.issue_date ? new Date(record.issue_date).toLocaleDateString() : 'N/A'}</td>
+                                            <td>${record.issue_type || 'N/A'}</td>
+                                            <td>${record.total_issued_kg || '0'}</td>
+                                            <td>${record.total_received_kg || '0'}</td>
+                                            <td>${record.remaining_stock_kg || '0'}</td>
+                                            <td>${new Date(record.created_at).toLocaleDateString()}</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-danger" onclick="deleteIssueRecord(${record.id})">Delete</button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid #3a3a3a;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-success" onclick="exportRecordsFromModal()">Export All</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const existingModal = document.getElementById('savedRecordsModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    const modal = new bootstrap.Modal(document.getElementById('savedRecordsModal'));
+    modal.show();
+}
+
+async function deleteIssueRecord(recordId) {
+    if (!confirm(`Are you sure you want to delete record ID: ${recordId}? This action cannot be undone.`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/main/api/yarn-issue/delete/${recordId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        alert('Record deleted successfully!');
+        document.getElementById('savedIssuesBtn').click();
+    } catch (error) {
+        console.error('Error deleting record:', error);
+        alert('Failed to delete record: ' + error.message);
+    }
+}
+
+async function exportRecordsFromModal() {
+    document.getElementById('saveToExcelBtn').click();
+}
+
+// EVENT LISTENERS AND INITIALIZATION
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFormFromTop();
+    setupKeyboardNavigation();
+
+    // Collapsible functionality
+    const collapsibleToggle = document.getElementById('breakdownToggle');
+    if (collapsibleToggle) {
+        collapsibleToggle.addEventListener('click', function(e) {
+            if (e.target.tagName === 'INPUT' || 
+                e.target.tagName === 'SELECT' || 
+                e.target.tagName === 'BUTTON' || 
+                e.target.tagName === 'TEXTAREA') {
+                return;
+            }
+            toggleCollapsible();
+        });
+    }
+
+    // Save to MySQL button
+const saveToMySQLBtn = document.getElementById('saveToMySQLBtn');
+if (saveToMySQLBtn) {
+    saveToMySQLBtn.addEventListener('click', async function() {
+        try {
+            const formData = collectFormData();
+            const issueDetails = collectIssueDetails();
+
+            if (!formData.yarn_lot || !formData.issue_date) {
+                alert('Please fill in required fields: Yarn Lot and Issue Date');
+                return;
+            }
+
+            const response = await fetch('/main/api/yarn-issue/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    formData: formData,
+                    issueDetails: issueDetails
+                })
+            });
+
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+            const result = await response.json();
+            currentRecordId = result.id;
+            alert('Data saved successfully to MySQL!');
+            console.log('Save successful:', result);
+            
+            // **REFRESH DROPDOWNS AFTER SAVE**
+            await fetchYarnLots();
+            await fetchDispoNumbersForSearch();
+            
+            initializeFormFromTop();
+            generateNextIssueNo();
+        } catch (error) {
+            console.error('Error saving data:', error);
+            alert('Failed to save data: ' + error.message);
+        }
+    });
+}
+
+    // Update MySQL button
+    const updateToMySQLBtn = document.getElementById('updateToMySQLBtn');
+    if (updateToMySQLBtn) {
+        updateToMySQLBtn.addEventListener('click', async function() {
+            if (!currentRecordId) {
+                alert('No record selected for update. Please search and load a record first.');
+                return;
+            }
+
+            try {
+                const formData = collectFormData();
+                const issueDetails = collectIssueDetails();
+
+                if (!formData.yarn_lot || !formData.issue_date) {
+                    alert('Please fill in required fields: Yarn Lot and Issue Date');
+                    return;
+                }
+
+                const response = await fetch(`/main/api/yarn-issue/update/${currentRecordId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        formData: formData,
+                        issueDetails: issueDetails
+                    })
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+                const result = await response.json();
+                alert('Data updated successfully in MySQL!');
+                console.log('Update successful:', result);
+                
+                initializeFormFromTop();
+            } catch (error) {
+                console.error('Error updating data:', error);
+                alert('Failed to update data: ' + error.message);
+            }
+        });
+    }
+
+    // Export to Excel button
+    const saveToExcelBtn = document.getElementById('saveToExcelBtn');
+    if (saveToExcelBtn) {
+        saveToExcelBtn.addEventListener('click', async function() {
+            try {
+                const response = await fetch('/main/api/yarn-issue/export-excel', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                
+                const contentDisposition = response.headers.get('content-disposition');
+                let filename = 'yarn_issue_records.csv';
+                if (contentDisposition) {
+                    const match = contentDisposition.match(/filename="(.+)"/);
+                    if (match) filename = match[1];
+                }
+                
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                console.log('Export successful');
+            } catch (error) {
+                console.error('Error exporting data:', error);
+                alert('Failed to export data: ' + error.message);
+            }
+        });
+    }
+
+    // Saved Issues button
+    const savedIssuesBtn = document.getElementById('savedIssuesBtn');
+    if (savedIssuesBtn) {
+        savedIssuesBtn.addEventListener('click', async function() {
+            try {
+                const response = await fetch('/main/api/yarn-issue/saved-records', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const records = await response.json();
+                displaySavedRecords(records);
+            } catch (error) {
+                console.error('Error fetching saved records:', error);
+                alert('Failed to fetch saved records: ' + error.message);
+            }
+        });
+    }
+
+    // Delete Record button
+    const deleteIssueBtn = document.getElementById('deleteIssueBtn');
+    if (deleteIssueBtn) {
+        deleteIssueBtn.addEventListener('click', async function() {
+            const recordId = prompt('Enter the ID of the record to delete:');
+            
+            if (!recordId) {
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete record ID: ${recordId}? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/main/api/yarn-issue/delete/${recordId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                alert('Record deleted successfully!');
+                console.log('Delete successful:', result);
+            } catch (error) {
+                console.error('Error deleting record:', error);
+                alert('Failed to delete record: ' + error.message);
+            }
+        });
+    }
+
+    // Table row management buttons
+    const addIssueRowBtn = document.getElementById('addIssueRowBtn');
+    if (addIssueRowBtn) {
+        addIssueRowBtn.addEventListener('click', function() {
+            const tbody = document.querySelector('#yarnIssueTable tbody');
+            if (!tbody) return;
+            
+            const rowCount = tbody.querySelectorAll('tr').length;
+            
+            if (rowCount >= 50) {
+                alert('Maximum 50 rows allowed');
+                return;
+            }
+            
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td class="date-column"><input type="date" class="form-control" name="receive_date[]"></td>
+                <td class="quantity-column"><input type="number" step="0.01" class="form-control" name="receive_quantity[]" value="0"></td>
+                <td class="date-column"><input type="date" class="form-control" name="issue_date[]"></td>
+                <td class="quantity-column"><input type="number" step="0.01" class="form-control" name="issued_quantity[]" value="0"></td>
+            `;
+            tbody.appendChild(newRow);
+            
+            const receiveQuantityInput = newRow.querySelector('input[name="receive_quantity[]"]');
+            if (receiveQuantityInput) {
+                receiveQuantityInput.addEventListener('input', calculateTotalReceived);
+            }
+            
+            const issueQuantityInput = newRow.querySelector('input[name="issued_quantity[]"]');
+            if (issueQuantityInput) {
+                issueQuantityInput.addEventListener('input', calculateTotalIssued);
+            }
+        });
+    }
+
+    const deleteIssueRowBtn = document.getElementById('deleteIssueRowBtn');
+    if (deleteIssueRowBtn) {
+        deleteIssueRowBtn.addEventListener('click', function() {
+            const tbody = document.querySelector('#yarnIssueTable tbody');
+            if (!tbody) return;
+            
+            const rows = tbody.querySelectorAll('tr');
+            
+            if (rows.length > 1) {
+                tbody.removeChild(rows[rows.length - 1]);
+                calculateTotalReceived();
+                calculateTotalIssued();
+            } else {
+                alert('At least one row is required');
+            }
+        });
+    }
+
+    // Clear form button
+    const clearFormBtn = document.getElementById('clearFormBtn');
+    if (clearFormBtn) {
+        clearFormBtn.addEventListener('click', function() {
+            const form = document.getElementById('yarnIssueForm');
+            if (form) form.reset();
+            
+            currentRecordId = null;
+            clearBreakdownTable();
+            
+            calculateTotalReceived();
+            calculateTotalIssued();
+            
+            const searchButtons = [
+                { id: 'searchYarnLotDropdown', text: '<i class="fas fa-search"></i> Search Yarn Lot' },
+                { id: 'searchDispoDropdown', text: '<i class="fas fa-search"></i> Search Dispo Number' }
+            ];
+            
+            searchButtons.forEach(btn => {
+                const button = document.getElementById(btn.id);
+                if (button) button.innerHTML = btn.text;
+            });
+            
+            initializeFormFromTop();
+            generateNextIssueNo();
+        });
+    }
+
+    // Input event listeners for calculations
+    document.addEventListener('input', function(e) {
+        if (e.target.name === 'receive_quantity[]') {
+            calculateTotalReceived();
+        } else if (e.target.name === 'issued_quantity[]') {
+            calculateTotalIssued();
+        }
+    });
+
+    // Yarn lot change event
+    const yarnLotSelect = document.getElementById('yarnLot');
+    if (yarnLotSelect) {
+        yarnLotSelect.addEventListener('change', function() {
+            if (this.value) {
+                // Find the record ID from the dropdown options
+                const selectedOption = this.options[this.selectedIndex];
+                const yarnData = selectedOption.getAttribute('data-yarn-data');
+                if (yarnData) {
+                    const parsedData = JSON.parse(yarnData);
+                    if (parsedData.id) {
+                        fetchYarnLotForIssue(parsedData.id, this.value);
+                    }
+                }
+            }
+        });
+    }
+
+    // Initialize data fetching
+    setTimeout(() => {
+        fetchYarnLots();
+        fetchDispoNumbersForSearch();
+        fetchPONumbers();
+        generateNextIssueNo();
+        calculateTotalReceived();
+        calculateTotalIssued();
+        
+        const currentDate = new Date().toISOString().split('T')[0];
+        const issueDateField = document.getElementById('issueDate');
+        if (issueDateField && !issueDateField.value) {
+            issueDateField.value = currentDate;
+        }
+    }, 100);
+
+    console.log('Yarn Issue Form initialized successfully');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PO Create Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+            --container-bg: #252525;
+            --text-color: #e0e0e0;
+            --accent-color: #00c4ff;
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            --btn-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            --border-glow: rgba(0, 196, 255, 0.3);
+        }
+
+        body {
+            background: var(--primary-bg);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            height: 100vh;
+            overflow: auto;
+            background-attachment: fixed;
+        }
+
+        .main-container {
+            background: var(--container-bg);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border: 1px solid #3a3a3a;
+            height: auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 196, 255, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 196, 255, 0.03) 0%, transparent 20%);
+        }
+
+        .main-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.03) 50%, transparent 51%);
+            background-size: 10px 10px;
+            pointer-events: none;
+        }
+
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 15px;
+            border-radius: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 1050;
+            overflow: visible;
+        }
+
+        .header-controls::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 15%;
+            width: 70%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        }
+
+        .header-controls h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-color);
+            text-shadow: var(--text-shadow);
+            margin: 0;
+            background: linear-gradient(45deg, #e0e0e0, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .header-controls h1::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 40%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-color), transparent);
+            border-radius: 3px;
+        }
+        
+        /* Gradient button styles */
+        .header-controls .btn, .header-controls .btn.dropdown-toggle {
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: none;
+            color: #fff;
+            box-shadow: var(--btn-shadow);
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            font-weight: 600;
+            white-space: nowrap;
+            min-width: 140px;
+            text-align: center;
+        }
+
+        /* Specific gradient colors for different button types */
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8, #20c997) !important;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107, #fd7e14) !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #6f42c1) !important;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997) !important;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #e83e8c) !important;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057) !important;
+        }
+
+        .header-controls .btn, .header-controls .btn.dropdown-toggle {
+            border-radius: 20px;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: none;
+            color: #fff;
+            box-shadow: var(--btn-shadow);
+            font-size: 0.85rem;
+            padding: 6px 15px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            font-weight: 600;
+            white-space: nowrap;
+            margin: 0 10px;
+        }
+
+        .header-controls .btn:first-child {
+            margin-left: 0;
+        }
+
+        .header-controls .btn:last-child {
+            margin-right: 0;
+        }
+
+        .header-controls .btn::before, .header-controls .btn.dropdown-toggle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: all 0.5s ease;
+            z-index: -1;
+        }
+
+        .header-controls .btn:hover, .header-controls .btn.dropdown-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        .header-controls .btn:hover::before, .header-controls .btn.dropdown-toggle:hover::before {
+            left: 100%;
+        }
+
+        .header-controls .btn i {
+            margin-right: 6px;
+        }
+
+        .header-controls .btn.dropdown-toggle {
+            min-width: 150px;
+        }
+
+        .dropdown-menu {
+            background: #303030;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            z-index: 1051;
+        }
+
+        .dropdown-item {
+            color: var(--text-color);
+            font-size: 0.85rem;
+            padding: 8px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background: #404040;
+            color: #ffffff;
+        }
+
+        .form-section {
+            background: #252525;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .form-section:hover {
+            background: #2D2D2D;
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-glow);
+            border-color: rgba(0, 196, 255, 0.2);
+        }
+
+        .form-section h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            text-shadow: var(--text-shadow);
+            margin-bottom: 15px;
+            position: relative;
+            padding-bottom: 8px;
+        }
+
+        .form-section h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 30%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-color), transparent);
+            border-radius: 2px;
+        }
+
+        .form-label {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+
+        .form-control, .form-select {
+            background-color: #404040;
+            border: 1px solid #505050;
+            color: var(--text-color);
+            border-radius: 10px;
+            padding: 8px 12px;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            width: 100%;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #454545 !important;
+            color: var(--text-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(0, 196, 255, 0.25);
+        }
+
+        .form-control:hover, .form-select:hover {
+            border-color: var(--accent-color);
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 10px;
+            top: 70%;
+            transform: translateY(-50%);
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group .form-control, .form-group .form-select {
+            padding-left: 30px;
+        }
+
+        .form-group .form-control:focus + i,
+        .form-group .form-select:focus + i {
+            color: #ffffff;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        @media (max-width: 1200px) {
+            .header-controls h1 {
+                font-size: 1.3rem;
+            }
+
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                font-size: 0.8rem;
+                padding: 5px 10px;
+                margin: 0 8px;
+            }
+
+            .header-controls .btn.dropdown-toggle {
+                min-width: 130px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .header-controls {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .header-controls .btn-group {
+                width: 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                margin: 0 4px;
+            }
+
+            .form-section {
+                padding: 15px;
+            }
+
+            .form-group {
+                margin-bottom: 8px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 8px;
+            }
+
+            .main-container {
+                padding: 10px;
+            }
+
+            .header-controls h1 {
+                font-size: 1.2rem;
+            }
+
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                font-size: 0.75rem;
+                padding: 4px 8px;
+                margin: 0 3px;
+            }
+
+            .header-controls .btn.dropdown-toggle {
+                min-width: 120px;
+            }
+
+            .form-section h2 {
+                font-size: 1.1rem;
+            }
+
+            .form-label {
+                font-size: 0.85rem;
+            }
+
+            .form-control, .form-select {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+
+            .form-group i {
+                font-size: 0.8rem;
+            }
+
+            .form-group .form-control, .form-group .form-select {
+                padding-left: 28px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .form-group {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+
+            .form-control, .form-select {
+                font-size: 0.9rem;
+                padding: 8px 12px;
+            }
+
+            .form-group i {
+                font-size: 0.9rem;
+            }
+
+            .form-group .form-control, .form-group .form-select {
+                padding-left: 30px;
+            }
+        }
+
+        /* Modal Styles */
+        .modal-content {
+            background: var(--container-bg);
+            color: var(--text-color);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .modal-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .modal-body table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .modal-body table, .modal-body th, .modal-body td {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-body th, .modal-body td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        .modal-body th {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Enhanced modal styles for wider table */
+.modal-xl {
+    max-width: 95%;
+}
+
+#savedPONoModal .modal-body {
+    max-height: 600px;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+#savedPONoModal .table-responsive {
+    max-height: 450px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+#poTable {
+    width: 100%;
+    margin-bottom: 0;
+    font-size: 0.85rem;
+}
+
+#poTable thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #1a1a1a;
+    border-bottom: 2px solid var(--accent-color);
+    white-space: nowrap;
+    padding: 8px 6px;
+    font-size: 0.8rem;
+}
+
+#poTable tbody td {
+    padding: 6px 4px;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#poTable tbody tr:hover {
+    background: rgba(0, 196, 255, 0.1);
+}
+
+.deletePOBtn {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+}
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header-controls">
+            <h1>PO Create Form</h1>
+            <div class="btn-group">
+                <div class="dropdown">
+                    <button class="btn btn-info dropdown-toggle" type="button" id="searchPODropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-search"></i> Search PO Number
+                    </button>
+                    <ul class="dropdown-menu" id="poDropdown" aria-labelledby="searchPODropdown">
+                        <li class="dropdown-item disabled">No PO numbers available</li>
+                    </ul>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-info dropdown-toggle" type="button" id="searchPreCostingDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-search"></i> Search Pre Costing No
+                    </button>
+                    <ul class="dropdown-menu" id="preCostingDropdown" aria-labelledby="searchPreCostingDropdown">
+                        <li class="dropdown-item disabled">No pre-costing numbers available</li>
+                    </ul>
+                </div>
+                <button class="btn btn-warning" id="clearFormBtn"><i class="fas fa-eraser"></i> Clear Form</button>
+                <button class="btn btn-success" id="saveToMySQLBtn" style="background: linear-gradient(90deg, #007bff, #00c4ff);"><i class="fas fa-save"></i> Save to MySQL</button>
+                <button class="btn btn-danger" id="deletePOBtn"><i class="fas fa-trash-alt"></i> Delete PO</button>
+               
+                <button class="btn btn-primary" id="savedPONoBtn"><i class="fas fa-save"></i> Saved PO No</button>
+            </div>
+        </div>
+
+        <form id="poCreateForm">
+            <!-- PO Details Section -->
+            <div class="form-section">
+                <h2>PO Details</h2>
+                <div class="row">
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="preCostingNo" class="form-label">Pre Costing No</label>
+                            <input type="text" class="form-control" id="preCostingNo" name="pre_costing_no" onblur="this.style.backgroundColor='#404040'">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="poIssueDate" class="form-label">PO Issue Date</label>
+                            <input type="date" class="form-control" id="poIssueDate" name="po_issue_date">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="poReviseDate" class="form-label">PO Revise Date</label>
+                            <input type="date" class="form-control" id="poReviseDate" name="po_revise_date">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="poApprovalDate" class="form-label">PO Approval/Dispo Date</label>
+                            <input type="date" class="form-control" id="poApprovalDate" name="po_approval_date">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="orderNo" class="form-label">Order No</label>
+                            <input type="text" class="form-control" id="orderNo" name="order_no">
+                            <i class="fas fa-hashtag"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="poNo" class="form-label">PO No</label>
+                            <input type="text" class="form-control" id="poNo" name="po_no">
+                            <i class="fas fa-file-invoice"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="piNo" class="form-label">PI No</label>
+                            <input type="text" class="form-control" id="piNo" name="pi_no">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="accountHolder" class="form-label">Account Holder</label>
+                            <input type="text" class="form-control" id="accountHolder" name="account_holder">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="buyerName" class="form-label">Buyer Name</label>
+                            <input type="text" class="form-control" id="buyerName" name="buyer_name">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="orderStatus" class="form-label">Order Status</label>
+                            <select class="form-select" id="orderStatus" name="order_status">
+                                <option value="">Select Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="buyerStyleRef" class="form-label">Buyer Style/Ref</label>
+                            <input type="text" class="form-control" id="buyerStyleRef" name="buyer_style_ref">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="poQuantity" class="form-label">PO Quantity</label>
+                            <input type="number" class="form-control" id="poQuantity" name="po_quantity">
+                            <i class="fas fa-ruler"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="poRevisedNo" class="form-label">PO Revised No</label>
+                            <input type="text" class="form-control" id="poRevisedNo" name="po_revised_no">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="poRevisedReason" class="form-label">PO Revised Reason</label>
+                            <input type="text" class="form-control" id="poRevisedReason" name="po_revised_reason">
+                            <i class="fas fa-comment"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="repeatOrderNo" class="form-label">Repeat Order No</label>
+                            <input type="text" class="form-control" id="repeatOrderNo" name="repeat_order_no">
+                            <i class="fas fa-redo"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="garmentsAddress" class="form-label">Garments Address</label>
+                            <input type="text" class="form-control" id="garmentsAddress" name="garments_address">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="approval" class="form-label">Approved</label>
+                            <select class="form-select" id="approval" name="approval">
+                                <option value="">Select Approval</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                            </select>
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="piDate" class="form-label">PI Date</label>
+                            <input type="date" class="form-control" id="piDate" name="pi_date">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="pricePerYard" class="form-label">Price/Yds TK</label>
+                            <input type="number" class="form-control" id="pricePerYard" name="price_per_yard" step="0.01">
+                            <i class="fas">৳</i> <!-- Bengali Rupee Sign -->
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="upchargePricePerYardTK" class="form-label">Upcharge Price/Yds TK</label>
+                            <input type="number" class="form-control" id="upchargePricePerYardTK" name="upcharge_price_per_yard_tk" step="0.01">
+                            <i class="fas">৳</i> <!-- Bengali Rupee Sign -->
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="pricePerYardUSD" class="form-label">Price/Yds USD</label>
+                            <input type="number" class="form-control" id="pricePerYardUSD" name="price_per_yard_usd" step="0.01">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div><div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="upchargePricePerYardUSD" class="form-label">Upcharge Price/Yds USD</label>
+                            <input type="number" class="form-control" id="upchargePricePerYardUSD" name="upcharge_price_per_yard_usd" step="0.01">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fabric Details Section -->
+            <div class="form-section">
+                <h2>Fabric Details</h2>
+                <div class="row">
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="warpCount1" class="form-label">Warp Count 1</label>
+                            <input type="text" class="form-control" id="warpCount1" name="warp_count_1">
+                            <i class="fas fa-barcode"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="warpPly1" class="form-label">Warp Ply 1</label>
+                            <input type="text" class="form-control" id="warpPly1" name="warp_ply_1">
+                            <i class="fas fa-random"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="warpCount2" class="form-label">Warp Count 2</label>
+                            <input type="text" class="form-control" id="warpCount2" name="warp_count_2">
+                            <i class="fas fa-barcode"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="warpPly2" class="form-label">Warp Ply 2</label>
+                            <input type="text" class="form-control" id="warpPly2" name="warp_ply_2">
+                            <i class="fas fa-random"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="warpCount3" class="form-label">Warp Count 3</label>
+                            <input type="text" class="form-control" id="warpCount3" name="warp_count_3">
+                            <i class="fas fa-barcode"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="warpPly3" class="form-label">Warp Ply 3</label>
+                            <input type="text" class="form-control" id="warpPly3" name="warp_ply_3">
+                            <i class="fas fa-random"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="weftCount1" class="form-label">Weft Count 1</label>
+                            <input type="text" class="form-control" id="weftCount1" name="weft_count_1">
+                            <i class="fas fa-align-justify"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="weftPly1" class="form-label">Weft Ply 1</label>
+                            <input type="text" class="form-control" id="weftPly1" name="weft_ply_1">
+                            <i class="fas fa-random"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="weftCount2" class="form-label">Weft Count 2</label>
+                            <input type="text" class="form-control" id="weftCount2" name="weft_count_2">
+                            <i class="fas fa-align-justify"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="weftPly2" class="form-label">Weft Ply 2</label>
+                            <input type="text" class="form-control" id="weftPly2" name="weft_ply_2">
+                            <i class="fas fa-random"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="weftCount3" class="form-label">Weft Count 3</label>
+                            <input type="text" class="form-control" id="weftCount3" name="weft_count_3">
+                            <i class="fas fa-align-justify"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="weftPly3" class="form-label">Weft Ply 3</label>
+                            <input type="text" class="form-control" id="weftPly3" name="weft_ply_3">
+                            <i class="fas fa-random"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="weaveType" class="form-label">Weave Type</label>
+                            <input type="text" class="form-control" id="weaveType" name="weave_type">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="finishType" class="form-label">Finish Type</label>
+                            <input type="text" class="form-control" id="finishType" name="finish_type">
+                            <i class="fas fa-paint-roller"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="stickerConstruction" class="form-label">Sticker Construction</label>
+                            <input type="text" class="form-control" id="stickerConstruction" name="sticker_construction">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="productionConstruction" class="form-label">Production Construction</label>
+                            <input type="text" class="form-control" id="productionConstruction" name="production_construction">
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="stickerComposition" class="form-label">Sticker Composition</label>
+                            <input type="text" class="form-control" id="stickerComposition" name="sticker_composition">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="fabricComposition" class="form-label">Fabric Composition</label>
+                            <input type="text" class="form-control" id="fabricComposition" name="fabric_composition">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="dispoOverallWidth" class="form-label">Dispo Overall Width</label>
+                            <input type="text" class="form-control" id="dispoOverallWidth" name="dispo_overall_width">
+                            <i class="fas fa-arrows-alt-h"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="dispoCuttableWidth" class="form-label">Dispo Cuttable Width</label>
+                            <input type="text" class="form-control" id="dispoCuttableWidth" name="dispo_cuttable_width">
+                            <i class="fas fa-cut"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="tNumber" class="form-label">Dispo reference/NF No</label>
+                            <input type="text" class="form-control" id="tNumber" name="t_number">
+                            <i class="fas fa-retweet"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="strikeOffHlNumber" class="form-label">Strike Off/HL ref</label>
+                            <input type="text" class="form-control" id="strikeOffHlNumber" name="strike_off_hl_number">
+                            <i class="fas fa-refresh"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="dispoNumber" class="form-label">Dispo Number</label>
+                            <input type="text" class="form-control" id="dispoNumber" name="dispo_number">
+                            <i class="fas fa-flag"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="printMethod" class="form-label">Print Method</label>
+                            <input type="text" class="form-control" id="printMethod" name="print_method">
+                            <i class="fas fa-print"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="processType" class="form-label">Process Type</label>
+                            <input type="text" class="form-control" id="processType" name="process_type">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="fabricType" class="form-label">Fabric Type</label>
+                            <input type="text" class="form-control" id="fabricType" name="fabric_type">
+                            <i class="fas fa-certificate"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="yarnType" class="form-label">Yarn Type</label>
+                            <input type="text" class="form-control" id="yarnType" name="yarn_type">
+                            <i class="fas fa-certificate"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="orderType" class="form-label">Order Type</label>
+                            <input type="text" class="form-control" id="orderType" name="order_type">
+                            <i class="fas fa-sort"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="ppDeliveryDate" class="form-label">PP Delivery Date</label>
+                            <input type="date" class="form-control" id="ppDeliveryDate" name="pp_delivery_date">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="bulkDeliveryDate" class="form-label">Bulk Delivery Date</label>
+                            <input type="date" class="form-control" id="bulkDeliveryDate" name="bulk_delivery_date">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="endUse" class="form-label">End Use</label>
+                            <input type="text" class="form-control" id="endUse" name="end_use">
+                            <i class="fas fa-tshirt"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="washType" class="form-label">Wash Type</label>
+                            <input type="text" class="form-control" id="washType" name="wash_type">
+                            <i class="fas fa-tint"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="lightSource" class="form-label">Light Source</label>
+                            <input type="text" class="form-control" id="lightSource" name="light_source">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quality Parameters Section -->
+            <div class="form-section">
+                <h2>Quality Parameters</h2>
+                <div class="row">
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="warpTensileStrength" class="form-label">Warp Tensile force</label>
+                            <input type="text" class="form-control" id="warpTensileStrength" name="warp_tensile_strength">
+                            <i class="fas fa-ruler-vertical"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="weftTensileStrength" class="form-label">Weft Tensile force</label>
+                            <input type="text" class="form-control" id="weftTensileStrength" name="weft_tensile_strength">
+                            <i class="fas fa-ruler-horizontal"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="pillingGrade" class="form-label">Pilling Grade</label>
+                            <input type="text" class="form-control" id="pillingGrade" name="pilling_grade">
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="rubbingGrade" class="form-label">Rubbing Grade</label>
+                            <input type="text" class="form-control" id="rubbingGrade" name="rubbing_grade">
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="elongation" class="form-label">Elongation%</label>
+                            <input type="text" class="form-control" id="elongation" name="elongation">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="growth" class="form-label">Growth%</label>
+                            <input type="text" class="form-control" id="growth" name="growth">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="recovery" class="form-label">Recovery%</label>
+                            <input type="text" class="form-control" id="recovery" name="recovery">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="buyerGsmBeforeWash" class="form-label">Buyer GSM (B/W)</label>
+                            <input type="text" class="form-control" id="buyerGsmBeforeWash" name="buyer_gsm_before_wash">
+                            <i class="fas fa-weight"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="buyerGsmAfterWash" class="form-label">Buyer GSM (A/W)</label>
+                            <input type="text" class="form-control" id="buyerGsmAfterWash" name="buyer_gsm_after_wash">
+                            <i class="fas fa-weight"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="warpShrinkage" class="form-label">Warp Shrinkage%</label>
+                            <input type="text" class="form-control" id="warpShrinkage" name="warp_shrinkage">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="weftShrinkage" class="form-label">Weft Shrinkage%</label>
+                            <input type="text" class="form-control" id="weftShrinkage" name="weft_shrinkage">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="qualityParameter" class="form-label">Quality Parameters</label>
+                            <input type="text" class="form-control" id="qualityParameter" name="quality_parameter">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="warpTearStrength" class="form-label">Warp Tear force</label>
+                            <input type="text" class="form-control" id="warpTearStrength" name="warp_tear_strength">
+                            <i class="fas fa-ruler-vertical"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-4 col-6">
+                        <div class="form-group">
+                            <label for="weftTearStrength" class="form-label">Weft Tear force</label>
+                            <input type="text" class="form-control" id="weftTearStrength" name="weft_tear_strength">
+                            <i class="fas fa-ruler-horizontal"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Information Section -->
+            <div class="form-section">
+                <h2>Additional Information</h2>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label for="specialNote" class="form-label">Special Note</label>
+                            <textarea class="form-control" id="specialNote" name="special_note" rows="3"></textarea>
+                            <i class="fas fa-sticky-note"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Modal - Updated table structure -->
+<div class="modal fade" id="savedPONoModal" tabindex="-1" aria-labelledby="savedPONoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="savedPONoModalLabel">Saved PO Numbers</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="startDateFilter" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="startDateFilter">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="endDateFilter" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="endDateFilter">
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button class="btn btn-info" id="applyDateFilter">Apply Filter</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table id="poTable" class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>PO No</th>
+                                <th>Pre Costing No</th>
+                                <th>PO Issue Date</th>
+                                <th>PI No</th>
+                                <th>Buyer Name</th>
+                                <th>PO Quantity</th>
+                                <th>Price/Yds TK</th>
+                                <th>Upcharge Price/Yds TK</th>
+                                <th>Price/Yds USD</th>
+                                <th>Upcharge Price/Yds USD</th>
+                                <th>Sticker Construction</th>
+                                <th>Production Construction</th>
+                                <th>Sticker Composition</th>
+                                <th>Fabric Composition</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="poTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success" id="saveAsCSVBtn">Save as CSV</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // Enhanced logging function
+    function debugLog(stage, message, data = null) {
+        const timestamp = new Date().toISOString();
+        console.log(`[${timestamp}] [${stage}] ${message}`);
+        if (data) {
+            console.log(`[${timestamp}] [${stage}] Data:`, data);
+        }
+    }
+
+    // Fetch Pre-Costing Numbers
+    document.getElementById('searchPreCostingDropdown').addEventListener('click', async () => {
+        try {
+            debugLog('PRECOSTING_FETCH', 'Starting pre-costing numbers fetch');
+            const response = await fetch('/main/api/precosting/pre-costing-numbers', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            const result = await response.json();
+            const dropdown = document.getElementById('preCostingDropdown');
+            dropdown.innerHTML = '';
+
+            if (response.ok && result.length > 0) {
+                debugLog('PRECOSTING_FETCH', `Found ${result.length} pre-costing numbers`);
+                result.forEach(item => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.className = 'dropdown-item';
+                    a.href = '#';
+                    a.textContent = item.pre_costing_no;
+                    a.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        document.getElementById('preCostingNo').value = item.pre_costing_no;
+                        fetchPreCostingDetails(item.pre_costing_no);
+                    });
+                    li.appendChild(a);
+                    dropdown.appendChild(li);
+                });
+            } else {
+                debugLog('PRECOSTING_FETCH', 'No pre-costing numbers found');
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.className = 'dropdown-item disabled';
+                a.textContent = 'No pre-costing numbers available';
+                li.appendChild(a);
+                dropdown.appendChild(li);
+            }
+        } catch (error) {
+            debugLog('PRECOSTING_FETCH_ERROR', 'Error fetching pre-costing numbers', error);
+            alert('Error fetching pre-costing numbers');
+        }
+    });
+
+    // Fetch PO Numbers
+    document.getElementById('searchPODropdown').addEventListener('click', async () => {
+        try {
+            debugLog('PO_NUMBERS_FETCH', 'Starting PO numbers fetch');
+            const response = await fetch('/main/api/po/po-numbers', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            const result = await response.json();
+            const dropdown = document.getElementById('poDropdown');
+            dropdown.innerHTML = '';
+
+            if (response.ok && result.length > 0) {
+                debugLog('PO_NUMBERS_FETCH', `Found ${result.length} PO numbers`);
+                result.forEach(item => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.className = 'dropdown-item';
+                    a.href = '#';
+                    a.textContent = item.po_no;
+                    a.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        fetchPODetailsByPONo(item.po_no);
+                    });
+                    li.appendChild(a);
+                    dropdown.appendChild(li);
+                });
+            } else {
+                debugLog('PO_NUMBERS_FETCH', 'No PO numbers found');
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.className = 'dropdown-item disabled';
+                a.textContent = 'No PO numbers available';
+                li.appendChild(a);
+                dropdown.appendChild(li);
+            }
+        } catch (error) {
+            debugLog('PO_NUMBERS_FETCH_ERROR', 'Error fetching PO numbers', error);
+            alert('Error fetching PO numbers');
+        }
+    });
+
+    // Fetch Pre-Costing Details by Pre-Costing No
+    async function fetchPreCostingDetails(preCostingNo) {
+        try {
+            debugLog('PRECOSTING_DETAILS', `Fetching pre-costing details for: ${preCostingNo}`);
+            const response = await fetch(`/main/api/precosting/search/${encodeURIComponent(preCostingNo)}`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            const result = await response.json();
+            if (response.ok) {
+                debugLog('PRECOSTING_DETAILS', 'Successfully fetched pre-costing details', result);
+                populateForm(result.preCostingData, 'preCosting');
+            } else {
+                debugLog('PRECOSTING_DETAILS_ERROR', 'No data found for pre-costing number', result);
+                alert('No data found for this Pre-Costing No.');
+                clearForm();
+            }
+        } catch (error) {
+            debugLog('PRECOSTING_DETAILS_ERROR', 'Error fetching pre-costing details', error);
+            alert('Error fetching pre-costing details');
+        }
+    }
+
+    // Fetch PO Details by PO No
+    async function fetchPODetailsByPONo(poNo) {
+        try {
+            debugLog('PO_DETAILS', `Fetching PO details for: ${poNo}`);
+            const response = await fetch(`/main/api/po/search-by-po-no/${encodeURIComponent(poNo)}`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            const result = await response.json();
+            if (response.ok) {
+                debugLog('PO_DETAILS', 'Successfully fetched PO details', result);
+                populateForm(result, 'po');
+            } else {
+                debugLog('PO_DETAILS_ERROR', 'No PO data found', result);
+                alert('No PO data found for this PO No.');
+                clearForm();
+            }
+        } catch (error) {
+            debugLog('PO_DETAILS_ERROR', 'Error fetching PO details', error);
+            alert('Error fetching PO details by PO No');
+        }
+    }
+
+    // Populate form with fetched data
+    function populateForm(data, source = 'po') {
+        debugLog('FORM_POPULATE', `Populating form with ${source} data`, data);
+        
+        const keyMaps = {
+            po: {
+                pre_costing_no: 'preCostingNo',
+                po_issue_date: 'poIssueDate',
+                po_revise_date: 'poReviseDate',
+                po_approval_date: 'poApprovalDate',
+                order_no: 'orderNo',
+                po_no: 'poNo',
+                pi_no: 'piNo',
+                account_holder: 'accountHolder',
+                buyer_name: 'buyerName',
+                order_status: 'orderStatus',
+                buyer_style_ref: 'buyerStyleRef',
+                po_quantity: 'poQuantity',
+                po_revised_no: 'poRevisedNo',
+                po_revised_reason: 'poRevisedReason',
+                repeat_order_no: 'repeatOrderNo',
+                garments_address: 'garmentsAddress',
+                approval: 'approval',
+                pi_date: 'piDate',
+                price_per_yard: 'pricePerYard',
+                upcharge_price_per_yard_tk: 'upchargePricePerYardTK',
+                price_per_yard_usd: 'pricePerYardUSD',
+                upcharge_price_per_yard_usd: 'upchargePricePerYardUSD',
+                weave_type: 'weaveType',
+                finish_type: 'finishType',
+                sticker_construction: 'stickerConstruction',
+                production_construction: 'productionConstruction',
+                sticker_composition: 'stickerComposition',
+                fabric_composition: 'fabricComposition',
+                warp_count_1: 'warpCount1',
+                warp_ply_1: 'warpPly1',
+                warp_count_2: 'warpCount2',
+                warp_ply_2: 'warpPly2',
+                warp_count_3: 'warpCount3',
+                warp_ply_3: 'warpPly3',
+                weft_count_1: 'weftCount1',
+                weft_ply_1: 'weftPly1',
+                weft_count_2: 'weftCount2',
+                weft_ply_2: 'weftPly2',
+                weft_count_3: 'weftCount3',
+                weft_ply_3: 'weftPly3',
+                dispo_overall_width: 'dispoOverallWidth',
+                dispo_cuttable_width: 'dispoCuttableWidth',
+                t_number: 'tNumber',
+                strike_off_hl_number: 'strikeOffHlNumber',
+                dispo_number: 'dispoNumber',
+                print_method: 'printMethod',
+                process_type: 'processType',
+                fabric_type: 'fabricType',
+                yarn_type: 'yarnType',
+                order_type: 'orderType',
+                pp_delivery_date: 'ppDeliveryDate',
+                bulk_delivery_date: 'bulkDeliveryDate',
+                end_use: 'endUse',
+                wash_type: 'washType',
+                light_source: 'lightSource',
+                warp_tensile_strength: 'warpTensileStrength',
+                weft_tensile_strength: 'weftTensileStrength',
+                pilling_grade: 'pillingGrade',
+                rubbing_grade: 'rubbingGrade',
+                elongation: 'elongation',
+                growth: 'growth',
+                recovery: 'recovery',
+                buyer_gsm_before_wash: 'buyerGsmBeforeWash',
+                buyer_gsm_after_wash: 'buyerGsmAfterWash',
+                warp_shrinkage: 'warpShrinkage',
+                weft_shrinkage: 'weftShrinkage',
+                quality_parameter: 'qualityParameter',
+                warp_tear_strength: 'warpTearStrength',
+                weft_tear_strength: 'weftTearStrength',
+                special_note: 'specialNote'
+            },
+            preCosting: {
+                pre_costing_no: 'preCostingNo',
+                buyer: 'buyerName',
+                order_quantity: 'poQuantity',
+                total_pre_cost_tk: 'pricePerYard',
+                total_pre_cost_usd: 'pricePerYardUSD',
+                total_upcharged_pre_cost_tk: 'upchargePricePerYardTK',
+                total_upcharged_pre_cost_usd: 'upchargePricePerYardUSD',
+                weave_type: 'weaveType',
+                construction: 'productionConstruction',
+                finish_width: 'dispoOverallWidth'
+            }
+        };
+
+        const keyMap = keyMaps[source] || keyMaps.po;
+        let populatedFields = 0;
+        let skippedFields = 0;
+
+        for (const [apiKey, value] of Object.entries(data)) {
+            const htmlId = keyMap[apiKey];
+            if (htmlId) {
+                const input = document.getElementById(htmlId);
+                if (input && input.type !== 'file') {
+                    if (input.type === 'date' && value) {
+                        const date = new Date(value);
+                        const formattedDate = date.toISOString().split('T')[0];
+                        input.value = formattedDate;
+                    } else {
+                        input.value = value !== null && value !== undefined ? value : '';
+                    }
+                    if (input.type === 'text' || input.type === 'number') {
+                        input.style.backgroundColor = '#404040';
+                    }
+                    populatedFields++;
+                } else {
+                    debugLog('FORM_POPULATE_WARNING', `Input field not found for: ${htmlId}`);
+                    skippedFields++;
+                }
+            }
+        }
+        
+        debugLog('FORM_POPULATE', `Form population complete. Populated: ${populatedFields}, Skipped: ${skippedFields}`);
+    }
+
+    // Clear form
+    function clearForm() {
+        debugLog('FORM_CLEAR', 'Clearing form data');
+        document.getElementById('poCreateForm').reset();
+        document.querySelectorAll('.form-control, .form-select').forEach(input => {
+            input.style.backgroundColor = '#404040';
+        });
+    }
+
+    // Enhanced data collection function
+    function collectFormData() {
+        debugLog('DATA_COLLECTION', 'Starting form data collection');
+        
+        const form = document.getElementById('poCreateForm');
+        const formData = new FormData(form);
+        const jsonData = Object.fromEntries(formData.entries());
+        
+        // Remove any non-essential fields
+        delete jsonData.originalDocs;
+        
+        // Log each field for debugging
+        debugLog('DATA_COLLECTION', 'Raw form data collected', {
+            fieldCount: Object.keys(jsonData).length,
+            fields: Object.keys(jsonData)
+        });
+        
+        // Validate required fields
+        const requiredFields = ['pre_costing_no', 'po_no'];
+        const missingFields = [];
+        
+        for (const field of requiredFields) {
+            if (!jsonData[field] || jsonData[field].trim() === '') {
+                missingFields.push(field);
+            }
+        }
+        
+        if (missingFields.length > 0) {
+            debugLog('DATA_VALIDATION_ERROR', 'Missing required fields', missingFields);
+            return { valid: false, error: `Missing required fields: ${missingFields.join(', ')}`, data: null };
+        }
+        
+        // Log final data being prepared for server
+        debugLog('DATA_COLLECTION', 'Final data prepared for server', jsonData);
+        
+        return { valid: true, data: jsonData, error: null };
+    }
+
+    // UNIFIED Save to MySQL function (replaces both previous save functions)
+    async function saveToMySQL() {
+        debugLog('SAVE_START', 'Starting PO data save process');
+        
+        try {
+            // Collect and validate form data
+            const { valid, data: jsonData, error } = collectFormData();
+            
+            if (!valid) {
+                alert(error);
+                return;
+            }
+            
+            // Validate pre-costing number exists
+            debugLog('SAVE_VALIDATION', 'Validating pre-costing number');
+            const validateResponse = await fetch('/main/api/precosting/pre-costing-numbers', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            
+            if (!validateResponse.ok) {
+                throw new Error(`Failed to validate pre-costing number: ${validateResponse.status}`);
+            }
+            
+            const validateResult = await validateResponse.json();
+            if (!validateResult.some(item => item.pre_costing_no === jsonData.pre_costing_no)) {
+                alert('Invalid Pre Costing No. Please select from the dropdown or enter a valid number.');
+                return;
+            }
+            
+            debugLog('SAVE_REQUEST', 'Sending data to server', {
+                url: '/main/api/po/save',
+                method: 'POST',
+                dataSize: JSON.stringify(jsonData).length,
+                data: jsonData
+            });
+
+            // Send request to server
+            const response = await fetch('/main/api/po/save', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(jsonData),
+                credentials: 'include'
+            });
+            
+            debugLog('SAVE_RESPONSE', 'Received response from server', {
+                status: response.status,
+                statusText: response.statusText,
+                ok: response.ok
+            });
+
+            // Handle response
+            const result = await response.json();
+            
+            if (response.ok) {
+                debugLog('SAVE_SUCCESS', 'PO data saved successfully', result);
+                alert('PO data saved successfully!');
+            } else {
+                debugLog('SAVE_ERROR_RESPONSE', 'Server returned error', {
+                    status: response.status,
+                    error: result.error,
+                    details: result.details,
+                    sqlMessage: result.sqlMessage,
+                    sqlState: result.sqlState,
+                    errno: result.errno
+                });
+                
+                let errorMessage = `Failed to save PO data: ${result.error || 'Unknown error'}`;
+                if (result.details) {
+                    errorMessage += `\nDetails: ${result.details}`;
+                }
+                if (result.sqlMessage) {
+                    errorMessage += `\nSQL Error: ${result.sqlMessage}`;
+                }
+                
+                alert(errorMessage);
+                console.error('Detailed server error:', result);
+            }
+            
+        } catch (error) {
+            debugLog('SAVE_ERROR_EXCEPTION', 'Exception during save process', {
+                error: error.message,
+                stack: error.stack
+            });
+            
+            console.error('Save error details:', error);
+            alert(`Error saving PO data: ${error.message}`);
+        }
+    }
+
+    // Clear form event listener
+    document.getElementById('clearFormBtn').addEventListener('click', clearForm);
+
+    // SINGLE Save button event listener (removes the duplicate)
+    document.getElementById('saveToMySQLBtn').addEventListener('click', saveToMySQL);
+
+    // Delete PO
+    document.getElementById('deletePOBtn').addEventListener('click', async () => {
+        const poNo = document.getElementById('poNo').value.trim();
+        if (!poNo) {
+            alert('Please select a PO to delete.');
+            return;
+        }
+
+        if (confirm(`Are you sure you want to delete PO ${poNo}? This action cannot be undone.`)) {
+            try {
+                debugLog('DELETE_START', `Deleting PO: ${poNo}`);
+                const response = await fetch(`/main/api/po/delete/${encodeURIComponent(poNo)}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    debugLog('DELETE_SUCCESS', `PO deleted successfully: ${poNo}`);
+                    alert(result.message);
+                    clearForm();
+                } else {
+                    debugLog('DELETE_ERROR', `Failed to delete PO: ${poNo}`, result);
+                    alert('Failed to delete PO: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                debugLog('DELETE_EXCEPTION', `Exception during PO deletion: ${poNo}`, error);
+                alert('Error deleting PO: ' + error.message);
+            }
+        }
+    });
+
+    // DOMContentLoaded event
+    document.addEventListener('DOMContentLoaded', async () => {
+        debugLog('DOM_LOADED', 'Page loaded, initializing components');
+        
+        const preCostingDropdown = document.getElementById('pre_costing_no_dropdown');
+
+        async function checkLoginAndFetchPreCostingNumbers() {
+            try {
+                debugLog('INIT_LOGIN_CHECK', 'Checking user login status');
+                const response = await fetch('/main/api/current-user', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    debugLog('INIT_LOGIN_ERROR', 'User not logged in, redirecting');
+                    window.location.href = '/main/login.html';
+                    return;
+                }
+
+                debugLog('INIT_PRECOSTING_FETCH', 'Fetching pre-costing numbers for dropdown');
+                const preCostingResponse = await fetch('/main/api/precosting/pre-costing-numbers', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                if (!preCostingResponse.ok) {
+                    throw new Error('Failed to fetch pre-costing numbers: ' + preCostingResponse.status);
+                }
+                const preCostingNumbers = await preCostingResponse.json();
+                
+                preCostingDropdown.innerHTML = '<option value="">Select Pre Costing No</option>';
+                if (preCostingNumbers.length > 0) {
+                    debugLog('INIT_DROPDOWN_POPULATE', `Populating dropdown with ${preCostingNumbers.length} items`);
+                    preCostingNumbers.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.pre_costing_no;
+                        option.textContent = item.pre_costing_no;
+                        preCostingDropdown.appendChild(option);
+                    });
+                } else {
+                    debugLog('INIT_DROPDOWN_EMPTY', 'No pre-costing numbers available');
+                    preCostingDropdown.innerHTML = '<option value="">No pre-costing numbers available</option>';
+                }
+            } catch (error) {
+                debugLog('INIT_ERROR', 'Error during initialization', error);
+                preCostingDropdown.innerHTML = '<option value="">Error loading pre-costing numbers</option>';
+            }
+        }
+
+        await checkLoginAndFetchPreCostingNumbers();
+        
+        // Remove the duplicate save button handler and saveToMySQL function
+        // The save functionality is now handled by the unified saveToMySQL function above
+        
+        debugLog('INIT_COMPLETE', 'Page initialization completed');
+    });
+
+    // Close form
+    document.getElementById('closeBtn').addEventListener('click', () => {
+        window.location.href = '/main';
+    });
+
+    // Keep the existing loadSavedPONumbers and other functions as they are...
+    async function loadSavedPONumbers(startDate = '', endDate = '') {
+        try {
+            debugLog('LOAD_SAVED_PO', 'Loading saved PO numbers', { startDate, endDate });
+            
+            const queryParams = new URLSearchParams();
+            if (startDate) queryParams.append('startDate', startDate);
+            if (endDate) queryParams.append('endDate', endDate);
+            
+            const url = `/main/api/po/po-numbers-with-dates${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+            
+            const response = await fetch(url, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+            }
+            
+            const result = await response.json();
+            debugLog('LOAD_SAVED_PO', `Loaded ${result.length} PO records`);
+            
+            const tableBody = document.getElementById('poTableBody');
+            tableBody.innerHTML = '';
+
+            if (result && Array.isArray(result) && result.length > 0) {
+                result.forEach(po => {
+                    const row = document.createElement('tr');
+                    const poNo = po.po_no || 'N/A';
+                    const preCostingNo = po.pre_costing_no || 'N/A';
+                    const issueDate = po.po_issue_date ? new Date(po.po_issue_date).toLocaleDateString() : 'N/A';
+                    const piNo = po.pi_no || 'N/A';
+                    const buyerName = po.buyer_name || 'N/A';
+                    const poQuantity = po.po_quantity || 'N/A';
+                    const pricePerYardTK = po.price_per_yard ? parseFloat(po.price_per_yard).toFixed(2) : 'N/A';
+                    const upchargePricePerYardTK = po.upcharge_price_per_yard_tk ? parseFloat(po.upcharge_price_per_yard_tk).toFixed(2) : 'N/A';
+                    const pricePerYardUSD = po.price_per_yard_usd ? parseFloat(po.price_per_yard_usd).toFixed(2) : 'N/A';
+                    const upchargePricePerYardUSD = po.upcharge_price_per_yard_usd ? parseFloat(po.upcharge_price_per_yard_usd).toFixed(2) : 'N/A';
+                    const stickerConstruction = po.sticker_construction || 'N/A';
+                    const productionConstruction = po.production_construction || 'N/A';
+                    const stickerComposition = po.sticker_composition || 'N/A';
+                    const fabricComposition = po.fabric_composition || 'N/A';
+                    
+                    row.innerHTML = `
+                        <td>${poNo}</td>
+                        <td>${preCostingNo}</td>
+                        <td>${issueDate}</td>
+                        <td>${piNo}</td>
+                        <td>${buyerName}</td>
+                        <td>${poQuantity}</td>
+                        <td>৳${pricePerYardTK}</td>
+                        <td>৳${upchargePricePerYardTK}</td>
+                        <td>$${pricePerYardUSD}</td>
+                        <td>$${upchargePricePerYardUSD}</td>
+                        <td>${stickerConstruction}</td>
+                        <td>${productionConstruction}</td>
+                        <td>${stickerComposition}</td>
+                        <td>${fabricComposition}</td>
+                        <td><button class="btn btn-danger btn-sm deletePOBtn" data-po-no="${poNo}">Delete</button></td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+                // Re-attach delete event listeners
+                document.querySelectorAll('.deletePOBtn').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const poNo = e.target.getAttribute('data-po-no');
+                        if (poNo && poNo !== 'N/A' && confirm(`Are you sure you want to delete PO ${poNo}?`)) {
+                            try {
+                                const deleteResponse = await fetch(`/main/api/po/delete/${encodeURIComponent(poNo)}`, {
+                                    method: 'DELETE',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    credentials: 'include'
+                                });
+                                if (deleteResponse.ok) {
+                                    await loadSavedPONumbers(startDate, endDate);
+                                    alert('PO deleted successfully!');
+                                } else {
+                                    const errorText = await deleteResponse.text();
+                                    alert(`Failed to delete PO: ${errorText || 'Unknown error'}`);
+                                }
+                            } catch (error) {
+                                debugLog('DELETE_FROM_TABLE_ERROR', 'Error deleting PO from table', error);
+                                alert('Error deleting PO: ' + error.message);
+                            }
+                        }
+                    });
+                });
+            } else {
+                tableBody.innerHTML = '<tr><td colspan="15" class="text-center">No PO numbers available</td></tr>';
+            }
+        } catch (error) {
+            debugLog('LOAD_SAVED_PO_ERROR', 'Error loading saved PO numbers', error);
+            const tableBody = document.getElementById('poTableBody');
+            tableBody.innerHTML = `<tr><td colspan="15" class="text-center text-danger">Error loading PO numbers: ${error.message}</td></tr>`;
+        }
+    }
+
+    // Modal and other event listeners (keep existing functionality)
+    document.getElementById('savedPONoBtn').addEventListener('click', async () => {
+        try {
+            const modal = new bootstrap.Modal(document.getElementById('savedPONoModal'));
+            modal.show();
+            
+            document.getElementById('startDateFilter').value = '';
+            document.getElementById('endDateFilter').value = '';
+            
+            await loadSavedPONumbers();
+        } catch (error) {
+            debugLog('MODAL_ERROR', 'Error opening saved PO modal', error);
+            alert('Error opening saved PO modal: ' + error.message);
+        }
+    });
+
+    document.getElementById('applyDateFilter').addEventListener('click', () => {
+        const startDate = document.getElementById('startDateFilter').value;
+        const endDate = document.getElementById('endDateFilter').value;
+        loadSavedPONumbers(startDate, endDate);
+    });
+
+    document.getElementById('saveAsCSVBtn').addEventListener('click', async () => {
+        const startDate = document.getElementById('startDateFilter').value;
+        const endDate = document.getElementById('endDateFilter').value;
+        try {
+            const response = await fetch(`/main/api/po/export-csv?startDate=${startDate}&endDate=${endDate}`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `saved_po_numbers_${startDate || 'all'}_${endDate || 'all'}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } else {
+                const errorText = await response.text();
+                alert(`Failed to export CSV: ${errorText || 'Unknown error'}`);
+            }
+        } catch (error) {
+            debugLog('CSV_EXPORT_ERROR', 'Error exporting CSV', error);
+            alert('Error exporting CSV: ' + error.message);
+        }
+    });
+
+    // Keyboard navigation (keep existing)
+    const inputs = document.querySelectorAll('input, select, textarea');
+    let currentIndex = 0;
+
+    function focusInput(index) {
+        if (index >= 0 && index < inputs.length) {
+            inputs[index].focus();
+            currentIndex = index;
+        }
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            focusInput(currentIndex + 1);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            focusInput(currentIndex - 1);
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            focusInput(currentIndex + 1);
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            focusInput(currentIndex - 1);
+        }
+    });
+</script>
+</body>
+</html>

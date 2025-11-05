@@ -1,0 +1,3663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Pre-Costing Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/md5-js@0.0.3/md5.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-bg: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+            --container-bg: #252525;
+            --card-bg: #353535;
+            --card-hover-bg: #454545;
+            --input-bg: #303030;
+            --input-focus-bg: #353535;
+            --text-color: #e0e0e0;
+            --accent-color: #00c4ff;
+            --accent-gradient: linear-gradient(90deg, #007bff, #00c4ff);
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            --btn-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            --text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            --border-glow: rgba(0, 196, 255, 0.3);
+        }
+
+        body {
+            background: var(--primary-bg);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            min-height: 100vh;
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            background-attachment: fixed;
+        }
+
+        .calculator-container {
+            max-width: 1400px;
+            width: 100%;
+            background: var(--container-bg);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            padding: 25px;
+            margin: 10px auto;
+            border: 1px solid #3a3a3a;
+            position: relative;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 196, 255, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 196, 255, 0.03) 0%, transparent 20%);
+        }
+
+        .calculator-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.03) 50%, transparent 51%);
+            background-size: 10px 10px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .section-header {
+            background: var(--accent-gradient);
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+            text-shadow: var(--text-shadow);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+
+        .section-header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: skewX(-45deg);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) skewX(-45deg); }
+            100% { transform: translateX(100%) skewX(-45deg); }
+        }
+
+        .header-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-controls::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 15%;
+            width: 70%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        }
+
+        .header-controls h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin: 0;
+            flex: 1;
+            text-shadow: var(--text-shadow);
+            background: linear-gradient(45deg, #e0e0e0, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+        }
+
+        .header-controls h1::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 40%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-color), transparent);
+            border-radius: 3px;
+        }
+
+        .header-controls .btn,
+        .header-controls .form-select,
+        .btn-sm {
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border-radius: 10px;
+            border: none;
+            color: #fff;
+            box-shadow: var(--btn-shadow);
+            font-weight: 550;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .header-controls .btn::before,
+        .btn-sm::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: all 0.5s ease;
+            z-index: -1;
+        }
+
+        .header-controls .btn:hover,
+        .btn-sm:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .header-controls .btn:hover::before,
+        .btn-sm:hover::before {
+            left: 100%;
+        }
+
+        .header-controls .btn i,
+        .btn-sm i {
+            margin-right: 6px;
+        }
+
+        .header-controls .form-select {
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-weight: 500;
+            border: 1px solid #4a4a4a;
+        }
+
+        .header-controls .form-select:focus {
+            background-color: var(--input-focus-bg);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(0, 196, 255, 0.25);
+            color: #ffffff;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 1px solid #4a4a4a;
+            background: var(--input-bg);
+            color: #fff;
+            box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.4), inset -2px -2px 5px rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            padding: 8px 12px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 8px rgba(0, 183, 255, 0.5), inset 2px 2px 5px rgba(0, 0, 0, 0.3);
+            outline: none;
+            background: var(--input-focus-bg);
+            color: #fff;
+        }
+
+        .form-control::selection, .form-select::selection {
+            background: var(--accent-color);
+            color: #fff;
+        }
+
+        .form-control[readonly] {
+            background: #3a3a3a;
+            font-weight: 500;
+            color: #fff;
+            font-size: 1rem;
+            box-shadow: inset 3px 3px 5px rgba(0, 0, 0, 0.3), inset -2px -2px 5px rgba(255, 255, 255, 0.05);
+        }
+
+        .table-responsive {
+            margin-bottom: 25px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .table {
+            margin-bottom: 0;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: #2a2a2a;
+            color: var(--text-color);
+        }
+
+        .table thead th {
+            background: #3a3a3a;
+            color: var(--text-color);
+            font-weight: 600;
+            padding: 12px 8px;
+            border: none;
+            text-shadow: var(--text-shadow);
+            text-align: center;
+            white-space: normal;
+            font-size: 0.9rem;
+            position: relative;
+        }
+        
+        /* Make specific table columns narrower */
+.table thead th:nth-child(2), .table tbody td:nth-child(2) { /* Ply column */
+    min-width: 60px;
+    max-width: 80px;
+    width: 70px;
+}
+
+.table thead th:nth-child(3), .table tbody td:nth-child(3) { /* Repeat Breakdown column */
+    min-width: 80px;
+    max-width: 100px;
+    width: 90px;
+}
+
+/* Make input fields in these columns smaller */
+.table tbody td:nth-child(2) input,
+.table tbody td:nth-child(3) input {
+    padding: 4px 6px;
+    font-size: 0.85rem;
+}
+
+/* Reduce overall table cell padding for better spacing */
+.table thead th,
+.table tbody td {
+    padding: 6px 4px;
+    font-size: 0.85rem;
+}
+
+/* Make result cells more compact */
+.result-cell {
+    padding: 4px;
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+
+
+/* Reduce margin between form rows */
+.row.mb-2 {
+    margin-bottom: 8px !important;
+}
+
+.col-md-2.mb-2 {
+    margin-bottom: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+/* Make form controls more compact */
+.form-control {
+    padding: 6px 10px;
+    font-size: 0.9rem;
+    height: auto;
+}
+
+/* Make labels more compact */
+label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--accent-color);
+    margin-bottom: 4px;
+    display: block;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Reduce section header margin */
+.section-header {
+    margin-bottom: 10px;
+}
+        
+        
+        
+
+        .table thead th::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 15%;
+            width: 70%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0, 196, 255, 0.2), transparent);
+        }
+
+        .table tbody td {
+            padding: 8px 6px;
+            background: #2a2a2a;
+            border: none;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 0.9rem;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .table tbody tr:hover td {
+            background: #353535;
+        }
+
+        .table tfoot td {
+            background: #303030;
+            padding: 10px;
+            text-align: center;
+            border: none;
+        }
+
+        /* Specific column widths */
+        .table thead th:nth-child(1), .table tbody td:nth-child(1) { min-width: 80px; }
+        .table thead th:nth-child(2), .table tbody td:nth-child(2) { min-width: 100px; }
+        .table thead th:nth-child(3), .table tbody td:nth-child(3) { min-width: 120px; }
+
+        .pattern-row input {
+            width: 100%;
+            padding: 6px 8px;
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: #fff;
+            border: 1px solid #4a4a4a;
+            box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.3), inset -2px -2px 4px rgba(255, 255, 255, 0.05);
+            text-align: center;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .pattern-row input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 6px rgba(0, 183, 255, 0.5), inset 2px 2px 4px rgba(0, 0, 0, 0.3);
+            background: var(--input-focus-bg);
+            color: #fff;
+        }
+
+        .result-cell {
+            background: #3a3a3a;
+            font-weight: 500;
+            padding: 6px;
+            border-radius: 6px;
+            color: #fff;
+            box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.2), inset -2px -2px 4px rgba(255, 255, 255, 0.05);
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary { background: var(--accent-gradient); }
+        .btn-primary:hover { background: linear-gradient(90deg, #0088ff, #00d2ff); }
+        .btn-success { background: linear-gradient(90deg, #28a745, #34d058); }
+        .btn-success:hover { background: linear-gradient(90deg, #2ecc71, #3ee085); }
+        .btn-info { background: linear-gradient(90deg, #17a2b8, #1de9b6); }
+        .btn-info:hover { background: linear-gradient(90deg, #1ab6cf, #20ffc7); }
+        .btn-secondary { background: linear-gradient(90deg, #6c757d, #8d959d); color: #fff; }
+        .btn-secondary:hover { background: linear-gradient(90deg, #7d868e, #9ba5ae); }
+        .btn-danger { background: linear-gradient(90deg, #dc3545, #ff4050); }
+        .btn-danger:hover { background: linear-gradient(90deg, #e84c59, #ff5060); }
+        .btn-warning { background: linear-gradient(90deg, #ffc107, #ffdb4a); color: #212529; }
+        .btn-warning:hover { background: linear-gradient(90deg, #ffca2c, #ffe066); }
+
+        .btn-sm {
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .row.mb-3 {
+            margin-bottom: 20px !important;
+            position: relative;
+            z-index: 1;
+        }
+
+        .row.mb-3 .col-md-3, .row.mb-3 .col-md-4, .row.mb-3 .col-md-6 {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-size: 0.95rem;
+            font-weight: 520;
+            color: var(--accent-color);
+            margin-bottom: 8px;
+            display: block;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        .modal-content {
+            border-radius: 20px;
+            background: #252525;
+            border: 1px solid #3a3a3a;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            background: var(--accent-gradient);
+            color: #ffffff;
+            border-radius: 20px 20px 0 0;
+            border-bottom: none;
+            padding: 15px 20px;
+        }
+
+        .modal-header .modal-title {
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-shadow: var(--text-shadow);
+        }
+
+        .modal-body {
+            background: #303030;
+            color: var(--text-color);
+            padding: 20px;
+        }
+
+        .modal-footer {
+            background: rgba(0, 0, 0, 0.2);
+            border-top: none;
+            padding: 15px;
+        }
+
+        .modal-footer .btn {
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            border: none;
+            font-weight: 600;
+        }
+
+        .modal-footer .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 196, 255, 0.3);
+            border-radius: 8px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 196, 255, 0.5);
+        }
+
+        /* Responsive Media Queries */
+        @media (max-width: 1400px) {
+            .calculator-container {
+                padding: 20px;
+            }
+            
+            .header-controls .btn {
+                padding: 6px 10px;
+                font-size: 0.85rem;
+            }
+            
+            .header-controls h1 {
+                font-size: 1.6rem;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .header-controls h1 {
+                font-size: 1.4rem;
+            }
+            
+            label {
+                font-size: 0.9rem;
+            }
+            
+            .form-control, .form-select {
+                font-size: 0.95rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .calculator-container {
+                padding: 15px;
+            }
+            
+            .header-controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .header-controls h1 {
+                margin-bottom: 15px;
+                width: 100%;
+                text-align: center;
+            }
+            
+            .header-controls .btn, 
+            .header-controls .form-select {
+                width: 100%;
+                margin-bottom: 8px;
+                font-size: 0.9rem;
+            }
+            
+            .section-header {
+                font-size: 1.1rem;
+                padding: 10px 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 8px;
+            }
+            
+            .calculator-container {
+                padding: 12px;
+                margin: 5px;
+            }
+            
+            .section-header {
+                font-size: 1rem;
+                padding: 8px 12px;
+                margin-bottom: 12px;
+            }
+            
+            .form-control, .form-select {
+                font-size: 0.9rem;
+                padding: 6px 10px;
+            }
+            
+            label {
+                font-size: 0.85rem;
+                margin-bottom: 5px;
+            }
+            
+            .btn-sm {
+                padding: 4px 8px;
+                font-size: 0.8rem;
+            }
+            
+            .table thead th, 
+            .table tbody td {
+                padding: 6px 4px;
+                font-size: 0.8rem;
+            }
+            
+            .pattern-row input {
+                padding: 4px 6px;
+                font-size: 0.8rem;
+            }
+            
+            .result-cell {
+                font-size: 0.8rem;
+                padding: 4px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .calculator-container {
+                padding: 10px;
+            }
+            
+            .header-controls h1 {
+                font-size: 1.2rem;
+            }
+            
+            .header-controls .btn {
+                font-size: 0.8rem;
+                padding: 5px 8px;
+            }
+            
+            .section-header {
+                font-size: 0.9rem;
+                padding: 8px 10px;
+            }
+            
+            .table thead th, 
+            .table tbody td {
+                padding: 4px 2px;
+                font-size: 0.75rem;
+            }
+            
+            .btn-sm {
+                padding: 3px 6px;
+                font-size: 0.75rem;
+            }
+            
+            .row.mb-3 {
+                margin-bottom: 10px !important;
+            }
+            
+            .row.mb-3 .col-md-3, 
+            .row.mb-3 .col-md-4, 
+            .row.mb-3 .col-md-6 {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="header-controls">
+            <h1>Pre-Costing Form</h1>
+            <div class="d-flex flex-wrap gap-2 justify-content-end w-100">
+                <button class="btn btn-primary" id="searchBtn"><i class="fas fa-search"></i> Search Pre-Costing</button>
+                <select class="form-select" style="min-width: 200px; max-width: 350px;" id="preCostingDropdown"> 
+                    <option value="">Select Pre-costing No</option>
+                </select>
+                <button class="btn btn-success" id="saveToPostgreSQLBtn"><i class="fas fa-database"></i> Save to MySQL</button>
+                <button class="btn btn-info" id="exportToCSVBtn"><i class="fas fa-file-csv"></i> Export to CSV</button>
+                <button class="btn btn-secondary" id="exportToSQLBtn"><i class="fas fa-file-code"></i> Export to SQL</button>
+                <button class="btn btn-success" id="saveBtn"><i class="fas fa-save"></i> Save</button>
+                <button class="btn btn-info" id="loadBtn"><i class="fas fa-folder"></i> Load</button>
+                <button class="btn btn-danger" id="clearBtn"><i class="fas fa-trash"></i> Clear</button>
+                
+            </div>
+        </div>
+
+        <!-- Load Modal -->
+        <div class="modal fade" id="loadModal" tabindex="-1" aria-labelledby="loadModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="loadModalLabel">Load Pre-Costing Data</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="loadJsonFile" class="form-label">Load from JSON File</label>
+                            <input type="file" class="form-control" id="loadJsonFile" accept=".json">
+                        </div>
+                        <h6>Saved in Session</h6>
+                        <ul class="list-group" id="loadList"></ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Basic Information -->
+        <div class="section-header">Basic Information</div>
+        <div class="row mb-3">
+            <div class="col-md-2"><label>Pre Costing No:</label><input type="text" class="form-control" id="preCostingNo" name="total_upcharged_pre_cost_tk" maxlength="" pattern="\d{1,8}" placeholder="Enter Pre-Costing No" value=""></div>
+            <div class="col-md-2"><label>Buyer:</label><input type="text" class="form-control" id="buyer" name="total_upcharged_pre_cost_tk" value=""></div>
+            <div class="col-md-2"><label>Construction:</label><input type="text" class="form-control" id="construction" name="total_upcharged_pre_cost_tk" value=""></div>
+            <div class="col-md-2"><label>Warp EPI:</label><input type="number" class="form-control" id="epi" name="epi" value=""></div>
+            <div class="col-md-2"><label>Weft PPI:</label><input type="number" class="form-control" id="ppi" name="ppi" value=""></div>
+            <div class="col-md-2">
+                <label>Weave Type:</label>
+                <select class="form-control" id="weaveType" name="weave_type">
+                    <option value="Plain">Plain</option>
+                    <option value="Oxford">Oxford</option>
+                    <option value="Ottoman">Ottoman</option>
+                    <option value="Matt">Matt</option>
+                    <option value="2/1 Twill">2/1 Twill</option>
+                    <option value="2/2 Twill">2/2 Twill</option>
+                    <option value="3/1 Twill">3/1 Twill</option>
+                    <option value="4/1 Satin">4/1 Satin</option>
+                    <option value="3/2 Twill">3/2 Twill</option>
+                    <option value="3/3 Twill">3/3 Twill</option>
+                    <option value="3/3 Matt">3/3 Matt</option>
+                    <option value="3/2 Matt">3/2 Matt</option>
+                    <option value="4/4 Twill">4/4 Twill</option>
+                    <option value="4/2 Twill">4/2 Twill</option>
+                    <option value="6/2 Twill">6/2 Twill</option>
+                    <option value="2/2 Oxford Twill">2/2 Oxford Twill</option>
+                    <option value="3/1 Oxford Twill">3/1 Oxford Twill</option>
+                    <option value="2/1 Matt Twill">2/1 Matt Twill</option>
+                    <option value="2/2 Matt Twill">2/2 Matt Twill</option>
+                    <option value="3/1 Matt Twill">3/1 Matt Twill</option>
+                    <option value="3/3 Matt Twill">3/3 Matt Twill</option>
+                    <option value="4/4 Matt Twill">4/4 Matt Twill</option>
+                    <option value="Dobby">Dobby</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-2"><label>Warp Count 1:</label><input type="number" class="form-control" id="warpCount1" name="warp_count_1" value=""></div>
+            <div class="col-md-2"><label>Warp Ply 1:</label><input type="number" class="form-control" id="warpPly1" name="warp_ply_1" value=""></div>
+            <div class="col-md-2"><label>Warp Count 2:</label><input type="number" class="form-control" id="warpCount2" name="warp_count_2" value=""></div>
+            <div class="col-md-2"><label>Warp Ply 2:</label><input type="number" class="form-control" id="warpPly2" name="warp_ply_2" value=""></div>
+            <div class="col-md-2"><label>Warp Count 3:</label><input type="number" class="form-control" id="warpCount3" name="warp_count_3" value=""></div>
+            <div class="col-md-2"><label>Warp Ply 3:</label><input type="number" class="form-control" id="warpPly3" name="warp_ply_3" value=""></div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-2"><label>Weft Count 1:</label><input type="number" class="form-control" id="weftCount1" name="weft_count_1" value=""></div>
+            <div class="col-md-2"><label>Weft Ply 1:</label><input type="number" class="form-control" id="weftPly1" name="weft_ply_1" value=""></div>
+            <div class="col-md-2"><label>Weft Count 2:</label><input type="number" class="form-control" id="weftCount2" name="weft_count_2" value=""></div>
+            <div class="col-md-2"><label>Weft Ply 2:</label><input type="number" class="form-control" id="weftPly2" name="weft_ply_2" value=""></div>
+            <div class="col-md-2"><label>Weft Count 3:</label><input type="number" class="form-control" id="weftCount3" name="weft_count_3" value=""></div>
+            <div class="col-md-2"><label>Weft Ply 3:</label><input type="number" class="form-control" id="weftPly3" name="weft_ply_3" value=""></div>
+        </div>
+
+        <!-- Dimensions and Specifications - Updated to 6 fields per row -->
+<div class="section-header">Dimensions & Specifications</div>
+<div class="row mb-2">
+    <div class="col-md-2 mb-2"><label>Finish Width (in):</label><input type="number" class="form-control" id="finishWidth" name="finish_width" value=""></div>
+    <div class="col-md-2 mb-2"><label>Greige Width (in):</label><input type="number" class="form-control" id="greigeWidth" name="greige_width" value=""></div>
+    <div class="col-md-2 mb-2"><label>Total Ends:</label><input type="number" class="form-control" id="totalEnds" name="total_ends" value=""></div>
+    <div class="col-md-2 mb-2"><label>Warp Crimp (%):</label><input type="number" class="form-control" id="warpCrimp" name="warp_crimp" value=""></div>
+    <div class="col-md-2 mb-2"><label>Weft Crimp (%):</label><input type="number" class="form-control" id="weftCrimp" name="weft_crimp" value=""></div>
+    <div class="col-md-2 mb-2"><label>Reed Space:</label><input type="number" class="form-control" id="reedSpace" value=""></div>
+</div>
+
+       <!-- Wastage and Allowances - Updated to 6 fields per row -->
+<div class="section-header">Wastage & Allowances</div>
+<div class="row mb-2">
+    <div class="col-md-2 mb-2"><label>Y/D Allow (%):</label><input type="number" class="form-control" id="ydAllow" name="yd_allow" value=""></div>
+    <div class="col-md-2 mb-2"><label>Warp Waste (%):</label><input type="number" class="form-control" id="warpWast" name="warp_wast" value=""></div>
+    <div class="col-md-2 mb-2"><label>Weft Waste (%):</label><input type="number" class="form-control" id="weftWast" name="weft_wast" value=""></div>
+    <div class="col-md-2 mb-2"><label>Finish Allow (%):</label><input type="number" class="form-control" id="finishAllow" name="finish_allow" value=""></div>
+    <div class="col-md-2 mb-2"><label>Order Quantity (yds):</label><input type="number" class="form-control" id="orderQuantity" name="order_quantity" value=""></div>
+    <div class="col-md-2 mb-2"><label>Pick Length (Inch):</label><input type="number" class="form-control" id="pickLength" name="pick_length" value=""></div>
+</div>
+
+        <!-- Cost Parameters - Updated to 6 fields per row -->
+<div class="section-header">Cost Parameters</div>
+<div class="row mb-2">
+    <div class="col-md-2 mb-2"><label>Pick Rate (tk/yd):</label><input type="number" class="form-control" id="weavingPickRate" name="weaving_rate" value=""></div>
+    <div class="col-md-2 mb-2"><label>Dye/Finish Rate (tk/yd):</label><input type="number" class="form-control" id="dyeingFinishingRate" name="dye_finish_rate" value=""></div>
+    <div class="col-md-2 mb-2"><label>Commercial Cost (tk/yd):</label><input type="number" class="form-control" id="commercialCostInput" name="commercial_cost" value=""></div>
+    <div class="col-md-2 mb-2"><label>Profit:</label><input type="number" class="form-control" id="profit" name="profit" value=""></div>
+    <div class="col-md-2 mb-2"><label>Dollar Rate in TK:</label><input type="number" class="form-control" id="dollarRateTk" name="dollar_rate_tk" value=""></div>
+    <div class="col-md-2 mb-2"><label>Pre-costing Date:</label><input type="date" class="form-control" id="preCostingDate" name="pre_costing_date" value=""></div>
+</div>
+
+        <!-- Warp & Weft Pattern Calculation -->
+        <div class="section-header">Warp & Weft Pattern Details</div>
+        <div class="row mb-3">
+            <div class="col-md-2 mb-2"><label>Warp Repeat Size (Inch):</label><input type="number" class="form-control result-field" id="warpRepeatSize" name="" readonly></div>
+            <div class="col-md-2 mb-2"><label>Weft Repeat Size (Inch):</label><input type="number" class="form-control result-field" id="weftRepeatSize" name="" readonly></div>
+            <div class="col-md-2 mb-2"><label>Warp Repeat Number:</label><input type="number" class="form-control result-field" id="warpRepeatNumber" name="" readonly></div>
+            <div class="col-md-2 mb-2"><label>Weft Repeat Number:</label><input type="number" class="form-control result-field" id="weftRepeatNumber" name="" readonly></div>
+            <div class="col-md-2 mb-2"><label>Warp Repeat Ends:</label><input type="number" class="form-control result-field" id="warpRepeatEnds" name="" readonly></div>
+        </div>
+
+        <!-- Warp Details -->
+        <div class="section-header">Warp Details</div>
+        <div class="table-responsive">
+            <table class="table table-bordered" id="warpCalculationTable">
+                <thead>
+                    <tr>
+                        <th>Warp Count</th>
+                        <th>Ply</th>
+                        <th>Repeat Brkdwn (Inch)</th>
+                        <th>Color_Name(s)</th>
+                        <th>Denting</th>
+                        <th>Rate (tk/lbs)</th>
+                        <th>Y/Dye Cost/kg</th>
+                        <th>Repeat Ends / Color</th>
+                        <th>Pattern Total Ends</th>
+                        <th>Dents in Full Width</th>
+                        <th>Greige Yn Rate/kg</th>
+                        <th>Greige Consump (kg/yd)</th>
+                        <th>Raw Yarn Cost / yd</th>
+                        <th>Y/Dye Cost / yd</th>
+                        <th>Warp total cost / yd</th>
+                        <th>Required Greige Warp (kg)</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                      <tr class="pattern-row">
+                        <td><input type="number" class="form-control" name="warp_count" value="20"></td>
+                        <td><input type="number" class="form-control" name="warp_ply" value="1" min="1"></td> <!-- NEW FIELD -->
+                        <td><input type="number" class="form-control" name="repeat_breakdown" value="2"></td>
+                        <td><input type="text" class="form-control" name="color_name" value="White"></td>
+                        <td><input type="number" class="form-control" name="denting" value="2"></td>
+                        <td><input type="number" class="form-control" name="rate_per_lbs" value="142"></td>
+                        <td><input type="number" class="form-control" name="dyeing_cost_per_kg" value="150"></td>
+                        <td class="result-cell" name="repeat_ends_per_color"></td>
+                        <td class="result-cell" name="pattern_total_ends"></td>
+                        <td class="result-cell" name="dent_numbers_in_full_width"></td>
+                        <td class="result-cell" name="greige_yarn_rate"></td>
+                        <td class="result-cell" name="consumption"></td>
+                        <td class="result-cell" name="yarn_cost"></td>
+                        <td class="result-cell" name="color_cost"></td>
+                        <td class="result-cell" name="warp_total_cost"></td>
+                        <td class="result-cell" name="required_greige"></td>
+                        <td><button type="button" class="btn btn-sm btn-danger remove-row"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr><td colspan="17"><button class="btn btn-sm btn-primary add-warp-row"><i class="fas fa-plus"></i> Add Warp Pattern</button></td></tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Weft Details -->
+        <div class="section-header">Weft Details</div>
+        <div class="table-responsive">
+            <table class="table table-bordered" id="weftCalculationTable">
+                <thead>
+                    <tr>
+                        <th>Weft Count</th>
+                        <th>Ply</th>
+                        <th>Repeat Brkdwn (Inch)</th>
+                        <th>Color_Names</th>
+                        <th>Pick Density</th>
+                        <th>Rate (tk/lbs)</th>
+                        <th>Y/Dyeing Cost/kg</th>
+                        <th>Repeat Picks / Color</th>
+                        <th>Pattern Total Picks</th>
+                        <th>Greige Yarn Rate/kg</th>
+                        <th>Greige Consump (kg/yd)</th>
+                        <th>Raw Yarn Cost / yd</th>
+                        <th>Y/Dye Cost / yd</th>
+                        <th>Weft total cost / yd</th>
+                        <th>Required Greige Weft (kg)</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="pattern-row">
+                        <td><input type="number" class="form-control" name="weft_count" value="20"></td>
+                        <td><input type="number" class="form-control" name="weft_ply" value="1" min="1"></td> <!-- NEW FIELD -->
+                        <td><input type="number" class="form-control" name="repeat_breakdown" value="2"></td>
+                        <td><input type="text" class="form-control" name="color_name" value="White"></td>
+                        <td><input type="number" class="form-control" name="pick_density" value="54"></td>
+                        <td><input type="number" class="form-control" name="rate_per_lbs" value="142"></td>
+                        <td><input type="number" class="form-control" name="dyeing_cost_per_kg" value="150"></td>
+                        <td class="result-cell" name="repeat_picks_per_color"></td>
+                        <td class="result-cell" name="pattern_total_picks"></td>
+                        <td class="result-cell" name="greige_yarn_rate"></td>
+                        <td class="result-cell" name="consumption"></td>
+                        <td class="result-cell" name="yarn_cost"></td>
+                        <td class="result-cell" name="color_cost"></td>
+                        <td class="result-cell" name="weft_total_cost"></td>
+                        <td class="result-cell" name="required_greige"></td>
+                        <td><button type="button" class="btn btn-sm btn-danger remove-row"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr><td colspan="16"><button class="btn btn-sm btn-primary add-weft-row"><i class="fas fa-plus"></i> Add Weft Pattern</button></td></tr>
+                </tfoot>
+            </table>
+        </div>
+
+       <!-- Total Pre-costing Values - Updated with new USD fields -->
+<div class="section-header">Total Pre-costing Values</div>
+<div class="row mb-3">
+    <div class="col-md-2 mb-2"><label>Total Pre-cost (Taka):</label><input type="number" class="form-control result-field" id="totalPreCostTk" name="total_pre_cost_tk" readonly></div>
+    <div class="col-md-2 mb-2"><label>Total Pre-cost (USD):</label><input type="number" class="form-control result-field" id="totalPreCostUSD" name="total_pre_cost_usd" readonly></div>
+    <div class="col-md-2 mb-2"><label>Total Upcharged (tk):</label><input type="number" class="form-control result-field" id="totalUpchargePreCostTk" name="total_upcharged_pre_cost_tk" readonly></div>
+    <div class="col-md-2 mb-2"><label>Total Upcharged (USD):</label><input type="number" class="form-control result-field" id="totalUpchargePreCostUSD" name="total_upcharged_pre_cost_usd" readonly></div>
+    <div class="col-md-2 mb-2"><label>Total Greige Cost (USD):</label><input type="number" class="form-control result-field" id="totalGreigeYarnCostUSD" name="total_greige_yarn_cost_usd" readonly></div>
+    <div class="col-md-2 mb-2"><label>Greige cost/yd (USD):</label><input type="number" class="form-control result-field" id="greigeYarnCostPerYdUSD" name="greige_yarn_cost_per_yd_usd" readonly></div>
+</div>
+<div class="row mb-2">
+    <div class="col-md-2 mb-2"><label>Weaving Cost (USD):</label><input type="number" class="form-control result-field" id="weavingCostUSD" name="weaving_cost_usd" readonly></div>
+    <div class="col-md-2 mb-2"><label>Break-Even Cost (USD):</label><input type="number" class="form-control result-field" id="breakEvenCostUSD" name="break_even_cost_usd" readonly></div>
+    <div class="col-md-2 mb-2"><label>Pick Rate (USD):</label><input type="number" class="form-control result-field" id="pickRateUSD" name="pick_rate_usd" readonly></div>
+    <div class="col-md-2 mb-2"><label>Total Greige Cost (USD):</label><input type="number" class="form-control result-field" id="totalGreigeCostUSD" name="total_greige_cost_usd" readonly></div>
+    <div class="col-md-2 mb-2"><label>Total Weaving Cost (USD)</label><input type="number" class="form-control result-field" id="totalWeavingCostUSD" name="total_weaving_cost_usd" readonly></div>
+    <div class="col-md-2 mb-2"><label>Net B/E Cost/yd (USD):</label><input type="number" class="form-control result-field" id="netBreakEvenCostPerYdUSD" name="net_break_even_cost_per_yd_usd" readonly></div>
+</div>
+<div class="row mb-2">
+    <div class="col-md-2 mb-2"><label>Upcharged Net Profit/yd (USD):</label><input type="number" class="form-control result-field" id="upchargedNetProfitPerYdUSD" name="upcharged_net_profit_per_yd_usd" readonly></div>
+</div>
+
+        <!-- Calculation Results -->
+        <div class="section-header">Calculation Results</div>
+        <div class="row mb-2">
+            <div class="col-md-2 mb-2"><label>Greige Required Quantity (yds):</label><input type="number" class="form-control result-field" id="greigeReqQuantity" name="greige_req_quantity" readonly></div>
+            <div class="col-md-2 mb-2"><label>Required Warp Yarn Quantity (kg):</label><input type="number" class="form-control result-field" id="requiredWarpKg" name="required_warp_yarn" readonly></div>
+            <div class="col-md-2 mb-2"><label>Required Weft Yarn Quantity (kg):</label><input type="number" class="form-control result-field" id="requiredWeftKg" name="required_weft_yarn" readonly></div>
+            <div class="col-md-2 mb-2"><label>Total Required Yarn Quantity (kg):</label><input type="number" class="form-control result-field" id="totalRequiredKg" name="total_required_yarn" readonly></div>
+        
+            <div class="col-md-2 mb-2"><label>Warp Greige Consumption (kg):</label><input type="number" class="form-control result-field" id="warpGreigeConsump" name="warp_greige_consump" readonly></div>
+            <div class="col-md-2 mb-2"><label>Weft Greige Consumption (kg):</label><input type="number" class="form-control result-field" id="weftGreigeConsump" name="weft_greige_consump" readonly></div>
+            </div>
+        <div class="row mb-2">
+            <div class="col-md-2 mb-2"><label>Total Greige Consumption (kg):</label><input type="number" class="form-control result-field" id="totalGreigeConsump" name="total_greige_consump" readonly></div>
+            <div class="col-md-2 mb-2"><label>Warp Finish Consumption (kg):</label><input type="number" class="form-control result-field" id="warpFinishConsump" name="warp_finish_consump" readonly></div>
+      
+            <div class="col-md-2 mb-2"><label>Weft Finish Consumption (kg):</label><input type="number" class="form-control result-field" id="weftFinishConsump" name="weft_finish_consump" readonly></div>
+            <div class="col-md-2 mb-2"><label>Total Finish Consumption (kg):</label><input type="number" class="form-control result-field" id="totalFinishConsump" name="total_finish_consump" readonly></div>
+            <div class="col-md-2 mb-2"><label>Break-Even Cost (taka/yd):</label><input type="number" class="form-control result-field" id="breakEvenCostYd" name="break_even_cost" readonly></div>
+            <div class="col-md-2 mb-2"><label>Warp Yarn Cost (taka/yard):</label><input type="number" class="form-control result-field" id="warpYnCost" name="warp_yarn_cost" readonly></div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-2 mb-2"><label> Weft Yarn Cost (taka/yard):</label><input type="number" class="form-control result-field" id="weftYnCost" name="weft_yarn_cost" readonly></div>
+            <div class="col-md-2 mb-2"><label>Total Greige yarn Cost (taka/yd):</label><input type="number" class="form-control result-field" id="totalGreigeCost" name="total_greige_yarn_cost_per_yd" readonly></div>
+            <div class="col-md-2 mb-2"><label>Yarn Dyeing Cost (taka/yd):</label><input type="number" class="form-control result-field" id="yarnDyeCost" name="yarn_dyeing_cost" readonly></div>
+            <div class="col-md-2 mb-2"><label>Total Dyed Yarn Cost (taka/yd):</label><input type="number" class="form-control result-field" id="totalYnCost" name="total_yarn_cost" readonly></div>
+        
+            <div class="col-md-2 mb-2"><label>Greige Yarn Cost Per Yard Fabric (taka/yd):</label><input type="number" class="form-control result-field" id="greigeYarnCostPerYd" name="greige_cost" readonly></div>
+            <div class="col-md-2 mb-2"><label>Weaving Cost of Fabric (taka/yd):</label><input type="number" class="form-control result-field" id="weavingCost" name="weaving_cost" readonly></div>
+            </div>
+        <div class="row mb-2">
+            <div class="col-md-2 mb-2"><label>Sales Price of Fabric (taka/yd):</label><input type="number" class="form-control result-field" id="salesPrice" name="sales_price" readonly></div>
+            <div class="col-md-2 mb-2"><label>Upcharged Sales Price (tk/yd):</label><input type="number" class="form-control result-field" id="upchargeSalesPrice" name="upcharged_sales_price" readonly></div>
+        </div>
+
+        <!-- Budget Costs -->
+        <div class="section-header">Budget Costs</div>
+        <div class="row mb-2">
+            <div class="col-md-2 mb-2"><label>Total Warp Cost (tk):</label><input type="number" class="form-control result-field" id="totalGrWarpCost" name="total_warp_cost" readonly></div>
+            <div class="col-md-2 mb-2"><label>Total Warp Cost %:</label><input type="number" class="form-control result-field" id="totalGrWarpCostPercent" readonly></div>
+            <div class="col-md-2 mb-2"><label>Total Weft Cost (tk):</label><input type="number" class="form-control result-field" id="totalGrWeftCost" name="total_weft_cost" readonly></div>
+            <div class="col-md-2 mb-2"><label>Total Weft Cost %:</label><input type="number" class="form-control result-field" id="totalGrWeftCostPercent" readonly></div>
+      
+            <div class="col-md-2 mb-2"><label>Total Greige Cost (tk):</label><input type="number" class="form-control result-field" id="graTotalGregCost" name="total_greige_cost" readonly></div>
+            <div class="col-md-2 mb-2"><label>Total Greige Cost %:</label><input type="number" class="form-control result-field" id="graTotalGregCostPercent" readonly></div>
+              </div>
+        <div class="row mb-2">
+            <div class="col-md-2 mb-2"><label>Total Dyeing Cost (tk):</label><input type="number" class="form-control result-field" id="totalYDyeingCost" name="total_dyeing_cost" readonly></div>
+            <div class="col-md-2 mb-2"><label>Total Dyeing Cost %:</label><input type="number" class="form-control result-field" id="totalYDyeingCostPercent" readonly></div>
+        
+            <div class="col-md-2 mb-2"><label>Total Weaving Cost (tk):</label><input type="number" class="form-control result-field" id="totalWeavingCost" name="total_weaving_cost" readonly></div>
+            <div class="col-md-2 mb-2"><label>Total Weaving cost %:</label><input type="number" class="form-control result-field" id="totalWeavingCostPercent" readonly></div>
+            <div class="col-md-2 mb-2"><label>Total Dye/Finish Cost (tk):</label><input type="number" class="form-control result-field" id="totalDyeFinCost" name="total_dye_finish_cost" readonly></div>
+            <div class="col-md-2 mb-2"><label>Total Dye/Finish Cost %:</label><input type="number" class="form-control result-field" id="totalDyeFinCostPercent" readonly></div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-md-2 mb-2"><label>Total Commercial Cost (taka):</label><input type="number" class="form-control result-field" id="totalCommercialCost" name="total_commercial_cost" readonly></div>
+            <div class="col-md-2 mb-2"><label>Total Commercial Cost Percentage:</label><input type="number" class="form-control result-field" id="commercialCostPercent" readonly></div>
+            <div class="col-md-2 mb-2"><label>Grand Total Break-Even Cost (taka):</label><input type="number" class="form-control result-field" id="grandTotalBECost" name="grand_total_break_even_cost" readonly></div>
+            <div class="col-md-2 mb-2"><label>Net Break-Even Cost/yd (taka):</label><input type="number" class="form-control result-field" id="netBreakEvenCostPerYd" name="net_break_even_cost_per_yd" readonly></div>
+        
+            <div class="col-md-2 mb-2"><label>Net Profit per yard fabric (taka):</label><input type="number" class="form-control result-field" id="netProfitPerYd" name="net_profit_per_yd" readonly></div>
+            <div class="col-md-2 mb-2"><label>Grand Total Profit per yard fabric (tk):</label><input type="number" class="form-control result-field" id="grandTotalProfit" name="grand_total_profit" readonly></div>
+            </div>
+        <div class="row mb-2">
+            <div class="col-md-2 mb-2"><label>Grand Total Profit Percentage:</label><input type="number" class="form-control result-field" id="grandTotalProfitPercent" readonly></div>
+            <div class="col-md-2 mb-2"><label>Total Sales Value as Pre-costing (taka):</label><input type="number" class="form-control result-field" id="totalSalesValue" name="total_sales_value" readonly></div>
+      
+            <div class="col-md-2 mb-2"><label>Upcharged Net Profit/yd (taka):</label><input type="number" class="form-control result-field" id="upchargeNetProfit" name="upcharged_net_profit_per_yd" readonly></div>
+            <div class="col-md-2 mb-2"><label>Upcharged Grand Total Profit (taka):</label><input type="number" class="form-control result-field" id="upchargeGrandTotalProfit" name="upcharged_grand_total_profit" readonly></div>
+            <div class="col-md-2 mb-2"><label>Upcharged Grand Total Profit %:</label><input type="number" class="form-control result-field" id="upGrandTotalProfitPercent" readonly></div>
+            <div class="col-md-2 mb-2"><label>Upcharged Total Sales Value (taka):</label><input type="number" class="form-control result-field" id="upchargeTotalSalesValue" name="upcharged_total_sales_value" readonly></div>
+        </div>
+
+        <!-- Technical Specifications -->
+        <div class="section-header">Technical Specifications</div>
+        <div class="row mb-2">
+            <div class="col-md-2 mb-2"><label>Warp GSM:</label><input type="number" class="form-control result-field" id="warpTotalGSM" readonly></div>
+            <div class="col-md-2 mb-2"><label>Weft GSM:</label><input type="number" class="form-control result-field" id="weftTotalGSM" readonly></div>
+            <div class="col-md-2 mb-2"><label>Total GSM:</label><input type="number" class="form-control result-field" id="totalGSM" readonly></div>
+            <div class="col-md-2 mb-2"><label>Wt of Finish Fabric (kg):</label><input type="number" class="form-control result-field" id="weightFinishFabric" readonly></div>
+        
+            <div class="col-md-2 mb-2"><label>Warp Cover Factor:</label><input type="number" class="form-control result-field" id="warpCoverFactor" readonly></div>
+            <div class="col-md-2 mb-2"><label>Weft Cover Factor:</label><input type="number" class="form-control result-field" id="weftCoverFactor" readonly></div>
+            </div>
+        <div class="row mb-2">
+            <div class="col-md-2 mb-2"><label>Total Cover Factor:</label><input type="number" class="form-control result-field" id="totalCoverFactor" readonly></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    
+    <script>
+
+function roundTo(number, decimals) {
+    return Number(Math.round(number + 'e' + decimals) + 'e-' + decimals);
+}
+
+let currentPreCostingData = {
+    preCostingData: null,
+    warpDetails: [],
+    weftDetails: []
+};
+
+const hashedPassword = '32250170a0dca92d53ec9624f336ca24';
+
+let isSetupDone = false;
+
+// FIXED: generateNextPreCostingNo function
+async function generateNextPreCostingNo() {
+    try {
+        const response = await fetch('/main/api/precosting/next-pre-costing-no', { credentials: 'include' });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to generate pre-costing number');
+        }
+
+        // FIXED: Handle the response properly
+        const preCostingNo = data.pre_costing_no || data.preCostingNo;
+        if (!preCostingNo) {
+            console.warn('No pre-costing number received from server, using default');
+            return 'Pre/costing/No:01';
+        }
+
+        // Check if it's already in the correct format
+        if (preCostingNo.includes('Pre/costing/No:')) {
+            return preCostingNo;
+        }
+
+        // If it's in year/number format, convert it
+        const match = preCostingNo.match(/(\d{4})\/(\d+)/);
+        if (match) {
+            const year = match[1];
+            const number = parseInt(match[2], 10);
+            if (number > 100000000) {
+                throw new Error('Maximum pre-costing number (100,000,000) reached.');
+            }
+            const formattedNumber = number < 10 ? `0${number}` : number;
+            return `Pre/costing/No:${formattedNumber}`;
+        }
+
+        // Fallback
+        return 'Pre/costing/No:01';
+    } catch (error) {
+        console.error('Error generating pre-costing number:', error);
+        return 'Pre/costing/No:01';
+    }
+}
+
+async function setInitialPreCostingNo() {
+    const preCostingNoInput = document.getElementById('preCostingNo');
+    if (preCostingNoInput) {
+        const nextPreCostingNo = await generateNextPreCostingNo();
+        preCostingNoInput.value = nextPreCostingNo;
+    }
+}
+
+// CORRECTED: Update the DOMContentLoaded event 
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log("Precosting app loaded - checking authentication");
+    
+    // Check if logged in
+    fetch('/main/api/current-user', { 
+        credentials: 'include',
+        headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+        }
+    })
+    .then(response => {
+        console.log("Authentication response status:", response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("Authentication data:", data);
+        if (!data.user) {
+            console.error("No user found in session, redirecting to login");
+            window.location.href = '/main';
+            return;
+        }
+        
+        // Set global logged in state
+        isLoggedIn = true;
+        
+        // Initialize pre-costing number
+        setInitialPreCostingNo();
+
+        // Initialize tables
+        const warpTbody = document.getElementById('warpCalculationTable')?.querySelector('tbody');
+        const weftTbody = document.getElementById('weftCalculationTable')?.querySelector('tbody');
+        if (warpTbody && warpTbody.children.length === 0) addEmptyWarpRow(warpTbody);
+        if (weftTbody && weftTbody.children.length === 0) addEmptyWeftRow(weftTbody);
+
+        setupEventListeners();
+        debouncedCalculateForm();
+    })
+    .catch(error => {
+        console.error('Error checking session:', error);
+        alert('Authentication error: ' + error.message + '. Please login again.');
+        window.location.href = '/main';
+    });
+});
+
+// Add keyboard navigation for form inputs
+document.addEventListener('keydown', (event) => {
+    const activeElement = document.activeElement;
+    if (!activeElement || !activeElement.matches('input, select')) return;
+
+    const inputs = Array.from(document.querySelectorAll('input:not([readonly]), select'));
+    const currentIndex = inputs.indexOf(activeElement);
+
+    let nextIndex = currentIndex;
+    if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        nextIndex = currentIndex + 1;
+        if (nextIndex >= inputs.length) nextIndex = 0;
+    } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        nextIndex = currentIndex - 1;
+        if (nextIndex < 0) nextIndex = inputs.length - 1;
+    } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        nextIndex = currentIndex + 1;
+        if (nextIndex >= inputs.length) nextIndex = 0;
+    } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        nextIndex = currentIndex - 1;
+        if (nextIndex < 0) nextIndex = inputs.length - 1;
+    }
+
+    if (nextIndex !== currentIndex) {
+        inputs[nextIndex].focus();
+        if (inputs[nextIndex].type !== 'select-one') {
+            inputs[nextIndex].select();
+        }
+    }
+});
+
+// Ensure table inputs also support keyboard navigation
+document.addEventListener('keydown', (event) => {
+    const activeElement = document.activeElement;
+    if (!activeElement || !activeElement.matches('.pattern-row input')) return;
+
+    if (['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(event.key)) {
+        event.preventDefault();
+
+        const table = activeElement.closest('table');
+        const row = activeElement.closest('tr');
+        const cell = activeElement.closest('td');
+        const rows = Array.from(table.querySelectorAll('tbody tr'));
+        const cells = Array.from(row.querySelectorAll('td input:not([readonly])'));
+        const rowIndex = rows.indexOf(row);
+        const cellIndex = cells.indexOf(activeElement);
+
+        let nextRowIndex = rowIndex;
+        let nextCellIndex = cellIndex;
+
+        if (event.key === 'ArrowRight') {
+            nextCellIndex = cellIndex + 1;
+            if (nextCellIndex >= cells.length) {
+                nextCellIndex = 0;
+                nextRowIndex = (rowIndex + 1) % rows.length;
+            }
+        } else if (event.key === 'ArrowLeft') {
+            nextCellIndex = cellIndex - 1;
+            if (nextCellIndex < 0) {
+                nextCellIndex = cells.length - 1;
+                nextRowIndex = (rowIndex - 1 + rows.length) % rows.length;
+            }
+        } else if (event.key === 'ArrowDown') {
+            nextRowIndex = (rowIndex + 1) % rows.length;
+            nextCellIndex = cellIndex;
+        } else if (event.key === 'ArrowUp') {
+            nextRowIndex = (rowIndex - 1 + rows.length) % rows.length;
+            nextCellIndex = cellIndex;
+        }
+
+        const nextRow = rows[nextRowIndex];
+        const nextCells = Array.from(nextRow.querySelectorAll('td input:not([readonly])'));
+        if (nextCells[nextCellIndex]) {
+            nextCells[nextCellIndex].focus();
+        }
+    }
+});
+
+// Setup event listeners after login
+function setupEventListeners() {
+    if (isSetupDone) {
+        console.log('Event listeners already set up, skipping...');
+        return;
+    }
+    
+    isSetupDone = true;
+    console.log('Setting up event listeners...');
+
+    populatePreCostingDropdown();
+    calculateForm();
+
+    // REMOVED: inputField check since it doesn't exist
+    const preCostingDropdown = document.getElementById('preCostingDropdown');
+    if (preCostingDropdown) {
+        preCostingDropdown.addEventListener('change', () => {
+            console.log('Dropdown changed, triggering debounced calculation');
+            debouncedCalculateForm();
+        });
+    } else {
+        console.warn('preCostingDropdown element not found');
+    }
+
+    console.log('Event listeners set up, performing initial calculation');
+    debouncedCalculateForm();
+
+    const searchBtn = document.getElementById('searchBtn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', searchPreCosting);
+    } else {
+        console.error('searchBtn element not found');
+    }
+
+    const saveToPostgreSQLBtn = document.getElementById('saveToPostgreSQLBtn');
+    if (saveToPostgreSQLBtn) {
+        saveToPostgreSQLBtn.addEventListener('click', saveToPostgreSQL);
+    } else {
+        console.error('saveToPostgreSQLBtn element not found');
+    }
+
+    const exportToCSVBtn = document.getElementById('exportToCSVBtn');
+    if (exportToCSVBtn) {
+        exportToCSVBtn.addEventListener('click', exportToCSV);
+    } else {
+        console.error('exportToCSVBtn element not found');
+    }
+
+    const exportToSQLBtn = document.getElementById('exportToSQLBtn');
+    if (exportToSQLBtn) {
+        exportToSQLBtn.addEventListener('click', exportToSQL);
+    } else {
+        console.error('exportToSQLBtn element not found');
+    }
+
+    const saveBtn = document.getElementById('saveBtn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', saveLocally);
+    } else {
+        console.error('saveBtn element not found');
+    }
+
+    const loadBtn = document.getElementById('loadBtn');
+    if (loadBtn) {
+        loadBtn.addEventListener('click', showLoadModal);
+    } else {
+        console.error('loadBtn element not found');
+    }
+
+    const preCostingNoInput = document.getElementById('preCostingNo');
+    if (preCostingNoInput) {
+        preCostingNoInput.addEventListener('input', (e) => {
+            let value = e.target.value;
+            const match = value.match(/Pre\/costing\/No:(\d+)/);
+            if (match) {
+                const number = parseInt(match[1], 10);
+                if (number > 100000000) {
+                    e.target.value = 'Pre/costing/No:100000000';
+                }
+            } else {
+                const numMatch = value.match(/\d+/);
+                if (numMatch) {
+                    let number = parseInt(numMatch[0], 10);
+                    if (number > 100000000) number = 100000000;
+                    const formattedNumber = number < 10 ? `0${number}` : number;
+                    e.target.value = `Pre/costing/No:${formattedNumber}`;
+                } else {
+                    e.target.value = 'Pre/costing/No:01';
+                }
+            }
+        });
+    }
+
+    const clearBtn = document.getElementById('clearBtn');
+if (clearBtn) {
+    clearBtn.addEventListener('click', async () => {
+        if (!isLoggedIn) {
+            alert('Please log in to perform this action.');
+            return;
+        }
+        
+        // Clear all input fields (including Basic Information fields)
+        document.querySelectorAll('input:not([type="button"]):not([type="submit"])').forEach(input => {
+            if (!input.readOnly) {
+                input.value = '';
+            }
+        });
+
+        // Clear select fields
+        document.querySelectorAll('select').forEach(select => {
+            select.selectedIndex = 0;
+        });
+
+        // Set default values for ply fields
+        const plyFields = ['warpPly1', 'warpPly2', 'warpPly3', 'weftPly1', 'weftPly2', 'weftPly3'];
+        plyFields.forEach(fieldId => {
+            const element = document.getElementById(fieldId);
+            if (element) {
+                element.value = '1';
+            }
+        });
+
+        // Clear all result fields
+        document.querySelectorAll('.result-field').forEach(field => {
+            field.value = '0.00';
+        });
+
+        // Clear all result cells in tables
+        document.querySelectorAll('#warpCalculationTable .result-cell, #weftCalculationTable .result-cell').forEach(cell => {
+            cell.textContent = '0.00';
+        });
+
+        // Clear and reset tables
+        const warpTbody = document.getElementById('warpCalculationTable').querySelector('tbody');
+        const weftTbody = document.getElementById('weftCalculationTable').querySelector('tbody');
+        warpTbody.innerHTML = '';
+        weftTbody.innerHTML = '';
+
+        // Add empty rows
+        addEmptyWarpRow(warpTbody);
+        addEmptyWeftRow(weftTbody);
+
+        // Reset currentPreCostingData
+        currentPreCostingData = null;
+
+        // Generate new pre-costing number
+        await setInitialPreCostingNo();
+        
+        // Recalculate with empty data
+        calculateForm();
+    });
+} else {
+    console.error('clearBtn element not found');
+}
+
+    // REMOVED: resetBtn check since it doesn't exist in the HTML
+
+    const addWarpRowBtn = document.querySelector('.add-warp-row');
+    if (addWarpRowBtn) {
+        addWarpRowBtn.addEventListener('click', () => {
+            if (!isLoggedIn) {
+                alert('Please log in to perform this action.');
+                return;
+            }
+            const tbody = document.getElementById('warpCalculationTable').querySelector('tbody');
+            addEmptyWarpRow(tbody);
+        });
+    } else {
+        console.error('add-warp-row element not found');
+    }
+
+    const addWeftRowBtn = document.querySelector('.add-weft-row');
+    if (addWeftRowBtn) {
+        addWeftRowBtn.addEventListener('click', () => {
+            if (!isLoggedIn) {
+                alert('Please log in to perform this action.');
+                return;
+            }
+            const tbody = document.getElementById('weftCalculationTable').querySelector('tbody');
+            addEmptyWeftRow(tbody);
+        });
+    } else {
+        console.error('add-weft-row element not found');
+    }
+}
+
+function debounce(func, delay) {
+    let timeoutId;
+    return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func(...args), delay);
+    };
+}
+
+const debouncedCalculateForm = debounce(calculateForm, 300);
+
+document.addEventListener('input', (e) => {
+    if (!isLoggedIn) return;
+    const target = e.target;
+    if (target.closest('#warpCalculationTable') || target.closest('#weftCalculationTable')) {
+        console.log('Input changed in table:', target.value, 'in element:', target);
+        debouncedCalculateForm();
+    }
+});
+
+document.querySelectorAll('input:not(#warpCalculationTable input):not(#weftCalculationTable input), select:not(#warpCalculationTable select):not(#weftCalculationTable select)').forEach(input => {
+    input.addEventListener('input', () => {
+        if (!isLoggedIn) return;
+        console.log('Input changed outside table:', input.id, input.value);
+        calculateForm();
+    });
+});
+
+document.addEventListener('click', (e) => {
+    if (!isLoggedIn) return;
+    if (e.target.closest('.remove-row')) {
+        const row = e.target.closest('tr');
+        if (row.parentNode.children.length > 1) {
+            row.remove();
+            console.log('Row removed from table');
+            calculateForm();
+        }
+    }
+});
+
+
+
+// Pre-costing calculator
+console.log("PreCosting calculator loaded");
+
+const PreCostingCalculator = {
+    constants: {
+        LBS_TO_KG: 0.453592,
+        YARDS_TO_METERS: 0.9144,
+        KG_TO_LBS: 2.2046,
+        METERS_TO_YARDS: 1.09361,
+        weaveConstants: {
+            'Plain': 1,
+            'Oxford': 0.94,
+            'Ottoman': 0.95,
+            'Matt': 0.77,
+            '2/1 Twill': 0.85,
+            '2/2 Twill': 0.8,
+            '3/1 Twill': 0.75,
+            '4/1 Satin': 0.715,
+            '3/2 Twill': 0.7,
+            '3/3 Twill': 0.65,
+            '3/3 Matt': 0.64,
+            '3/2 Matt': 0.66,
+            '4/4 Twill': 0.6,
+            '4/2 Twill': 0.63,
+            '6/2 Twill': 0.55,
+            '2/2 Oxford Twill': 0.74,
+            '3/1 Oxford Twill': 0.68,
+            '2/1 Matt Twill': 0.74,
+            '2/2 Matt Twill': 0.68,
+            '3/1 Matt Twill': 0.66,
+            '3/3 Matt Twill': 0.58,
+            '4/4 Matt Twill': 0.54,
+            'Dobby': 0.8
+        }
+    },
+
+    calculateWarpRepeatEnds(construction) {
+        return parseInt(construction?.split('/')[1]?.split('x')[0]) || 0;
+    },
+    calculateWarpDentNumbers(patternTotalEnds, denting) {
+        return denting ? (patternTotalEnds / denting) : 0;
+    },
+    calculateAdjustedWarpYarn(requiredYarn, warpWastage) {
+        return requiredYarn * (1 + (warpWastage / 100));
+    },
+    calculateAdjustedWeftYarn(requiredYarn, weftWastage) {
+        return requiredYarn * (1 + (weftWastage / 100));
+    },
+    calculateYarnDyeingAdjustment(yarnCost, ydAllowPercentage) {
+        return yarnCost * (1 + (ydAllowPercentage / 100));
+    },
+    calculateGreigeCostPerYd(warpYarnCostPreDyeing, weftYarnCostPreDyeing, wastageOverheadFactor = 0) {
+        return (warpYarnCostPreDyeing + weftYarnCostPreDyeing + wastageOverheadFactor) || 0;
+    },
+    calculateWarpConsumption(count, ply, patternTotalEnds, warpCrimp, ydAllow, warpWast, finishAllow) {
+                const effectiveCount = count / ply; // PLY EFFECT
+                return (effectiveCount && patternTotalEnds) ?
+                    (patternTotalEnds * (1 + (warpCrimp / 100)) * (1 + (ydAllow / 100)) * (1 + (warpWast / 100)) * (1 + (finishAllow / 100))) /
+                    (effectiveCount * 1693.3 * this.constants.METERS_TO_YARDS) : 0;
+            },
+    calculateWeftConsumption(count, ply, patternTotalPicks, pickLength, finishAllow, ydAllow, weftWast) {
+                const effectiveCount = count / ply; // PLY EFFECT
+                return effectiveCount ?
+                    (patternTotalPicks * pickLength *
+                    (1 + (finishAllow / 100)) *
+                    (1 + (ydAllow / 100)) *
+                    (1 + (weftWast / 100))) /
+                    (effectiveCount * 1693.3 * this.constants.METERS_TO_YARDS * 39.37) : 0;
+            },
+    calculateYarnCostPerYd(consumption, greigeYarnRate) {
+        return consumption * greigeYarnRate || 0;
+    },
+    calculateYarnDyeingCostPerYd(consumption, dyeingCostPerKg) {
+        return consumption * dyeingCostPerKg || 0;
+    },
+    calculateTotalYarnCostPerYd(yarnCost, dyeingCost) {
+        return (yarnCost + dyeingCost) || 0;
+    },
+    calculateRequiredYarn(consumption, orderQuantity) {
+        return consumption * orderQuantity || 0;
+    },
+    calcGreigeRequiredQty(orderQuantity, finishAllow) {
+        return orderQuantity * (1 + (finishAllow / 100)) || 0;
+    },
+    calculateBreakEvenCostPerYd(yarnCost, weavingCost, dyeingFinishingCost, commercialCost) {
+        return (yarnCost + weavingCost + dyeingFinishingCost + commercialCost) || 0;
+    },
+    calculateSalesPricePerYd(breakEvenCost, profitPerYd) {
+        return (breakEvenCost + profitPerYd) || 0;
+    },
+    calculateTotalValue(valuePerYd, quantity) {
+        return valuePerYd * quantity || 0;
+    },
+    calculatePercentage(part, whole) {
+        return whole ? ((part / whole) * 100) : 0;
+    },
+    calculateCoverFactor(epi, count, ply) {
+                const effectiveCount = count / ply; // PLY EFFECT
+                return epi / Math.sqrt(effectiveCount || 1);
+            },
+
+    // FIXED: Updated calculateWarpPattern to use ply
+calculateWarpPattern(warpDetails, formData, warpRepeatEnds, warpRepeatNumber) {
+    const totalRepeatBreakdown = warpDetails.reduce((sum, detail) => sum + (detail.repeatBreakdown || 0), 0) || 1;
+    const totalRepeatBreakdownDenting = warpDetails.reduce((sum, detail) => sum + ((detail.repeatBreakdown || 0) * (detail.denting || 0)), 0) || 1;
+    const results = [];
+    let totalEnds = 0, totalConsumption = 0, totalYarnCost = 0, totalColorCost = 0, totalWarpCost = 0, totalRequiredGreige = 0, totalGreigeYarnCostPreDyeing = 0;
+
+    for (const detail of warpDetails) {
+        const count = detail.count || 0;
+        const ply = detail.ply || 1; // NEW: Get ply value
+        const repeatBreakdown = detail.repeatBreakdown || 0;
+        const denting = detail.denting || 0;
+        const ratePerLbs = detail.ratePerLbs || 0;
+        const dyeingCostPerKg = detail.dyeingCostPerKg || 0;
+        const greigeYarnRate = ratePerLbs * this.constants.KG_TO_LBS;
+
+        const repeatEndsPerColor = totalRepeatBreakdownDenting ?
+            ((repeatBreakdown * denting) / totalRepeatBreakdownDenting) * warpRepeatEnds : 0;
+        const patternTotalEnds = repeatEndsPerColor * warpRepeatNumber;
+
+        // UPDATED: Pass ply to consumption calculation
+        const consumption = this.calculateWarpConsumption(
+            count, ply, patternTotalEnds, formData.warpCrimp, formData.ydAllow, formData.warpWast, formData.finishAllow
+        );
+        const yarnCost = this.calculateYarnCostPerYd(consumption, greigeYarnRate);
+        const colorCost = this.calculateYarnDyeingCostPerYd(consumption, dyeingCostPerKg);
+        const warpTotalCost = this.calculateTotalYarnCostPerYd(yarnCost, colorCost);
+        const requiredGreige = this.calculateRequiredYarn(consumption, formData.orderQuantity);
+        const dentNumbersInFullWidth = this.calculateWarpDentNumbers(patternTotalEnds, denting);
+
+        totalEnds += patternTotalEnds;
+        totalConsumption += consumption;
+        totalYarnCost += yarnCost;
+        totalColorCost += colorCost;
+        totalWarpCost += warpTotalCost;
+        totalRequiredGreige += requiredGreige;
+        totalGreigeYarnCostPreDyeing += yarnCost;
+
+        results.push({
+            repeatEndsPerColor, patternTotalEnds, dentNumbersInFullWidth, greigeYarnRate,
+            consumption, yarnCost, colorCost, warpTotalCost, requiredGreige
+        });
+    }
+    return {
+        patterns: results,
+        totals: { totalEnds, totalConsumption, totalYarnCost, totalColorCost, totalWarpCost, totalRequiredGreige, totalGreigeYarnCostPreDyeing }
+    };
+},
+
+// FIXED: Updated calculateWeftPattern to use ply
+calculateWeftPattern(weftDetails, formData, weftRepeatNumber) {
+    const totalRepeatBreakdown = weftDetails.reduce((sum, detail) => sum + (detail.repeatBreakdown || 0), 0) || 1;
+    const results = [];
+    let totalPicks = 0, totalConsumption = 0, totalYarnCost = 0, totalColorCost = 0, totalWeftCost = 0, totalRequiredGreige = 0, totalGreigeYarnCostPreDyeing = 0;
+
+    for (const detail of weftDetails) {
+        const count = detail.count || 0;
+        const ply = detail.ply || 1; // NEW: Get ply value
+        const repeatBreakdown = detail.repeatBreakdown || 0;
+        const pickDensity = detail.pickDensity || 0;
+        const ratePerLbs = detail.ratePerLbs || 0;
+        const dyeingCostPerKg = detail.dyeingCostPerKg || 0;
+        const greigeYarnRate = ratePerLbs * this.constants.KG_TO_LBS;
+        const repeatPicksPerColor = repeatBreakdown * pickDensity;
+        const patternTotalPicks = repeatPicksPerColor * weftRepeatNumber;
+
+        // UPDATED: Pass ply to consumption calculation
+        const consumption = this.calculateWeftConsumption(
+            count, ply, patternTotalPicks, formData.pickLength, formData.finishAllow, formData.ydAllow, formData.weftWast
+        );
+
+        const yarnCost = this.calculateYarnCostPerYd(consumption, greigeYarnRate);
+        const colorCost = this.calculateYarnDyeingCostPerYd(consumption, dyeingCostPerKg);
+        const weftTotalCost = this.calculateTotalYarnCostPerYd(yarnCost, colorCost);
+        const requiredGreige = this.calculateRequiredYarn(consumption, formData.orderQuantity);
+
+        totalPicks += patternTotalPicks;
+        totalConsumption += consumption;
+        totalYarnCost += yarnCost;
+        totalColorCost += colorCost;
+        totalWeftCost += weftTotalCost;
+        totalRequiredGreige += requiredGreige;
+        totalGreigeYarnCostPreDyeing += yarnCost;
+
+        results.push({
+            repeatPicksPerColor, patternTotalPicks, greigeYarnRate,
+            consumption, yarnCost, colorCost, weftTotalCost, requiredGreige
+        });
+    }
+    return {
+        patterns: results,
+        totals: { totalPicks, totalConsumption, totalYarnCost, totalColorCost, totalWeftCost, totalRequiredGreige, totalGreigeYarnCostPreDyeing }
+    };
+},
+
+    calculateFullPreCosting(formData) {
+        const warpRepeatSize = formData.warpDetails.reduce((sum, d) => sum + (d.repeatBreakdown || 0), 0) || 1;
+        const warpRepeatNumber = warpRepeatSize ? Math.round(formData.finishWidth / warpRepeatSize) : 1;
+        const warpRepeatEnds = formData.totalEnds / warpRepeatNumber || 0;
+
+        const weftRepeatSize = formData.weftDetails.reduce((sum, d) => sum + (d.repeatBreakdown || 0), 0) || 1;
+        const weftRepeatNumber = weftRepeatSize ? parseFloat((39.37 / weftRepeatSize).toFixed(2)) : 1;
+
+        const warpResults = this.calculateWarpPattern(formData.warpDetails || [], formData, warpRepeatEnds, warpRepeatNumber);
+        const weftResults = this.calculateWeftPattern(formData.weftDetails || [], formData, weftRepeatNumber);
+
+        const totalRepeatBreakdownWarp = formData.warpDetails.reduce((sum, detail) => sum + (detail.repeatBreakdown || 0), 0) || 1;
+        const totalRepeatBreakdownWeft = formData.weftDetails.reduce((sum, detail) => sum + (detail.repeatBreakdown || 0), 0) || 1;
+
+        const greigeReqQuantity = this.calcGreigeRequiredQty(formData.orderQuantity, formData.finishAllow);
+        const requiredWarpKg = warpResults.totals.totalRequiredGreige;
+        const requiredWeftKg = weftResults.totals.totalRequiredGreige;
+        const totalRequiredKg = requiredWarpKg + requiredWeftKg;
+        const warpGreigeConsump = greigeReqQuantity ? requiredWarpKg / greigeReqQuantity : 0;
+        const weftGreigeConsump = greigeReqQuantity ? requiredWeftKg / greigeReqQuantity : 0;
+        const totalGreigeConsump = warpGreigeConsump + weftGreigeConsump;
+        const warpFinishConsump = formData.orderQuantity ? requiredWarpKg / formData.orderQuantity : 0;
+        const weftFinishConsump = formData.orderQuantity ? requiredWeftKg / formData.orderQuantity : 0;
+        const totalFinishConsump = warpFinishConsump + weftFinishConsump;
+        const weavingCost = formData.weavingPickRate * (weftResults.totals.totalPicks / weftRepeatNumber) * (1 + (formData.finishAllow / 100));
+
+        const warpYnCost = warpResults.totals.totalYarnCost;
+        const weftYnCost = weftResults.totals.totalYarnCost;
+        const totalGreigeCost = this.calculateGreigeCostPerYd(warpYnCost, weftYnCost);
+        const yarnDyeCost = warpResults.totals.totalColorCost + weftResults.totals.totalColorCost;
+        const totalYnCost = this.calculateTotalYarnCostPerYd(totalGreigeCost, yarnDyeCost);
+        const breakEvenCostYd = this.calculateBreakEvenCostPerYd(
+            totalYnCost,
+            weavingCost,
+            formData.dyeingFinishingRate,
+            formData.commercialCostInput
+        );
+        const greigeYarnCostPerYd = breakEvenCostYd ? (breakEvenCostYd - formData.dyeingFinishingRate) / (1 + (formData.finishAllow / 100)) : 0;
+
+        const salesPrice = this.calculateSalesPricePerYd(breakEvenCostYd, formData.profit);
+        const upchargeSalesPrice =
+            formData.orderQuantity >= 100 && formData.orderQuantity <= 999 ? salesPrice * 1.5 :
+            formData.orderQuantity >= 1000 && formData.orderQuantity <= 2000 ? salesPrice * 1.35 :
+            formData.orderQuantity >= 2001 && formData.orderQuantity <= 3000 ? salesPrice * 1.2 : salesPrice;
+
+        const totalGrWarpCost = formData.orderQuantity * warpYnCost;
+        const totalGrWarpCostPercent = this.calculatePercentage(totalGrWarpCost, breakEvenCostYd * formData.orderQuantity);
+        const totalGrWeftCost = formData.orderQuantity * weftYnCost;
+        const totalGrWeftCostPercent = this.calculatePercentage(totalGrWeftCost, breakEvenCostYd * formData.orderQuantity);
+        const graTotalGregCost = totalGrWarpCost + totalGrWeftCost;
+        const graTotalGregCostPercent = this.calculatePercentage(graTotalGregCost, breakEvenCostYd * formData.orderQuantity);
+        const totalYDyeingCost = formData.orderQuantity * yarnDyeCost;
+        const totalYDyeingCostPercent = this.calculatePercentage(totalYDyeingCost, breakEvenCostYd * formData.orderQuantity);
+        const totalWeavingCost = formData.orderQuantity * weavingCost;
+        const totalWeavingCostPercent = this.calculatePercentage(totalWeavingCost, breakEvenCostYd * formData.orderQuantity);
+        const totalDyeFinCost = formData.orderQuantity * formData.dyeingFinishingRate;
+        const totalDyeFinCostPercent = this.calculatePercentage(totalDyeFinCost, breakEvenCostYd * formData.orderQuantity);
+        const totalCommercialCost = formData.orderQuantity * formData.commercialCostInput;
+        const commercialCostPercent = this.calculatePercentage(totalCommercialCost, breakEvenCostYd * formData.orderQuantity);
+        const grandTotalBECost = graTotalGregCost + totalYDyeingCost + totalWeavingCost + totalDyeFinCost + totalCommercialCost;
+        const netBreakEvenCostPerYd = formData.orderQuantity ? grandTotalBECost / formData.orderQuantity : 0;
+        const netProfitPerYd = salesPrice - netBreakEvenCostPerYd;
+        const grandTotalProfit = formData.orderQuantity * netProfitPerYd;
+        const grandTotalProfitPercent = this.calculatePercentage(grandTotalProfit, grandTotalBECost);
+        const totalSalesValue = this.calculateTotalValue(salesPrice, formData.orderQuantity);
+        const upchargeNetProfit = upchargeSalesPrice - netBreakEvenCostPerYd;
+        const upchargeGrandTotalProfit = formData.orderQuantity * upchargeNetProfit;
+        const upGrandTotalProfitPercent = this.calculatePercentage(upchargeGrandTotalProfit, grandTotalBECost);
+        const upchargeTotalSalesValue = this.calculateTotalValue(upchargeSalesPrice, formData.orderQuantity);
+
+        const totalPreCostTk = salesPrice;
+        const totalPreCostUSD = formData.dollarRateTk ? totalPreCostTk / formData.dollarRateTk : 0;
+        const totalUpchargePreCostTk = upchargeSalesPrice;
+        const totalUpchargePreCostUSD = formData.dollarRateTk ? totalUpchargePreCostTk / formData.dollarRateTk : 0;
+        
+        // NEW USD calculations
+        const totalGreigeYarnCostUSD = formData.dollarRateTk ? totalYnCost / formData.dollarRateTk : 0;
+        const greigeYarnCostPerYdUSD = formData.dollarRateTk ? totalGreigeCost / formData.dollarRateTk : 0;
+        const weavingCostUSD = formData.dollarRateTk ? weavingCost / formData.dollarRateTk : 0;
+        const breakEvenCostUSD = formData.dollarRateTk ? breakEvenCostYd / formData.dollarRateTk : 0;
+        const pickRateUSD = formData.dollarRateTk ? formData.weavingPickRate / formData.dollarRateTk : 0;
+        const totalGreigeCostUSD = formData.dollarRateTk ? graTotalGregCost / formData.dollarRateTk : 0;
+        const totalWeavingCostUSD = formData.dollarRateTk ? totalWeavingCost / formData.dollarRateTk : 0;
+        const netBreakEvenCostPerYdUSD = formData.dollarRateTk ? netBreakEvenCostPerYd / formData.dollarRateTk : 0;
+        const upchargedNetProfitPerYdUSD = formData.dollarRateTk ? upchargeNetProfit / formData.dollarRateTk : 0;
+
+        const warpTotalGSM = warpFinishConsump * 1000 / (formData.finishWidth * 0.0254);
+        const weftTotalGSM = weftFinishConsump * 1000 / (formData.finishWidth * 0.0254);
+        const totalGSM = warpTotalGSM + weftTotalGSM;
+        const weightFinishFabric = totalFinishConsump * formData.orderQuantity;
+
+        // FIXED: Calculate average counts considering ply
+    const avgWarpCount = formData.warpDetails.length > 0 ? 
+        formData.warpDetails.reduce((sum, d) => sum + ((d.count || 0) / (d.ply || 1)), 0) / formData.warpDetails.length : 0;
+    const avgWeftCount = formData.weftDetails.length > 0 ? 
+        formData.weftDetails.reduce((sum, d) => sum + ((d.count || 0) / (d.ply || 1)), 0) / formData.weftDetails.length : 0;
+    
+    const warpCoverFactor = this.calculateCoverFactor(formData.epi, avgWarpCount, 1); // Effective count already calculated
+    const weftCoverFactor = this.calculateCoverFactor(formData.ppi, avgWeftCount, 1); // Effective count already calculated
+    const totalCoverFactor = warpCoverFactor + weftCoverFactor - (warpCoverFactor * weftCoverFactor / (warpCoverFactor + weftCoverFactor));
+
+        return {
+            inputSummary: {
+                preCostingNo: formData.preCostingNo,
+                buyer: formData.buyer,
+                construction: formData.construction,
+                finishWidth: formData.finishWidth,
+                totalEnds: formData.totalEnds,
+                warpCrimp: formData.warpCrimp,
+                ydAllow: formData.ydAllow,
+                warpWast: formData.warpWast,
+                weftWast: formData.weftWast,
+                finishAllow: formData.finishAllow,
+                weavingPickRate: formData.weavingPickRate,
+                dyeingFinishingRate: formData.dyeingFinishingRate,
+                commercialCostInput: formData.commercialCostInput,
+                profit: formData.profit,
+                orderQuantity: formData.orderQuantity,
+                pickLength: formData.pickLength,
+                preCostingDate: formData.preCostingDate,
+                dollarRateTk: formData.dollarRateTk,
+                epi: formData.epi,
+                ppi: formData.ppi,
+                weaveType: formData.weaveType,
+                weftCrimp: formData.weftCrimp,
+                greigeWidth: formData.greigeWidth
+            },
+            orderParticulars: {
+                greigeReqQuantity, requiredWarpKg, requiredWeftKg, totalRequiredKg,
+                warpGreigeConsump, weftGreigeConsump, totalGreigeConsump,
+                warpFinishConsump, weftFinishConsump, totalFinishConsump,
+                greigeYarnCostPerYd
+            },
+            costBreakdown: {
+                warpYnCost, weftYnCost, totalGreigeCost, yarnDyeCost, totalYnCost,
+                weavingCost, breakEvenCostYd, salesPrice, upchargeSalesPrice
+            },
+            budgetCost: {
+                totalGrWarpCost, totalGrWarpCostPercent,
+                totalGrWeftCost, totalGrWeftCostPercent,
+                graTotalGregCost, graTotalGregCostPercent,
+                totalYDyeingCost, totalYDyeingCostPercent,
+                totalWeavingCost, totalWeavingCostPercent,
+                totalDyeFinCost, totalDyeFinCostPercent,
+                totalCommercialCost, commercialCostPercent,
+                grandTotalBECost, netBreakEvenCostPerYd,
+                netProfitPerYd, grandTotalProfit, grandTotalProfitPercent, totalSalesValue,
+                upchargeNetProfit, upchargeGrandTotalProfit, upGrandTotalProfitPercent, upchargeTotalSalesValue
+            },
+            technicalSpecs: {
+                warpTotalGSM, weftTotalGSM, totalGSM, weightFinishFabric,
+                warpCoverFactor, weftCoverFactor, totalCoverFactor
+            },
+            warpPatterns: { patterns: warpResults.patterns, totals: warpResults.totals },
+            weftPatterns: { patterns: weftResults.patterns, totals: weftResults.totals },
+            patternSummary: {
+                warpRepeatSize, warpRepeatNumber, warpRepeatEnds, weftRepeatSize, weftRepeatNumber
+            },
+            totalPreCostingValues: { 
+    totalPreCostTk, 
+    totalPreCostUSD, 
+    totalUpchargePreCostTk, 
+    totalUpchargePreCostUSD,
+    totalGreigeYarnCostUSD,
+    greigeYarnCostPerYdUSD,
+    weavingCostUSD,
+    breakEvenCostUSD,
+    pickRateUSD,
+    totalGreigeCostUSD,
+    totalWeavingCostUSD,
+    netBreakEvenCostPerYdUSD,
+    upchargedNetProfitPerYdUSD
+}
+        };
+    }
+};
+
+function getFormData() {
+    const warpTbody = document.getElementById('warpCalculationTable').querySelector('tbody');
+    const weftTbody = document.getElementById('weftCalculationTable').querySelector('tbody');
+
+    const warpDetails = Array.from(warpTbody.querySelectorAll('tr:not(.total-row)')).map(row => {
+        // FIXED: Check if cells exist before accessing
+        if (!row.cells || row.cells.length < 7) {
+            console.warn('Invalid warp row detected, skipping:', row);
+            return null;
+        }
+        
+        const countInput = row.cells[0]?.querySelector('input');
+        const plyInput = row.cells[1]?.querySelector('input');
+        const repeatInput = row.cells[2]?.querySelector('input');
+        const colorInput = row.cells[3]?.querySelector('input');
+        const dentingInput = row.cells[4]?.querySelector('input');
+        const rateInput = row.cells[5]?.querySelector('input');
+        const dyeingInput = row.cells[6]?.querySelector('input');
+
+        return {
+            count: countInput ? parseFloat(countInput.value) || 0 : 0,
+            ply: plyInput ? parseFloat(plyInput.value) || 1 : 1,
+            repeatBreakdown: repeatInput ? parseFloat(repeatInput.value) || 0 : 0,
+            colorName: colorInput ? colorInput.value || '' : '',
+            denting: dentingInput ? parseFloat(dentingInput.value) || 0 : 0,
+            ratePerLbs: rateInput ? parseFloat(rateInput.value) || 0 : 0,
+            dyeingCostPerKg: dyeingInput ? parseFloat(dyeingInput.value) || 0 : 0
+        };
+    }).filter(detail => detail !== null); // Remove null entries
+
+    const weftDetails = Array.from(weftTbody.querySelectorAll('tr:not(.total-row)')).map(row => {
+        // FIXED: Check if cells exist before accessing
+        if (!row.cells || row.cells.length < 7) {
+            console.warn('Invalid weft row detected, skipping:', row);
+            return null;
+        }
+
+        const countInput = row.cells[0]?.querySelector('input');
+        const plyInput = row.cells[1]?.querySelector('input');
+        const repeatInput = row.cells[2]?.querySelector('input');
+        const colorInput = row.cells[3]?.querySelector('input');
+        const pickDensityInput = row.cells[4]?.querySelector('input');
+        const rateInput = row.cells[5]?.querySelector('input');
+        const dyeingInput = row.cells[6]?.querySelector('input');
+
+        return {
+            count: countInput ? parseFloat(countInput.value) || 0 : 0,
+            ply: plyInput ? parseFloat(plyInput.value) || 1 : 1,
+            repeatBreakdown: repeatInput ? parseFloat(repeatInput.value) || 0 : 0,
+            colorName: colorInput ? colorInput.value || '' : '',
+            pickDensity: pickDensityInput ? parseFloat(pickDensityInput.value) || 0 : 0,
+            ratePerLbs: rateInput ? parseFloat(rateInput.value) || 0 : 0,
+            dyeingCostPerKg: dyeingInput ? parseFloat(dyeingInput.value) || 0 : 0
+        };
+    }).filter(detail => detail !== null); // Remove null entries
+
+    // Extract preCostingNo and handle both formatted and unformatted inputs
+    let preCostingNo = document.getElementById('preCostingNo')?.value || '1';
+    const match = preCostingNo.match(/Pre\/costing\/No:(\d+)/);
+    if (match) {
+        preCostingNo = match[1];
+    }
+    const number = parseInt(preCostingNo, 10) || 1;
+    const formattedNumber = number < 10 ? `0${number}` : number;
+    preCostingNo = `Pre/costing/No:${formattedNumber}`;
+
+    return {
+        preCostingNo: preCostingNo,
+        buyer: document.getElementById('buyer')?.value || '',
+        construction: document.getElementById('construction')?.value || '',
+        finishWidth: parseFloat(document.getElementById('finishWidth')?.value) || 0,
+        totalEnds: parseFloat(document.getElementById('totalEnds')?.value) || 0,
+        warpCrimp: parseFloat(document.getElementById('warpCrimp')?.value) || 0,
+        ydAllow: parseFloat(document.getElementById('ydAllow')?.value) || 0,
+        warpWast: parseFloat(document.getElementById('warpWast')?.value) || 0,
+        weftWast: parseFloat(document.getElementById('weftWast')?.value) || 0,
+        finishAllow: parseFloat(document.getElementById('finishAllow')?.value) || 0,
+        weavingPickRate: parseFloat(document.getElementById('weavingPickRate')?.value) || 0,
+        dyeingFinishingRate: parseFloat(document.getElementById('dyeingFinishingRate')?.value) || 0,
+        commercialCostInput: parseFloat(document.getElementById('commercialCostInput')?.value) || 0,
+        profit: parseFloat(document.getElementById('profit')?.value) || 0,
+        orderQuantity: parseFloat(document.getElementById('orderQuantity')?.value) || 0,
+        pickLength: parseFloat(document.getElementById('pickLength')?.value) || 0,
+        preCostingDate: document.getElementById('preCostingDate')?.value || '',
+        dollarRateTk: parseFloat(document.getElementById('dollarRateTk')?.value) || 0,
+        epi: parseFloat(document.getElementById('epi')?.value) || 0,
+        ppi: parseFloat(document.getElementById('ppi')?.value) || 0,
+        weaveType: document.getElementById('weaveType')?.value || '',
+        weftCrimp: parseFloat(document.getElementById('weftCrimp')?.value) || 0,
+        greigeWidth: parseFloat(document.getElementById('greigeWidth')?.value) || 0,
+        
+        // NEW: Add the Basic Information ply fields
+        warpCount1: document.getElementById('warpCount1')?.value || '',
+        warpPly1: parseFloat(document.getElementById('warpPly1')?.value) || 1,
+        warpCount2: document.getElementById('warpCount2')?.value || '',
+        warpPly2: parseFloat(document.getElementById('warpPly2')?.value) || 1,
+        warpCount3: document.getElementById('warpCount3')?.value || '',
+        warpPly3: parseFloat(document.getElementById('warpPly3')?.value) || 1,
+        weftCount1: document.getElementById('weftCount1')?.value || '',
+        weftPly1: parseFloat(document.getElementById('weftPly1')?.value) || 1,
+        weftCount2: document.getElementById('weftCount2')?.value || '',
+        weftPly2: parseFloat(document.getElementById('weftPly2')?.value) || 1,
+        weftCount3: document.getElementById('weftCount3')?.value || '',
+        weftPly3: parseFloat(document.getElementById('weftPly3')?.value) || 1,
+        
+        warpDetails: warpDetails,
+        weftDetails: weftDetails
+    };
+}
+
+// FIXED: updateWarpCalculationTable to handle ply column
+function updateWarpCalculationTable(results, formData) {
+    const tbody = document.getElementById('warpCalculationTable').querySelector('tbody');
+    if (!tbody) return;
+
+    // Remove existing total row
+    const existingTotalRow = tbody.querySelector('.total-row');
+    if (existingTotalRow) existingTotalRow.remove();
+
+    const warpPatterns = results.warpPatterns.patterns || [];
+    const warpDetails = formData.warpDetails || [];
+
+    // Update existing rows with pattern data
+    Array.from(tbody.querySelectorAll('tr:not(.total-row)')).forEach((row, index) => {
+        const pattern = warpPatterns[index];
+        if (pattern && row.cells.length >= 16) { // Check if row has enough cells
+            // UPDATED: Column indices shifted due to ply column
+            row.cells[7].textContent = pattern.repeatEndsPerColor.toFixed(2) || '0.00';
+            row.cells[8].textContent = pattern.patternTotalEnds.toFixed(2) || '0.00';
+            row.cells[9].textContent = pattern.dentNumbersInFullWidth.toFixed(2) || '0.00';
+            row.cells[10].textContent = pattern.greigeYarnRate.toFixed(1) || '0.0';
+            row.cells[11].textContent = pattern.consumption.toFixed(4) || '0.0000';
+            row.cells[12].textContent = pattern.yarnCost.toFixed(2) || '0.00';
+            row.cells[13].textContent = pattern.colorCost.toFixed(2) || '0.00';
+            row.cells[14].textContent = pattern.warpTotalCost.toFixed(2) || '0.00';
+            row.cells[15].textContent = pattern.requiredGreige.toFixed(2) || '0.00';
+            if (row.cells[16]) {
+                row.cells[16].innerHTML = '<button class="btn btn-sm btn-danger remove-row"><i class="fas fa-trash"></i></button>';
+            }
+        }
+    });
+
+    // Add total row - UPDATED for ply column
+    const totalRow = document.createElement('tr');
+    totalRow.className = 'total-row';
+    totalRow.innerHTML = `
+        <td>${(warpDetails.reduce((sum, d) => sum + (d.count || 0), 0) / warpDetails.length || 0).toFixed(2)}</td>
+        <td>${(warpDetails.reduce((sum, d) => sum + (d.ply || 1), 0) / warpDetails.length || 1).toFixed(2)}</td>
+        <td>${(warpDetails.reduce((sum, d) => sum + (d.repeatBreakdown || 0), 0) || 0).toFixed(2)}</td>
+        <td>-</td>
+        <td>${(warpDetails.reduce((sum, d) => sum + (d.denting || 0), 0) / warpDetails.length || 0).toFixed(2)}</td>
+        <td>${(warpDetails.reduce((sum, d) => sum + (d.ratePerLbs || 0), 0) / warpDetails.length || 0).toFixed(2)}</td>
+        <td>${(warpDetails.reduce((sum, d) => sum + (d.dyeingCostPerKg || 0), 0) / warpDetails.length || 0).toFixed(2)}</td>
+        <td>${(warpPatterns.reduce((sum, p) => sum + (p.repeatEndsPerColor || 0), 0) || 0).toFixed(2)}</td>
+        <td>${(warpPatterns.reduce((sum, p) => sum + (p.patternTotalEnds || 0), 0) || 0).toFixed(2)}</td>
+        <td>${(warpPatterns.reduce((sum, p) => sum + (p.dentNumbersInFullWidth || 0), 0) || 0).toFixed(2)}</td>
+        <td>${(warpPatterns.reduce((sum, p) => sum + (p.greigeYarnRate || 0), 0) / warpPatterns.length || 0).toFixed(1)}</td>
+        <td>${(warpPatterns.reduce((sum, p) => sum + (p.consumption || 0), 0) || 0).toFixed(4)}</td>
+        <td>${(warpPatterns.reduce((sum, p) => sum + (p.yarnCost || 0), 0) || 0).toFixed(2)}</td>
+        <td>${(warpPatterns.reduce((sum, p) => sum + (p.colorCost || 0), 0) || 0).toFixed(2)}</td>
+        <td>${(warpPatterns.reduce((sum, p) => sum + (p.warpTotalCost || 0), 0) || 0).toFixed(2)}</td>
+        <td>${(warpPatterns.reduce((sum, p) => sum + (p.requiredGreige || 0), 0) || 0).toFixed(2)}</td>
+        <td>-</td>
+    `;
+    tbody.appendChild(totalRow);
+}
+
+// FIXED: updateWeftCalculationTable to handle ply column
+function updateWeftCalculationTable(results, formData) {
+    const tbody = document.getElementById('weftCalculationTable').querySelector('tbody');
+    if (!tbody) return;
+
+    // Remove existing total row
+    const existingTotalRow = tbody.querySelector('.total-row');
+    if (existingTotalRow) existingTotalRow.remove();
+
+    const weftPatterns = results.weftPatterns.patterns || [];
+    const weftDetails = formData.weftDetails || [];
+
+    // Update existing rows with pattern data
+    Array.from(tbody.querySelectorAll('tr:not(.total-row)')).forEach((row, index) => {
+        const pattern = weftPatterns[index];
+        if (pattern && row.cells.length >= 15) { // Check if row has enough cells
+            // UPDATED: Column indices shifted due to ply column
+            row.cells[7].textContent = pattern.repeatPicksPerColor.toFixed(2) || '0.00';
+            row.cells[8].textContent = pattern.patternTotalPicks.toFixed(2) || '0.00';
+            row.cells[9].textContent = pattern.greigeYarnRate.toFixed(1) || '0.0';
+            row.cells[10].textContent = pattern.consumption.toFixed(4) || '0.0000';
+            row.cells[11].textContent = pattern.yarnCost.toFixed(2) || '0.00';
+            row.cells[12].textContent = pattern.colorCost.toFixed(2) || '0.00';
+            row.cells[13].textContent = pattern.weftTotalCost.toFixed(2) || '0.00';
+            row.cells[14].textContent = pattern.requiredGreige.toFixed(2) || '0.00';
+            if (row.cells[15]) {
+                row.cells[15].innerHTML = '<button class="btn btn-sm btn-danger remove-row"><i class="fas fa-trash"></i></button>';
+            }
+        }
+    });
+
+    // Add total row - UPDATED for ply column
+    const totalRow = document.createElement('tr');
+    totalRow.className = 'total-row';
+    totalRow.innerHTML = `
+        <td>${(weftDetails.reduce((sum, d) => sum + (d.count || 0), 0) / weftDetails.length || 0).toFixed(2)}</td>
+        <td>${(weftDetails.reduce((sum, d) => sum + (d.ply || 1), 0) / weftDetails.length || 1).toFixed(2)}</td>
+        <td>${(weftDetails.reduce((sum, d) => sum + (d.repeatBreakdown || 0), 0) || 0).toFixed(2)}</td>
+        <td>-</td>
+        <td>${(weftDetails.reduce((sum, d) => sum + (d.pickDensity || 0), 0) / weftDetails.length || 0).toFixed(2)}</td>
+        <td>${(weftDetails.reduce((sum, d) => sum + (d.ratePerLbs || 0), 0) / weftDetails.length || 0).toFixed(2)}</td>
+        <td>${(weftDetails.reduce((sum, d) => sum + (d.dyeingCostPerKg || 0), 0) / weftDetails.length || 0).toFixed(2)}</td>
+        <td>${(weftPatterns.reduce((sum, p) => sum + (p.repeatPicksPerColor || 0), 0) || 0).toFixed(2)}</td>
+        <td>${(weftPatterns.reduce((sum, p) => sum + (p.patternTotalPicks || 0), 0) || 0).toFixed(2)}</td>
+        <td>${(weftPatterns.reduce((sum, p) => sum + (p.greigeYarnRate || 0), 0) / weftPatterns.length || 0).toFixed(1)}</td>
+        <td>${(weftPatterns.reduce((sum, p) => sum + (p.consumption || 0), 0) || 0).toFixed(4)}</td>
+        <td>${(weftPatterns.reduce((sum, p) => sum + (p.yarnCost || 0), 0) || 0).toFixed(2)}</td>
+        <td>${(weftPatterns.reduce((sum, p) => sum + (p.colorCost || 0), 0) || 0).toFixed(2)}</td>
+        <td>${(weftPatterns.reduce((sum, p) => sum + (p.weftTotalCost || 0), 0) || 0).toFixed(2)}</td>
+        <td>${(weftPatterns.reduce((sum, p) => sum + (p.requiredGreige || 0), 0) || 0).toFixed(2)}</td>
+        <td>-</td>
+    `;
+    tbody.appendChild(totalRow);
+}
+
+function roundTo(number, decimals) {
+    const value = isFinite(number) ? number : 0;
+    return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+}
+
+function updatePreCostResults(results) {
+    const safeSetValue = (id, value, digits = 2) => {
+        const element = document.getElementById(id);
+        if (element) element.value = isFinite(value) ? value.toFixed(digits) : `0.${'0'.repeat(digits)}`;
+    };
+
+    safeSetValue('warpRepeatSize', results.patternSummary.warpRepeatSize);
+    safeSetValue('weftRepeatSize', results.patternSummary.weftRepeatSize);
+    safeSetValue('warpRepeatNumber', results.patternSummary.warpRepeatNumber);
+    safeSetValue('weftRepeatNumber', results.patternSummary.weftRepeatNumber);
+    safeSetValue('warpRepeatEnds', results.patternSummary.warpRepeatEnds);
+
+    safeSetValue('greigeReqQuantity', results.orderParticulars.greigeReqQuantity);
+    safeSetValue('requiredWarpKg', results.orderParticulars.requiredWarpKg);
+    safeSetValue('requiredWeftKg', results.orderParticulars.requiredWeftKg);
+    safeSetValue('totalRequiredKg', results.orderParticulars.totalRequiredKg);
+    safeSetValue('warpGreigeConsump', results.orderParticulars.warpGreigeConsump, 3);
+    safeSetValue('weftGreigeConsump', results.orderParticulars.weftGreigeConsump, 3);
+    safeSetValue('totalGreigeConsump', results.orderParticulars.totalGreigeConsump, 3);
+    safeSetValue('warpFinishConsump', results.orderParticulars.warpFinishConsump, 3);
+    safeSetValue('weftFinishConsump', results.orderParticulars.weftFinishConsump, 3);
+    safeSetValue('totalFinishConsump', results.orderParticulars.totalFinishConsump, 3);
+    safeSetValue('greigeYarnCostPerYd', results.orderParticulars.greigeYarnCostPerYd);
+    safeSetValue('warpYnCost', results.costBreakdown.warpYnCost);
+    safeSetValue('weftYnCost', results.costBreakdown.weftYnCost);
+    safeSetValue('totalGreigeCost', results.costBreakdown.totalGreigeCost);
+    safeSetValue('yarnDyeCost', results.costBreakdown.yarnDyeCost);
+    safeSetValue('totalYnCost', results.costBreakdown.totalYnCost);
+    safeSetValue('weavingCost', results.costBreakdown.weavingCost);
+    safeSetValue('breakEvenCostYd', results.costBreakdown.breakEvenCostYd);
+    safeSetValue('salesPrice', results.costBreakdown.salesPrice);
+    safeSetValue('upchargeSalesPrice', results.costBreakdown.upchargeSalesPrice);
+
+    safeSetValue('totalGrWarpCost', results.budgetCost.totalGrWarpCost);
+    safeSetValue('totalGrWarpCostPercent', results.budgetCost.totalGrWarpCostPercent);
+    safeSetValue('totalGrWeftCost', results.budgetCost.totalGrWeftCost);
+    safeSetValue('totalGrWeftCostPercent', results.budgetCost.totalGrWeftCostPercent);
+    safeSetValue('graTotalGregCost', results.budgetCost.graTotalGregCost);
+    safeSetValue('graTotalGregCostPercent', results.budgetCost.graTotalGregCostPercent);
+    safeSetValue('totalYDyeingCost', results.budgetCost.totalYDyeingCost);
+    safeSetValue('totalYDyeingCostPercent', results.budgetCost.totalYDyeingCostPercent);
+    safeSetValue('totalWeavingCost', results.budgetCost.totalWeavingCost);
+    safeSetValue('totalWeavingCostPercent', results.budgetCost.totalWeavingCostPercent);
+    safeSetValue('totalDyeFinCost', results.budgetCost.totalDyeFinCost);
+    safeSetValue('totalDyeFinCostPercent', results.budgetCost.totalDyeFinCostPercent);
+    safeSetValue('totalCommercialCost', results.budgetCost.totalCommercialCost);
+    safeSetValue('commercialCostPercent', results.budgetCost.commercialCostPercent);
+    safeSetValue('grandTotalBECost', results.budgetCost.grandTotalBECost);
+    safeSetValue('netBreakEvenCostPerYd', results.budgetCost.netBreakEvenCostPerYd);
+    safeSetValue('netProfitPerYd', results.budgetCost.netProfitPerYd);
+    safeSetValue('grandTotalProfit', results.budgetCost.grandTotalProfit);
+    safeSetValue('grandTotalProfitPercent', results.budgetCost.grandTotalProfitPercent);
+    safeSetValue('totalSalesValue', results.budgetCost.totalSalesValue);
+    safeSetValue('upchargeNetProfit', results.budgetCost.upchargeNetProfit);
+    safeSetValue('upchargeGrandTotalProfit', results.budgetCost.upchargeGrandTotalProfit);
+    safeSetValue('upGrandTotalProfitPercent', results.budgetCost.upGrandTotalProfitPercent);
+    safeSetValue('upchargeTotalSalesValue', results.budgetCost.upchargeTotalSalesValue);
+
+    safeSetValue('totalPreCostTk', results.totalPreCostingValues.totalPreCostTk);
+    safeSetValue('totalPreCostUSD', results.totalPreCostingValues.totalPreCostUSD);
+    safeSetValue('totalUpchargePreCostTk', results.totalPreCostingValues.totalUpchargePreCostTk);
+    safeSetValue('totalUpchargePreCostUSD', results.totalPreCostingValues.totalUpchargePreCostUSD);
+    // NEW: Add USD field updates
+    safeSetValue('totalGreigeYarnCostUSD', results.totalPreCostingValues.totalGreigeYarnCostUSD, 4);
+    safeSetValue('greigeYarnCostPerYdUSD', results.totalPreCostingValues.greigeYarnCostPerYdUSD, 4);
+    safeSetValue('weavingCostUSD', results.totalPreCostingValues.weavingCostUSD, 4);
+    safeSetValue('breakEvenCostUSD', results.totalPreCostingValues.breakEvenCostUSD, 4);
+    safeSetValue('pickRateUSD', results.totalPreCostingValues.pickRateUSD, 4);
+    safeSetValue('totalGreigeCostUSD', results.totalPreCostingValues.totalGreigeCostUSD, 4);
+    safeSetValue('totalWeavingCostUSD', results.totalPreCostingValues.totalWeavingCostUSD, 4);
+    safeSetValue('netBreakEvenCostPerYdUSD', results.totalPreCostingValues.netBreakEvenCostPerYdUSD, 4);
+    safeSetValue('upchargedNetProfitPerYdUSD', results.totalPreCostingValues.upchargedNetProfitPerYdUSD, 4);
+
+    safeSetValue('warpTotalGSM', results.technicalSpecs.warpTotalGSM);
+    safeSetValue('weftTotalGSM', results.technicalSpecs.weftTotalGSM);
+    safeSetValue('totalGSM', results.technicalSpecs.totalGSM);
+    safeSetValue('weightFinishFabric', results.technicalSpecs.weightFinishFabric);
+    safeSetValue('warpCoverFactor', results.technicalSpecs.warpCoverFactor);
+    safeSetValue('weftCoverFactor', results.technicalSpecs.weftCoverFactor);
+    safeSetValue('totalCoverFactor', results.technicalSpecs.totalCoverFactor);
+
+    console.log('Updated currentPreCostingData.warpDetails:', currentPreCostingData?.warpDetails || 'Not available');
+    console.log('Updated currentPreCostingData.weftDetails:', currentPreCostingData?.weftDetails || 'Not available');
+}
+
+function calculateForm() {
+    if (!isLoggedIn) {
+        console.log('User not logged in, skipping calculation');
+        return;
+    }
+    try {
+        if (!currentPreCostingData) {
+            currentPreCostingData = {
+                preCostingData: null,
+                warpDetails: [],
+                weftDetails: []
+            };
+        }
+
+        const formData = getFormData();
+        console.log('Calculating with Form Data:', formData);
+        const results = PreCostingCalculator.calculateFullPreCosting(formData);
+        console.log('Calculation Results:', {
+            orderParticulars: results.orderParticulars,
+            costBreakdown: results.costBreakdown,
+            patternSummary: results.patternSummary,
+            totalPreCostingValues: results.totalPreCostingValues,
+            warpPatterns: results.warpPatterns,
+            weftPatterns: results.weftPatterns
+        });
+        console.log('Budget Costs:', {
+            totalGrWarpCost: results.budgetCost.totalGrWarpCost,
+            totalGrWarpCostPercent: results.budgetCost.totalGrWarpCostPercent,
+            totalGrWeftCost: results.budgetCost.totalGrWeftCost,
+            totalGrWeftCostPercent: results.budgetCost.totalGrWeftCostPercent,
+            graTotalGregCost: results.budgetCost.graTotalGregCost,
+            graTotalGregCostPercent: results.budgetCost.graTotalGregCostPercent,
+            totalYDyeingCost: results.budgetCost.totalYDyeingCost,
+            totalYDyeingCostPercent: results.budgetCost.totalYDyeingCostPercent,
+            totalWeavingCost: results.budgetCost.totalWeavingCost,
+            totalWeavingCostPercent: results.budgetCost.totalWeavingCostPercent,
+            totalDyeFinCost: results.budgetCost.totalDyeFinCost,
+            totalDyeFinCostPercent: results.budgetCost.totalDyeFinCostPercent,
+            totalCommercialCost: results.budgetCost.totalCommercialCost,
+            commercialCostPercent: results.budgetCost.commercialCostPercent,
+            grandTotalBECost: results.budgetCost.grandTotalBECost,
+            netBreakEvenCostPerYd: results.budgetCost.netBreakEvenCostPerYd,
+            netProfitPerYd: results.budgetCost.netProfitPerYd,
+            grandTotalProfit: results.budgetCost.grandTotalProfit,
+            grandTotalProfitPercent: results.budgetCost.grandTotalProfitPercent,
+            totalSalesValue: results.budgetCost.totalSalesValue,
+            upchargeNetProfit: results.budgetCost.upchargeNetProfit,
+            upchargeGrandTotalProfit: results.budgetCost.upchargeGrandTotalProfit,
+            upGrandTotalProfitPercent: results.budgetCost.upGrandTotalProfitPercent,
+            upchargeTotalSalesValue: results.budgetCost.upchargeTotalSalesValue
+        });
+
+        if (currentPreCostingData.preCostingData) {
+            currentPreCostingData.preCostingData = {
+                ...currentPreCostingData.preCostingData,
+                greige_req_quantity: results.orderParticulars.greigeReqQuantity,
+                required_warp_yarn: results.orderParticulars.requiredWarpKg,
+                required_weft_yarn: results.orderParticulars.requiredWeftKg,
+                total_required_yarn: results.orderParticulars.totalRequiredKg,
+                warp_greige_consump: results.orderParticulars.warpGreigeConsump,
+                weft_greige_consump: results.orderParticulars.weftGreigeConsump,
+                total_greige_consump: results.orderParticulars.totalGreigeConsump,
+                warp_finish_consump: results.orderParticulars.warpFinishConsump,
+                weft_finish_consump: results.orderParticulars.weftFinishConsump,
+                total_finish_consump: results.orderParticulars.totalFinishConsump,
+                total_greige_yarn_cost_per_yd: results.orderParticulars.greigeYarnCostPerYd,
+                warp_yarn_cost: results.costBreakdown.warpYnCost,
+                weft_yarn_cost: results.costBreakdown.weftYnCost,
+                greige_cost: results.costBreakdown.totalGreigeCost,
+                yarn_dyeing_cost: results.costBreakdown.yarnDyeCost,
+                total_yarn_cost: results.costBreakdown.totalYnCost,
+                weaving_cost: results.costBreakdown.weavingCost,
+                break_even_cost: results.costBreakdown.breakEvenCostYd,
+                sales_price: results.costBreakdown.salesPrice,
+                upcharged_sales_price: results.costBreakdown.upchargeSalesPrice,
+                total_warp_cost: results.budgetCost.totalGrWarpCost,
+                totalGrWarpCostPercent: results.budgetCost.totalGrWarpCostPercent,
+                total_weft_cost: results.budgetCost.totalGrWeftCost,
+                totalGrWeftCostPercent: results.budgetCost.totalGrWeftCostPercent,
+                total_greige_cost: results.budgetCost.graTotalGregCost,
+                graTotalGregCostPercent: results.budgetCost.graTotalGregCostPercent,
+                total_dyeing_cost: results.budgetCost.totalYDyeingCost,
+                totalYDyeingCostPercent: results.budgetCost.totalYDyeingCostPercent,
+                total_weaving_cost: results.budgetCost.totalWeavingCost,
+                totalWeavingCostPercent: results.budgetCost.totalWeavingCostPercent,
+                total_dye_finish_cost: results.budgetCost.totalDyeFinCost,
+                totalDyeFinCostPercent: results.budgetCost.totalDyeFinCostPercent,
+                total_commercial_cost: results.budgetCost.totalCommercialCost,
+                commercialCostPercent: results.budgetCost.commercialCostPercent,
+                grand_total_break_even_cost: results.budgetCost.grandTotalBECost,
+                net_break_even_cost_per_yd: results.budgetCost.netBreakEvenCostPerYd,
+                net_profit_per_yd: results.budgetCost.netProfitPerYd,
+                grand_total_profit: results.budgetCost.grandTotalProfit,
+                grandTotalProfitPercent: results.budgetCost.grandTotalProfitPercent,
+                total_sales_value: results.budgetCost.totalSalesValue,
+                upcharged_net_profit_per_yd: results.budgetCost.upchargeNetProfit,
+                upcharged_grand_total_profit: results.budgetCost.upchargeGrandTotalProfit,
+                upGrandTotalProfitPercent: results.budgetCost.upGrandTotalProfitPercent,
+                upcharged_total_sales_value: results.budgetCost.upchargeTotalSalesValue,
+                total_pre_cost_tk: results.totalPreCostingValues.totalPreCostTk,
+                total_pre_cost_usd: results.totalPreCostingValues.totalPreCostUSD,
+                total_upcharged_pre_cost_tk: results.totalPreCostingValues.totalUpchargePreCostTk,
+                total_upcharged_pre_cost_usd: results.totalPreCostingValues.totalUpchargePreCostUSD,
+// NEW: Add USD field updates to currentPreCostingData
+total_greige_yarn_cost_usd: results.totalPreCostingValues.totalGreigeYarnCostUSD,
+greige_yarn_cost_per_yd_usd: results.totalPreCostingValues.greigeYarnCostPerYdUSD,
+weaving_cost_usd: results.totalPreCostingValues.weavingCostUSD,
+break_even_cost_usd: results.totalPreCostingValues.breakEvenCostUSD,
+pick_rate_usd: results.totalPreCostingValues.pickRateUSD,
+total_greige_cost_usd: results.totalPreCostingValues.totalGreigeCostUSD,
+total_weaving_cost_usd: results.totalPreCostingValues.totalWeavingCostUSD,
+net_break_even_cost_per_yd_usd: results.totalPreCostingValues.netBreakEvenCostPerYdUSD,
+upcharged_net_profit_per_yd_usd: results.totalPreCostingValues.upchargedNetProfitPerYdUSD
+            };
+        }
+
+        updateWarpCalculationTable(results, formData);
+        updateWeftCalculationTable(results, formData);
+        updatePreCostResults(results);
+        console.log('Form calculation completed successfully');
+    } catch (error) {
+        console.error('Error during calculation:', error);
+        alert('An error occurred during calculation. Please check your inputs.');
+    }
+}
+
+async function populatePreCostingDropdown() {
+    if (!isLoggedIn) {
+        console.log('User not logged in, skipping dropdown population');
+        return;
+    }
+    try {
+        const response = await fetch('/main/api/precosting/pre-costing-numbers');
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Failed to fetch pre-costing numbers');
+
+        const dropdown = document.getElementById('preCostingDropdown');
+        dropdown.innerHTML = '<option value="">Select Pre-costing No</option>';
+        if (data && data.length > 0) {
+            data.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.pre_costing_no;
+                option.textContent = item.pre_costing_no;
+                dropdown.appendChild(option);
+            });
+            console.log('Dropdown populated with', data.length, 'options:', data);
+        } else {
+            console.log('No pre-costing numbers found in database');
+        }
+    } catch (error) {
+        console.error('Error populating dropdown:', error);
+        alert('Failed to load pre-costing numbers: ' + error.message);
+        const dropdown = document.getElementById('preCostingDropdown');
+        dropdown.innerHTML = '<option value="">Select Pre-costing No (Offline)</option>';
+    }
+}
+
+// FIXED: searchPreCosting function to populate ply fields
+async function searchPreCosting() {
+    if (!isLoggedIn) {
+        alert('Please log in to perform this action.');
+        return;
+    }
+    const selectedPreCostingNo = document.getElementById('preCostingDropdown').value;
+    if (!selectedPreCostingNo) {
+        alert('Please select a Pre-costing No to search.');
+        return;
+    }
+
+    try {
+        console.log('Searching for pre-costing No:', selectedPreCostingNo);
+        const encodedPreCostingNo = selectedPreCostingNo.replace(/\//g, '%2F');
+        const url = `/main/api/precosting/search/${encodeURIComponent(selectedPreCostingNo)}`;
+        console.log('Fetching URL:', url);
+        const response = await fetch(url);
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+            const text = await response.text();
+            console.log('Raw response:', text);
+            throw new Error(`HTTP error! Status: ${response.status}, Response: ${text}`);
+        }
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            throw new Error(`Expected JSON, but received: ${text}`);
+        }
+
+        const result = await response.json();
+        console.log('Search API response:', result);
+
+        const { preCostingData: data, warpDetails: warpData, weftDetails: weftData } = result;
+
+        // Parse warp data with ply
+        const parsedWarpData = warpData.map(detail => ({
+            ...detail,
+            warp_count: parseFloat(detail.warp_count) || 0,
+            warp_ply: parseFloat(detail.warp_ply) || 1, // NEW: Handle ply
+            repeat_breakdown: parseFloat(detail.repeat_breakdown) || 0,
+            denting: parseFloat(detail.denting) || 0,
+            rate_per_lbs: parseFloat(detail.rate_per_lbs) || 0,
+            dyeing_cost_per_kg: parseFloat(detail.dyeing_cost_per_kg) || 0,
+            repeat_ends_per_color: parseFloat(detail.repeat_ends_per_color) || 0,
+            pattern_total_ends: parseFloat(detail.pattern_total_ends) || 0,
+            dent_numbers_in_full_width: parseFloat(detail.dent_numbers_in_full_width) || 0,
+            greige_yarn_rate: parseFloat(detail.greige_yarn_rate) || 0,
+            consumption: parseFloat(detail.consumption) || 0,
+            yarn_cost: parseFloat(detail.yarn_cost) || 0,
+            color_cost: parseFloat(detail.color_cost) || 0,
+            warp_total_cost: parseFloat(detail.warp_total_cost) || 0,
+            required_greige: parseFloat(detail.required_greige) || 0
+        }));
+
+        // Parse weft data with ply
+        const parsedWeftData = weftData.map(detail => ({
+            ...detail,
+            weft_count: parseFloat(detail.weft_count) || 0,
+            weft_ply: parseFloat(detail.weft_ply) || 1, // NEW: Handle ply
+            repeat_breakdown: parseFloat(detail.repeat_breakdown) || 0,
+            pick_density: parseFloat(detail.pick_density) || 0,
+            rate_per_lbs: parseFloat(detail.rate_per_lbs) || 0,
+            dyeing_cost_per_kg: parseFloat(detail.dyeing_cost_per_kg) || 0,
+            repeat_picks_per_color: parseFloat(detail.repeat_picks_per_color) || 0,
+            pattern_total_picks: parseFloat(detail.pattern_total_picks) || 0,
+            greige_yarn_rate: parseFloat(detail.greige_yarn_rate) || 0,
+            consumption: parseFloat(detail.consumption) || 0,
+            yarn_cost: parseFloat(detail.yarn_cost) || 0,
+            color_cost: parseFloat(detail.color_cost) || 0,
+            weft_total_cost: parseFloat(detail.weft_total_cost) || 0,
+            required_greige: parseFloat(detail.required_greige) || 0
+        }));
+
+        currentPreCostingData = {
+            preCostingData: data,
+            warpDetails: parsedWarpData,
+            weftDetails: parsedWeftData
+        };
+
+        // Populate basic form fields
+        document.getElementById('preCostingNo').value = data.pre_costing_no || '';
+        document.getElementById('buyer').value = data.buyer || '';
+        document.getElementById('construction').value = data.construction || '';
+        document.getElementById('finishWidth').value = data.finish_width || '';
+        document.getElementById('totalEnds').value = data.total_ends || '';
+        document.getElementById('warpCrimp').value = data.warp_crimp || '';
+        document.getElementById('ydAllow').value = data.yd_allow || '';
+        document.getElementById('warpWast').value = data.warp_wast || '';
+        document.getElementById('weftWast').value = data.weft_wast || '';
+        document.getElementById('finishAllow').value = data.finish_allow || '';
+        document.getElementById('weavingPickRate').value = data.weaving_rate || '';
+        document.getElementById('dyeingFinishingRate').value = data.dye_finish_rate || '';
+        document.getElementById('commercialCostInput').value = data.commercial_cost || '';
+        document.getElementById('profit').value = data.profit || '';
+        document.getElementById('epi').value = data.epi || '';
+        document.getElementById('ppi').value = data.ppi || '';
+        document.getElementById('weaveType').value = data.weave_type || '';
+        document.getElementById('greigeWidth').value = data.greige_width || '';
+        document.getElementById('weftCrimp').value = data.weft_crimp || '';
+        document.getElementById('orderQuantity').value = data.order_quantity || '';
+        document.getElementById('pickLength').value = data.pick_length || '';
+        document.getElementById('dollarRateTk').value = data.dollar_rate_tk || '';
+
+        // NEW: Populate Basic Information ply fields
+        document.getElementById('warpCount1').value = data.warp_count_1 || '';
+        document.getElementById('warpPly1').value = data.warp_ply_1 || '';
+        document.getElementById('warpCount2').value = data.warp_count_2 || '';
+        document.getElementById('warpPly2').value = data.warp_ply_2 || '';
+        document.getElementById('warpCount3').value = data.warp_count_3 || '';
+        document.getElementById('warpPly3').value = data.warp_ply_3 || '';
+        document.getElementById('weftCount1').value = data.weft_count_1 || '';
+        document.getElementById('weftPly1').value = data.weft_ply_1 || '';
+        document.getElementById('weftCount2').value = data.weft_count_2 || '';
+        document.getElementById('weftPly2').value = data.weft_ply_2 || '';
+        document.getElementById('weftCount3').value = data.weft_count_3 || '';
+        document.getElementById('weftPly3').value = data.weft_ply_3 || '';
+        
+        
+        if (data.pre_costing_date) {
+            const date = new Date(data.pre_costing_date);
+            const formattedDate = date.toISOString().split('T')[0];
+            document.getElementById('preCostingDate').value = formattedDate;
+        } else {
+            document.getElementById('preCostingDate').value = '';
+        }
+
+        // Populate all calculated result fields
+        document.getElementById('greigeReqQuantity').value = data.greige_req_quantity || '';
+        document.getElementById('requiredWarpKg').value = data.required_warp_yarn || '';
+        document.getElementById('requiredWeftKg').value = data.required_weft_yarn || '';
+        document.getElementById('totalRequiredKg').value = data.total_required_yarn || '';
+        document.getElementById('warpGreigeConsump').value = data.warp_greige_consump || '';
+        document.getElementById('weftGreigeConsump').value = data.weft_greige_consump || '';
+        document.getElementById('totalGreigeConsump').value = data.total_greige_consump || '';
+        document.getElementById('warpFinishConsump').value = data.warp_finish_consump || '';
+        document.getElementById('weftFinishConsump').value = data.weft_finish_consump || '';
+        document.getElementById('totalFinishConsump').value = data.total_finish_consump || '';
+        document.getElementById('greigeYarnCostPerYd').value = data.total_greige_yarn_cost_per_yd || '';
+        document.getElementById('warpYnCost').value = data.warp_yarn_cost || '';
+        document.getElementById('weftYnCost').value = data.weft_yarn_cost || '';
+        document.getElementById('totalGreigeCost').value = data.greige_cost || '';
+        document.getElementById('yarnDyeCost').value = data.yarn_dyeing_cost || '';
+        document.getElementById('totalYnCost').value = data.total_yarn_cost || '';
+        document.getElementById('weavingCost').value = data.weaving_cost || '';
+        document.getElementById('breakEvenCostYd').value = data.break_even_cost || '';
+        document.getElementById('salesPrice').value = data.sales_price || '';
+        document.getElementById('upchargeSalesPrice').value = data.upcharged_sales_price || '';
+        document.getElementById('totalGrWarpCost').value = data.total_warp_cost || '';
+        document.getElementById('totalGrWeftCost').value = data.total_weft_cost || '';
+        document.getElementById('graTotalGregCost').value = data.total_greige_cost || '';
+        document.getElementById('totalYDyeingCost').value = data.total_dyeing_cost || '';
+        document.getElementById('totalWeavingCost').value = data.total_weaving_cost || '';
+        document.getElementById('totalDyeFinCost').value = data.total_dye_finish_cost || '';
+        document.getElementById('totalCommercialCost').value = data.total_commercial_cost || '';
+        document.getElementById('grandTotalBECost').value = data.grand_total_break_even_cost || '';
+        document.getElementById('netBreakEvenCostPerYd').value = data.net_break_even_cost_per_yd || '';
+        document.getElementById('netProfitPerYd').value = data.net_profit_per_yd || '';
+        document.getElementById('grandTotalProfit').value = data.grand_total_profit || '';
+        document.getElementById('totalSalesValue').value = data.total_sales_value || '';
+        document.getElementById('upchargeNetProfit').value = data.upcharged_net_profit_per_yd || '';
+        document.getElementById('upchargeGrandTotalProfit').value = data.upcharged_grand_total_profit || '';
+        document.getElementById('upchargeTotalSalesValue').value = data.upcharged_total_sales_value || '';
+        document.getElementById('totalPreCostTk').value = data.total_pre_cost_tk || '';
+        document.getElementById('totalPreCostUSD').value = data.total_pre_cost_usd || '';
+        document.getElementById('totalUpchargePreCostTk').value = data.total_upcharged_pre_cost_tk || '';
+        document.getElementById('totalUpchargePreCostUSD').value = data.total_upcharged_pre_cost_usd || '';
+
+       // NEW: Populate USD fields
+        document.getElementById('totalGreigeYarnCostUSD').value = data.total_greige_yarn_cost_usd || '';
+        document.getElementById('greigeYarnCostPerYdUSD').value = data.greige_yarn_cost_per_yd_usd || '';
+        document.getElementById('weavingCostUSD').value = data.weaving_cost_usd || '';
+        document.getElementById('breakEvenCostUSD').value = data.break_even_cost_usd || '';
+        document.getElementById('pickRateUSD').value = data.pick_rate_usd || '';
+        document.getElementById('totalGreigeCostUSD').value = data.total_greige_cost_usd || '';
+        document.getElementById('totalWeavingCostUSD').value = data.total_weaving_cost_usd || '';
+        document.getElementById('netBreakEvenCostPerYdUSD').value = data.net_break_even_cost_per_yd_usd || '';
+        document.getElementById('upchargedNetProfitPerYdUSD').value = data.upcharged_net_profit_per_yd_usd || '';
+
+        // Clear and repopulate tables
+        const warpTbody = document.getElementById('warpCalculationTable').querySelector('tbody');
+        const weftTbody = document.getElementById('weftCalculationTable').querySelector('tbody');
+        warpTbody.innerHTML = '';
+        weftTbody.innerHTML = '';
+
+        // Populate warp table with ply data
+        if (parsedWarpData && parsedWarpData.length > 0) {
+            parsedWarpData.forEach(warpDetail => {
+                const newRow = document.createElement('tr');
+                newRow.className = 'pattern-row';
+                newRow.innerHTML = `
+                    <td><input type="number" class="form-control" name="warp_count" value="${warpDetail.warp_count || ''}" step="0.01" min="0"></td>
+                    <td><input type="number" class="form-control" name="warp_ply" value="${warpDetail.warp_ply || 1}" step="1" min="1"></td>
+                    <td><input type="number" class="form-control" name="repeat_breakdown" value="${warpDetail.repeat_breakdown || ''}" step="0.01" min="0"></td>
+                    <td><input type="text" class="form-control" name="color_name" value="${warpDetail.color_name || ''}"></td>
+                    <td><input type="number" class="form-control" name="denting" value="${warpDetail.denting || ''}" step="0.01" min="0"></td>
+                    <td><input type="number" class="form-control" name="rate_per_lbs" value="${warpDetail.rate_per_lbs || ''}" step="0.01" min="0"></td>
+                    <td><input type="number" class="form-control" name="dyeing_cost_per_kg" value="${warpDetail.dyeing_cost_per_kg || ''}" step="0.01" min="0"></td>
+                    <td class="result-cell">${warpDetail.repeat_ends_per_color.toFixed(2) || '0.00'}</td>
+                    <td class="result-cell">${warpDetail.pattern_total_ends.toFixed(2) || '0.00'}</td>
+                    <td class="result-cell">${warpDetail.dent_numbers_in_full_width.toFixed(2) || '0.00'}</td>
+                    <td class="result-cell">${warpDetail.greige_yarn_rate.toFixed(1) || '0.0'}</td>
+                    <td class="result-cell">${warpDetail.consumption.toFixed(4) || '0.0000'}</td>
+                    <td class="result-cell">${warpDetail.yarn_cost.toFixed(2) || '0.00'}</td>
+                    <td class="result-cell">${warpDetail.color_cost.toFixed(2) || '0.00'}</td>
+                    <td class="result-cell">${warpDetail.warp_total_cost.toFixed(2) || '0.00'}</td>
+                    <td class="result-cell">${warpDetail.required_greige.toFixed(2) || '0.00'}</td>
+                    <td><button class="btn btn-sm btn-danger remove-row"><i class="fas fa-trash"></i></button></td>
+                `;
+                warpTbody.appendChild(newRow);
+            });
+        } else {
+            addEmptyWarpRow(warpTbody);
+        }
+
+        // Populate weft table with ply data
+        if (parsedWeftData && parsedWeftData.length > 0) {
+            parsedWeftData.forEach(weftDetail => {
+                const newRow = document.createElement('tr');
+                newRow.className = 'pattern-row';
+                newRow.innerHTML = `
+                    <td><input type="number" class="form-control" name="weft_count" value="${weftDetail.weft_count || ''}" step="0.01" min="0"></td>
+                    <td><input type="number" class="form-control" name="weft_ply" value="${weftDetail.weft_ply || 1}" step="1" min="1"></td>
+                    <td><input type="number" class="form-control" name="repeat_breakdown" value="${weftDetail.repeat_breakdown || ''}" step="0.01" min="0"></td>
+                    <td><input type="text" class="form-control" name="color_name" value="${weftDetail.color_name || ''}"></td>
+                    <td><input type="number" class="form-control" name="pick_density" value="${weftDetail.pick_density || ''}" step="0.01" min="0"></td>
+                    <td><input type="number" class="form-control" name="rate_per_lbs" value="${weftDetail.rate_per_lbs || ''}" step="0.01" min="0"></td>
+                    <td><input type="number" class="form-control" name="dyeing_cost_per_kg" value="${weftDetail.dyeing_cost_per_kg || ''}" step="0.01" min="0"></td>
+                    <td class="result-cell">${weftDetail.repeat_picks_per_color.toFixed(2) || '0.00'}</td>
+                    <td class="result-cell">${weftDetail.pattern_total_picks.toFixed(2) || '0.00'}</td>
+                    <td class="result-cell">${weftDetail.greige_yarn_rate.toFixed(1) || '0.0'}</td>
+                    <td class="result-cell">${weftDetail.consumption.toFixed(4) || '0.0000'}</td>
+                    <td class="result-cell">${weftDetail.yarn_cost.toFixed(2) || '0.00'}</td>
+                    <td class="result-cell">${weftDetail.color_cost.toFixed(2) || '0.00'}</td>
+                    <td class="result-cell">${weftDetail.weft_total_cost.toFixed(2) || '0.00'}</td>
+                    <td class="result-cell">${weftDetail.required_greige.toFixed(2) || '0.00'}</td>
+                    <td><button class="btn btn-sm btn-danger remove-row"><i class="fas fa-trash"></i></button></td>
+                `;
+                weftTbody.appendChild(newRow);
+            });
+        } else {
+            addEmptyWeftRow(weftTbody);
+        }
+
+        calculateForm();
+    } catch (error) {
+        console.error('Error searching pre-costing:', error);
+        alert(`Failed to load pre-costing data: ${error.message}`);
+    }
+}
+
+// Saving precosting data to cPanel MySQL database
+async function saveToPostgreSQL() {
+    if (!isLoggedIn) {
+        alert('Please log in to perform this action.');
+        return;
+    }
+
+    const preCostingNo = document.getElementById('preCostingNo').value;
+    if (!preCostingNo) {
+        alert('Pre-costing No is required.');
+        return;
+    }
+
+    calculateForm();
+    const formData = getFormData();
+    const results = PreCostingCalculator.calculateFullPreCosting(formData);
+
+    const isUpdate = currentPreCostingData?.preCostingData?.pre_costing_no === preCostingNo;
+
+    try {
+        console.log('Debug: results.orderParticulars', results.orderParticulars);
+        const dataToSave = {
+            pre_costing_no: preCostingNo,
+            buyer: formData.buyer || '',
+            construction: formData.construction || '',
+            finish_width: roundTo(results.inputSummary.finishWidth, 2),
+            total_ends: roundTo(results.inputSummary.totalEnds, 2),
+            warp_crimp: roundTo(results.inputSummary.warpCrimp, 2),
+            yd_allow: roundTo(results.inputSummary.ydAllow, 2),
+            warp_wast: roundTo(results.inputSummary.warpWast, 2),
+            weft_wast: roundTo(results.inputSummary.weftWast, 2),
+            finish_allow: roundTo(results.inputSummary.finishAllow, 2),
+            weaving_rate: roundTo(results.inputSummary.weavingPickRate, 2),
+            dye_finish_rate: roundTo(results.inputSummary.dyeingFinishingRate, 2),
+            commercial_cost: roundTo(results.inputSummary.commercialCostInput, 2),
+            profit: roundTo(results.inputSummary.profit, 2),
+            greige_req_quantity: roundTo(results.orderParticulars.greigeReqQuantity || 0, 2),
+            required_warp_yarn: roundTo(results.orderParticulars.requiredWarpKg || 0, 2),
+            required_weft_yarn: roundTo(results.orderParticulars.requiredWeftKg || 0, 2),
+            total_required_yarn: roundTo(results.orderParticulars.totalRequiredKg || 0, 2),
+            warp_greige_consump: roundTo(results.orderParticulars.warpGreigeConsump || 0, 3),
+            weft_greige_consump: roundTo(results.orderParticulars.weftGreigeConsump || 0, 3),
+            total_greige_consump: roundTo(results.orderParticulars.totalGreigeConsump || 0, 3),
+            warp_finish_consump: roundTo(results.orderParticulars.warpFinishConsump || 0, 3),
+            weft_finish_consump: roundTo(results.orderParticulars.weftFinishConsump || 0, 3),
+            total_finish_consump: roundTo(results.orderParticulars.totalFinishConsump || 0, 3),
+            total_greige_yarn_cost_per_yd: roundTo(results.orderParticulars.greigeYarnCostPerYd || 0, 2),
+            warp_yarn_cost: roundTo(results.costBreakdown.warpYnCost || 0, 2),
+            weft_yarn_cost: roundTo(results.costBreakdown.weftYnCost || 0, 2),
+            greige_cost: roundTo(results.costBreakdown.totalGreigeCost || 0, 2),
+            yarn_dyeing_cost: roundTo(results.costBreakdown.yarnDyeCost || 0, 2),
+            total_yarn_cost: roundTo(results.costBreakdown.totalYnCost || 0, 2),
+            weaving_cost: roundTo(results.costBreakdown.weavingCost || 0, 2),
+            break_even_cost: roundTo(results.costBreakdown.breakEvenCostYd || 0, 2),
+            sales_price: roundTo(results.costBreakdown.salesPrice || 0, 2),
+            upcharged_sales_price: roundTo(results.costBreakdown.upchargeSalesPrice || 0, 2),
+            total_warp_cost: roundTo(results.budgetCost.totalGrWarpCost || 0, 2),
+            total_weft_cost: roundTo(results.budgetCost.totalGrWeftCost || 0, 2),
+            total_greige_cost: roundTo(results.budgetCost.graTotalGregCost || 0, 2),
+            total_dyeing_cost: roundTo(results.budgetCost.totalYDyeingCost || 0, 2),
+            total_weaving_cost: roundTo(results.budgetCost.totalWeavingCost || 0, 2),
+            total_dye_finish_cost: roundTo(results.budgetCost.totalDyeFinCost || 0, 2),
+            total_commercial_cost: roundTo(results.budgetCost.totalCommercialCost || 0, 2),
+            grand_total_break_even_cost: roundTo(results.budgetCost.grandTotalBECost || 0, 2),
+            net_break_even_cost_per_yd: roundTo(results.budgetCost.netBreakEvenCostPerYd || 0, 2),
+            net_profit_per_yd: roundTo(results.budgetCost.netProfitPerYd || 0, 2),
+            grand_total_profit: roundTo(results.budgetCost.grandTotalProfit || 0, 2),
+            total_sales_value: roundTo(results.budgetCost.totalSalesValue || 0, 2),
+            upcharged_net_profit_per_yd: roundTo(results.budgetCost.upchargeNetProfit || 0, 2),
+            upcharged_grand_total_profit: roundTo(results.budgetCost.upchargeGrandTotalProfit || 0, 2),
+            upcharged_total_sales_value: roundTo(results.budgetCost.upchargeTotalSalesValue || 0, 2),
+            total_pre_cost_tk: roundTo(results.totalPreCostingValues.totalPreCostTk || 0, 2),
+            total_pre_cost_usd: roundTo(results.totalPreCostingValues.totalPreCostUSD || 0, 2),
+            total_upcharged_pre_cost_tk: roundTo(results.totalPreCostingValues.totalUpchargePreCostTk || 0, 2),
+            total_upcharged_pre_cost_usd: roundTo(results.totalPreCostingValues.totalUpchargePreCostUSD || 0, 2),
+            epi: roundTo(results.inputSummary.epi, 2),
+            ppi: roundTo(results.inputSummary.ppi, 2),
+            weave_type: results.inputSummary.weaveType || '',
+            greige_width: roundTo(formData.greigeWidth, 2),
+            weft_crimp: roundTo(results.inputSummary.weftCrimp, 2),
+            order_quantity: results.inputSummary.orderQuantity || 0,
+            pick_length: roundTo(results.inputSummary.pickLength, 2),
+            dollar_rate_tk: roundTo(results.inputSummary.dollarRateTk, 2),
+            pre_costing_date: results.inputSummary.preCostingDate || new Date().toISOString().split('T')[0],
+            // NEW: Add ply fields from Basic Information
+            warp_count_1: formData.warpCount1 || null,
+            warp_ply_1: formData.warpPly1 || null,
+            warp_count_2: formData.warpCount2 || null,
+            warp_ply_2: formData.warpPly2 || null,
+            warp_count_3: formData.warpCount3 || null,
+           warp_ply_3: formData.warpPly3 || null,
+           weft_count_1: formData.weftCount1 || null,
+           weft_ply_1: formData.weftPly1 || null,
+           weft_count_2: formData.weftCount2 || null,
+           weft_ply_2: formData.weftPly2 || null,
+           weft_count_3: formData.weftCount3 || null,
+           weft_ply_3: formData.weftPly3 || null,
+           
+          
+           total_greige_yarn_cost_usd: roundTo(results.totalPreCostingValues.totalGreigeYarnCostUSD || 0, 4),
+           greige_yarn_cost_per_yd_usd: roundTo(results.totalPreCostingValues.greigeYarnCostPerYdUSD || 0, 4),
+           weaving_cost_usd: roundTo(results.totalPreCostingValues.weavingCostUSD || 0, 4),
+           break_even_cost_usd: roundTo(results.totalPreCostingValues.breakEvenCostUSD || 0, 4),
+           pick_rate_usd: roundTo(results.totalPreCostingValues.pickRateUSD || 0, 4),
+           total_greige_cost_usd: roundTo(results.totalPreCostingValues.totalGreigeCostUSD || 0, 4),
+           total_weaving_cost_usd: roundTo(results.totalPreCostingValues.totalWeavingCostUSD || 0, 4),
+           net_break_even_cost_per_yd_usd: roundTo(results.totalPreCostingValues.netBreakEvenCostPerYdUSD || 0, 4),
+           upcharged_net_profit_per_yd_usd: roundTo(results.totalPreCostingValues.upchargedNetProfitPerYdUSD || 0, 4)
+       };
+
+       // UPDATED: Add ply to warp details
+       let warpDetailsToSave = formData.warpDetails.map((detail, index) => {
+           const pattern = results.warpPatterns.patterns[index] || {};
+           return {
+               pre_costing_no: preCostingNo,
+               warp_count: detail.count || 0,
+               warp_ply: detail.ply || 1, // NEW: Include ply
+               repeat_breakdown: detail.repeatBreakdown || 0,
+               color_name: detail.colorName || '',
+               denting: detail.denting || 0,
+               rate_per_lbs: roundTo(detail.ratePerLbs, 2),
+               dyeing_cost_per_kg: roundTo(detail.dyeingCostPerKg, 2),
+               repeat_ends_per_color: roundTo(pattern.repeatEndsPerColor, 2),
+               pattern_total_ends: roundTo(pattern.patternTotalEnds, 2),
+               dent_numbers_in_full_width: roundTo(pattern.dentNumbersInFullWidth, 2),
+               greige_yarn_rate: roundTo(pattern.greigeYarnRate, 2),
+               consumption: roundTo(pattern.consumption, 4),
+               yarn_cost: roundTo(pattern.yarnCost, 2),
+               color_cost: roundTo(pattern.colorCost, 2),
+               warp_total_cost: roundTo(pattern.warpTotalCost, 2),
+               required_greige: roundTo(pattern.requiredGreige, 2)
+           };
+       });
+
+       // UPDATED: Add ply to weft details
+       let weftDetailsToSave = formData.weftDetails.map((detail, index) => {
+           const pattern = results.weftPatterns.patterns[index] || {};
+           return {
+               pre_costing_no: preCostingNo,
+               weft_count: detail.count || 0,
+               weft_ply: detail.ply || 1, // NEW: Include ply
+               repeat_breakdown: detail.repeatBreakdown || 0,
+               color_name: detail.colorName || '',
+               pick_density: detail.pickDensity || 0,
+               rate_per_lbs: roundTo(detail.ratePerLbs, 2),
+               dyeing_cost_per_kg: roundTo(detail.dyeingCostPerKg, 2),
+               repeat_picks_per_color: roundTo(pattern.repeatPicksPerColor, 2),
+               pattern_total_picks: roundTo(pattern.patternTotalPicks, 2),
+               greige_yarn_rate: roundTo(pattern.greigeYarnRate, 2),
+               consumption: roundTo(pattern.consumption, 4),
+               yarn_cost: roundTo(pattern.yarnCost, 2),
+               color_cost: roundTo(pattern.colorCost, 2),
+               weft_total_cost: roundTo(pattern.weftTotalCost, 2),
+               required_greige: roundTo(pattern.requiredGreige, 2)
+           };
+       });
+
+       // Ensure at least one empty record exists if no details provided
+       if (warpDetailsToSave.length === 0) {
+           warpDetailsToSave.push({
+               pre_costing_no: preCostingNo,
+               warp_count: 0,
+               warp_ply: 1, // NEW: Default ply
+               repeat_breakdown: 0,
+               color_name: '',
+               denting: 0,
+               rate_per_lbs: 0,
+               dyeing_cost_per_kg: 0,
+               repeat_ends_per_color: 0,
+               pattern_total_ends: 0,
+               dent_numbers_in_full_width: 0,
+               greige_yarn_rate: 0,
+               consumption: 0,
+               yarn_cost: 0,
+               color_cost: 0,
+               warp_total_cost: 0,
+               required_greige: 0
+           });
+       }
+
+       if (weftDetailsToSave.length === 0) {
+           weftDetailsToSave.push({
+               pre_costing_no: preCostingNo,
+               weft_count: 0,
+               weft_ply: 1, // NEW: Default ply
+               repeat_breakdown: 0,
+               color_name: '',
+               pick_density: 0,
+               rate_per_lbs: 0,
+               dyeing_cost_per_kg: 0,
+               repeat_picks_per_color: 0,
+               pattern_total_picks: 0,
+               greige_yarn_rate: 0,
+               consumption: 0,
+               yarn_cost: 0,
+               color_cost: 0,
+               weft_total_cost: 0,
+               required_greige: 0
+           });
+       }
+
+       console.log('Sending data to backend:', {
+           preCostingData: dataToSave,
+           warpDetails: warpDetailsToSave,
+           weftDetails: weftDetailsToSave,
+           operation: isUpdate ? 'update' : 'insert'
+       });
+
+       const response = await fetch('/main/api/precosting/save', {
+           method: 'POST',
+           headers: {
+               'Content-Type': 'application/json',
+           },
+           body: JSON.stringify({
+               preCostingData: dataToSave,
+               warpDetails: warpDetailsToSave,
+               weftDetails: weftDetailsToSave,
+               operation: isUpdate ? 'update' : 'insert'
+           }),
+       });
+
+       const result = await response.json();
+       if (!response.ok) {
+           console.error('Backend response:', result);
+           throw new Error(result.error || 'Failed to save data');
+       }
+
+       await populatePreCostingDropdown();
+       currentPreCostingData = null;
+       alert(`Data ${isUpdate ? 'updated' : 'saved'} successfully to MySQL!`);
+       console.log(`Data ${isUpdate ? 'updated' : 'saved'} successfully with pre_costing_no:`, preCostingNo);
+   } catch (error) {
+       console.error('Error saving to MySQL:', error);
+       alert(`Failed to save data: ${error.message}`);
+   }
+}
+
+
+// UPDATED: Export to CSV with ply and USD fields
+function exportToCSV() {
+    if (!isLoggedIn) {
+        alert('Please log in to perform this action.');
+        return;
+    }
+
+    calculateForm();
+
+    if (!currentPreCostingData) {
+        alert('No pre-costing data loaded. Please search for a pre-costing number or load data first.');
+        return;
+    }
+
+    const { preCostingData, warpDetails, weftDetails } = currentPreCostingData;
+
+    // Calculate Warp Details totals
+    const warpTotals = {
+        warp_count: 0,
+        warp_ply: 0,
+        pattern_total_ends: 0,
+        dent_numbers_in_full_width: 0,
+        greige_yarn_rate: 0,
+        consumption: 0,
+        yarn_cost: 0,
+        color_cost: 0,
+        warp_total_cost: 0,
+        required_greige: 0
+    };
+    warpDetails.forEach(detail => {
+        warpTotals.warp_count += parseFloat(detail.warp_count) || 0;
+        warpTotals.warp_ply += parseFloat(detail.warp_ply) || 1;
+        warpTotals.pattern_total_ends += parseFloat(detail.pattern_total_ends) || 0;
+        warpTotals.dent_numbers_in_full_width += parseFloat(detail.dent_numbers_in_full_width) || 0;
+        warpTotals.greige_yarn_rate += parseFloat(detail.greige_yarn_rate) || 0;
+        warpTotals.consumption += parseFloat(detail.consumption) || 0;
+        warpTotals.yarn_cost += parseFloat(detail.yarn_cost) || 0;
+        warpTotals.color_cost += parseFloat(detail.color_cost) || 0;
+        warpTotals.warp_total_cost += parseFloat(detail.warp_total_cost) || 0;
+        warpTotals.required_greige += parseFloat(detail.required_greige) || 0;
+    });
+
+    // Calculate Weft Details totals
+    const weftTotals = {
+        weft_count: 0,
+        weft_ply: 0,
+        pattern_total_picks: 0,
+        greige_yarn_rate: 0,
+        consumption: 0,
+        yarn_cost: 0,
+        color_cost: 0,
+        weft_total_cost: 0,
+        required_greige: 0
+    };
+    weftDetails.forEach(detail => {
+        weftTotals.weft_count += parseFloat(detail.weft_count) || 0;
+        weftTotals.weft_ply += parseFloat(detail.weft_ply) || 1;
+        weftTotals.pattern_total_picks += parseFloat(detail.pattern_total_picks) || 0;
+        weftTotals.greige_yarn_rate += parseFloat(detail.greige_yarn_rate) || 0;
+        weftTotals.consumption += parseFloat(detail.consumption) || 0;
+        weftTotals.yarn_cost += parseFloat(detail.yarn_cost) || 0;
+        weftTotals.color_cost += parseFloat(detail.color_cost) || 0;
+        weftTotals.weft_total_cost += parseFloat(detail.weft_total_cost) || 0;
+        weftTotals.required_greige += parseFloat(detail.required_greige) || 0;
+    });
+
+    // CSV content
+    let csvContent = '';
+
+    // Pre-costing Data with new ply fields
+    csvContent += 'Pre Costing Data\n';
+    csvContent += 'Pre Costing No,Buyer,Construction,Finish Width,Total Ends,Warp Crimp,YD Allow,Warp Wast,Weft Wast,Finish Allow,Weaving Pick Rate,Dyeing Finishing Rate,Commercial Cost,Profit,Order Quantity,Pick Length,Pre Costing Date,Dollar Rate Tk,EPI,PPI,Weave Type,Weft Crimp,Greige Width,Warp Count 1,Warp Ply 1,Warp Count 2,Warp Ply 2,Warp Count 3,Warp Ply 3,Weft Count 1,Weft Ply 1,Weft Count 2,Weft Ply 2,Weft Count 3,Weft Ply 3\n';
+    csvContent += `${preCostingData.pre_costing_no},${preCostingData.buyer},${preCostingData.construction},${preCostingData.finish_width},${preCostingData.total_ends},${preCostingData.warp_crimp},${preCostingData.yd_allow},${preCostingData.warp_wast},${preCostingData.weft_wast},${preCostingData.finish_allow},${preCostingData.weaving_rate},${preCostingData.dye_finish_rate},${preCostingData.commercial_cost},${preCostingData.profit},${preCostingData.order_quantity},${preCostingData.pick_length},${preCostingData.pre_costing_date},${preCostingData.dollar_rate_tk},${preCostingData.epi},${preCostingData.ppi},${preCostingData.weave_type},${preCostingData.weft_crimp},${preCostingData.greige_width},${preCostingData.warp_count_1 || ''},${preCostingData.warp_ply_1 || ''},${preCostingData.warp_count_2 || ''},${preCostingData.warp_ply_2 || ''},${preCostingData.warp_count_3 || ''},${preCostingData.warp_ply_3 || ''},${preCostingData.weft_count_1 || ''},${preCostingData.weft_ply_1 || ''},${preCostingData.weft_count_2 || ''},${preCostingData.weft_ply_2 || ''},${preCostingData.weft_count_3 || ''},${preCostingData.weft_ply_3 || ''}\n\n`;
+
+    // Warp Details with ply
+    csvContent += 'Warp Details\n';
+    csvContent += 'Count,Ply,Repeat Breakdown,Color Name,Denting,Rate Per Lbs,Dyeing Cost Per Kg,Repeat Ends Per Color,Pattern Total Ends,Dent Numbers In Full Width,Greige Yarn Rate,Consumption,Yarn Cost,Color Cost,Warp Total Cost,Required Greige\n';
+    warpDetails.forEach(detail => {
+        csvContent += `${detail.warp_count},${detail.warp_ply || 1},${detail.repeat_breakdown},${detail.color_name},${detail.denting},${detail.rate_per_lbs},${detail.dyeing_cost_per_kg},${detail.repeat_ends_per_color || 0},${detail.pattern_total_ends || 0},${detail.dent_numbers_in_full_width || 0},${detail.greige_yarn_rate || 0},${detail.consumption || 0},${detail.yarn_cost || 0},${detail.color_cost || 0},${detail.warp_total_cost || 0},${detail.required_greige || 0}\n`;
+    });
+    csvContent += `Total,${(warpTotals.warp_count / warpDetails.length || 0).toFixed(2)},${(warpTotals.warp_ply / warpDetails.length || 1).toFixed(2)},,,,${warpTotals.pattern_total_ends.toFixed(2)},${warpTotals.pattern_total_ends.toFixed(2)},${warpTotals.dent_numbers_in_full_width.toFixed(2)},${(warpTotals.greige_yarn_rate / warpDetails.length || 0).toFixed(1)},${warpTotals.consumption.toFixed(4)},${warpTotals.yarn_cost.toFixed(2)},${warpTotals.color_cost.toFixed(2)},${warpTotals.warp_total_cost.toFixed(2)},${warpTotals.required_greige.toFixed(2)}\n\n`;
+
+    // Weft Details with ply
+    csvContent += 'Weft Details\n';
+    csvContent += 'Count,Ply,Repeat Breakdown,Color Name,Pick Density,Rate Per Lbs,Dyeing Cost Per Kg,Repeat Picks Per Color,Pattern Total Picks,Greige Yarn Rate,Consumption,Yarn Cost,Color Cost,Weft Total Cost,Required Greige\n';
+    weftDetails.forEach(detail => {
+        csvContent += `${detail.weft_count},${detail.weft_ply || 1},${detail.repeat_breakdown},${detail.color_name},${detail.pick_density},${detail.rate_per_lbs},${detail.dyeing_cost_per_kg},${detail.repeat_picks_per_color || 0},${detail.pattern_total_picks || 0},${detail.greige_yarn_rate || 0},${detail.consumption || 0},${detail.yarn_cost || 0},${detail.color_cost || 0},${detail.weft_total_cost || 0},${detail.required_greige || 0}\n`;
+    });
+    csvContent += `Total,${(weftTotals.weft_count / weftDetails.length || 0).toFixed(2)},${(weftTotals.weft_ply / weftDetails.length || 1).toFixed(2)},,,,${weftTotals.pattern_total_picks.toFixed(2)},${weftTotals.pattern_total_picks.toFixed(2)},${(weftTotals.greige_yarn_rate / weftDetails.length || 0).toFixed(1)},${weftTotals.consumption.toFixed(4)},${weftTotals.yarn_cost.toFixed(2)},${weftTotals.color_cost.toFixed(2)},${weftTotals.weft_total_cost.toFixed(2)},${weftTotals.required_greige.toFixed(2)}\n\n`;
+
+    // Order Particulars (Calculation Results)
+    csvContent += 'Order Particulars\n';
+    csvContent += 'Greige Required Quantity,Required Warp Kg,Required Weft Kg,Total Required Kg,Warp Greige Consumption,Weft Greige Consumption,Total Greige Consumption,Warp Finish Consumption,Weft Finish Consumption,Total Finish Consumption,Greige Yarn Cost Per Yd\n';
+    csvContent += `${preCostingData.greige_req_quantity},${preCostingData.required_warp_yarn},${preCostingData.required_weft_yarn},${preCostingData.total_required_yarn},${preCostingData.warp_greige_consump},${preCostingData.weft_greige_consump},${preCostingData.total_greige_consump},${preCostingData.warp_finish_consump},${preCostingData.weft_finish_consump},${preCostingData.total_finish_consump},${preCostingData.total_greige_yarn_cost_per_yd}\n\n`;
+
+    // Cost Breakdown (Calculation Results)
+    csvContent += 'Cost Breakdown\n';
+    csvContent += 'Warp Yarn Cost,Weft Yarn Cost,Total Greige Cost,Yarn Dyeing Cost,Total Yarn Cost,Weaving Cost,Break Even Cost Per Yd,Sales Price,Upcharge Sales Price\n';
+    csvContent += `${preCostingData.warp_yarn_cost},${preCostingData.weft_yarn_cost},${preCostingData.greige_cost},${preCostingData.yarn_dyeing_cost},${preCostingData.total_yarn_cost},${preCostingData.weaving_cost},${preCostingData.break_even_cost},${preCostingData.sales_price},${preCostingData.upcharged_sales_price}\n\n`;
+
+    // Budget Costs
+    csvContent += 'Budget Costs\n';
+    csvContent += 'Total Gr Warp Cost,Total Gr Warp Cost Percent,Total Gr Weft Cost,Total Gr Weft Cost Percent,Grand Total Greige Cost,Grand Total Greige Cost Percent,Total Yarn Dyeing Cost,Total Yarn Dyeing Cost Percent,Total Weaving Cost,Total Weaving Cost Percent,Total Dye Finish Cost,Total Dye Finish Cost Percent,Total Commercial Cost,Commercial Cost Percent,Grand Total Break Even Cost,Net Break Even Cost Per Yd,Net Profit Per Yd,Grand Total Profit,Grand Total Profit Percent,Total Sales Value,Upcharge Net Profit,Upcharge Grand Total Profit,Upcharge Grand Total Profit Percent,Upcharge Total Sales Value\n';
+    csvContent += `${preCostingData.total_warp_cost},${preCostingData.totalGrWarpCostPercent || 0},${preCostingData.total_weft_cost},${preCostingData.totalGrWeftCostPercent || 0},${preCostingData.total_greige_cost},${preCostingData.graTotalGregCostPercent || 0},${preCostingData.total_dyeing_cost},${preCostingData.totalYDyeingCostPercent || 0},${preCostingData.total_weaving_cost},${preCostingData.totalWeavingCostPercent || 0},${preCostingData.total_dye_finish_cost},${preCostingData.totalDyeFinCostPercent || 0},${preCostingData.total_commercial_cost},${preCostingData.commercialCostPercent || 0},${preCostingData.grand_total_break_even_cost},${preCostingData.net_break_even_cost_per_yd},${preCostingData.net_profit_per_yd},${preCostingData.grand_total_profit},${preCostingData.grandTotalProfitPercent || 0},${preCostingData.total_sales_value},${preCostingData.upcharged_net_profit_per_yd},${preCostingData.upcharged_grand_total_profit},${preCostingData.upGrandTotalProfitPercent || 0},${preCostingData.upcharged_total_sales_value}\n\n`;
+
+    // Total Pre-costing Values including USD fields
+    csvContent += 'Total Pre-costing Values\n';
+    csvContent += 'Total Pre Cost Tk,Total Pre Cost USD,Total Upcharge Pre Cost Tk,Total Upcharge Pre Cost USD,Total Greige Yarn Cost USD,Greige Yarn Cost Per Yd USD,Weaving Cost USD,Break Even Cost USD,Pick Rate USD,Total Greige Cost USD,Total Weaving Cost USD,Net Break Even Cost Per Yd USD,Upcharged Net Profit Per Yd USD\n';
+    csvContent += `${preCostingData.total_pre_cost_tk},${preCostingData.total_pre_cost_usd},${preCostingData.total_upcharged_pre_cost_tk},${preCostingData.total_upcharged_pre_cost_usd},${preCostingData.total_greige_yarn_cost_usd || 0},${preCostingData.greige_yarn_cost_per_yd_usd || 0},${preCostingData.weaving_cost_usd || 0},${preCostingData.break_even_cost_usd || 0},${preCostingData.pick_rate_usd || 0},${preCostingData.total_greige_cost_usd || 0},${preCostingData.total_weaving_cost_usd || 0},${preCostingData.net_break_even_cost_per_yd_usd || 0},${preCostingData.upcharged_net_profit_per_yd_usd || 0}\n`;
+
+    // Create and download the CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `PreCosting_${preCostingData.pre_costing_no.replace('Pre/costing/No:', '')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// UPDATED: Export to SQL with ply and USD fields
+function exportToSQL() {
+    if (!isLoggedIn) {
+        alert('Please log in to perform this action.');
+        return;
+    }
+    
+    calculateForm();
+    
+    if (!currentPreCostingData) {
+        alert('No pre-costing data loaded. Please search for a pre-costing number first.');
+        return;
+    }
+
+    const { preCostingData, warpDetails, weftDetails } = currentPreCostingData;
+
+    // SQL content
+    let sqlContent = '';
+
+    // Warp Details with ply
+    warpDetails.forEach(detail => {
+        sqlContent += `INSERT INTO warp_details (
+            pre_costing_no, warp_count, warp_ply, repeat_breakdown, color_name, denting,
+            rate_per_lbs, dyeing_cost_per_kg, repeat_ends_per_color, pattern_total_ends,
+            dent_numbers_in_full_width, greige_yarn_rate, consumption, yarn_cost,
+            color_cost, warp_total_cost, required_greige
+        ) VALUES (
+            '${detail.pre_costing_no}', ${detail.warp_count}, ${detail.warp_ply || 1}, ${detail.repeat_breakdown}, '${detail.color_name}', ${detail.denting},
+            ${detail.rate_per_lbs}, ${detail.dyeing_cost_per_kg}, ${detail.repeat_ends_per_color || 0}, ${detail.pattern_total_ends || 0},
+            ${detail.dent_numbers_in_full_width || 0}, ${detail.greige_yarn_rate || 0}, ${detail.consumption || 0}, ${detail.yarn_cost || 0},
+            ${detail.color_cost || 0}, ${detail.warp_total_cost || 0}, ${detail.required_greige || 0}
+        );\n`;
+    });
+
+    // Weft Details with ply
+    weftDetails.forEach(detail => {
+        sqlContent += `INSERT INTO weft_details (
+            pre_costing_no, weft_count, weft_ply, repeat_breakdown, color_name, pick_density,
+            rate_per_lbs, dyeing_cost_per_kg, repeat_picks_per_color, pattern_total_picks,
+            greige_yarn_rate, consumption, yarn_cost, color_cost, weft_total_cost,
+            required_greige
+        ) VALUES (
+            '${detail.pre_costing_no}', ${detail.weft_count}, ${detail.weft_ply || 1}, ${detail.repeat_breakdown}, '${detail.color_name}', ${detail.pick_density},
+            ${detail.rate_per_lbs}, ${detail.dyeing_cost_per_kg}, ${detail.repeat_picks_per_color || 0}, ${detail.pattern_total_picks || 0},
+            ${detail.greige_yarn_rate || 0}, ${detail.consumption || 0}, ${detail.yarn_cost || 0}, ${detail.color_cost || 0},
+            ${detail.weft_total_cost || 0}, ${detail.required_greige || 0}
+        );\n`;
+    });
+
+    // Pre-costing Data with all new fields
+    sqlContent += `\nINSERT INTO pre_costing_data (
+        pre_costing_no, buyer, construction, finish_width, total_ends, warp_crimp, yd_allow, warp_wast, weft_wast, finish_allow,
+        weaving_rate, dye_finish_rate, commercial_cost, profit, order_quantity, pick_length, pre_costing_date, dollar_rate_tk,
+        epi, ppi, weave_type, weft_crimp, greige_width, warp_count_1, warp_ply_1, warp_count_2, warp_ply_2, warp_count_3, warp_ply_3,
+        weft_count_1, weft_ply_1, weft_count_2, weft_ply_2, weft_count_3, weft_ply_3,
+        total_pre_cost_tk, total_pre_cost_usd, total_upcharged_pre_cost_tk, total_upcharged_pre_cost_usd,
+        total_greige_yarn_cost_usd, greige_yarn_cost_per_yd_usd, weaving_cost_usd, break_even_cost_usd,
+        pick_rate_usd, total_greige_cost_usd, total_weaving_cost_usd, net_break_even_cost_per_yd_usd, upcharged_net_profit_per_yd_usd
+    ) VALUES (
+        '${preCostingData.pre_costing_no}', '${preCostingData.buyer}', '${preCostingData.construction}', ${preCostingData.finish_width}, ${preCostingData.total_ends},
+        ${preCostingData.warp_crimp}, ${preCostingData.yd_allow}, ${preCostingData.warp_wast}, ${preCostingData.weft_wast}, ${preCostingData.finish_allow},
+        ${preCostingData.weaving_rate}, ${preCostingData.dye_finish_rate}, ${preCostingData.commercial_cost}, ${preCostingData.profit},
+        ${preCostingData.order_quantity}, ${preCostingData.pick_length}, '${preCostingData.pre_costing_date}', ${preCostingData.dollar_rate_tk},
+        ${preCostingData.epi}, ${preCostingData.ppi}, '${preCostingData.weave_type}', ${preCostingData.weft_crimp}, ${preCostingData.greige_width},
+        '${preCostingData.warp_count_1 || ''}', ${preCostingData.warp_ply_1 || 'NULL'}, '${preCostingData.warp_count_2 || ''}', ${preCostingData.warp_ply_2 || 'NULL'},
+        '${preCostingData.warp_count_3 || ''}', ${preCostingData.warp_ply_3 || 'NULL'}, '${preCostingData.weft_count_1 || ''}', ${preCostingData.weft_ply_1 || 'NULL'},
+        '${preCostingData.weft_count_2 || ''}', ${preCostingData.weft_ply_2 || 'NULL'}, '${preCostingData.weft_count_3 || ''}', ${preCostingData.weft_ply_3 || 'NULL'},
+        ${preCostingData.total_pre_cost_tk}, ${preCostingData.total_pre_cost_usd}, ${preCostingData.total_upcharged_pre_cost_tk}, ${preCostingData.total_upcharged_pre_cost_usd},
+        ${preCostingData.total_greige_yarn_cost_usd || 0}, ${preCostingData.greige_yarn_cost_per_yd_usd || 0}, ${preCostingData.weaving_cost_usd || 0},
+        ${preCostingData.break_even_cost_usd || 0}, ${preCostingData.pick_rate_usd || 0}, ${preCostingData.total_greige_cost_usd || 0},
+        ${preCostingData.total_weaving_cost_usd || 0}, ${preCostingData.net_break_even_cost_per_yd_usd || 0}, ${preCostingData.upcharged_net_profit_per_yd_usd || 0}
+    );\n`;
+
+    // Create and download the SQL file
+    const blob = new Blob([sqlContent], { type: 'text/sql;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `PreCosting_${preCostingData.pre_costing_no.replace('Pre/costing/No:', '')}.sql`);
+    link.style.visibility = 'hidden';
+   document.body.appendChild(link);
+   link.click();
+   document.body.removeChild(link);
+}
+
+
+// Save locally (to localStorage)
+// UPDATED: Save locally with ply and USD fields
+function saveLocally() {
+    if (!isLoggedIn) {
+        alert('Please log in to perform this action.');
+        return;
+    }
+
+    const formData = getFormData();
+    
+    // Calculate the results to get USD values
+    const results = PreCostingCalculator.calculateFullPreCosting(formData);
+    
+    // Enhanced formData with calculated USD values
+    const enhancedFormData = {
+        ...formData,
+        
+        // Add calculated USD fields
+        totalGreigeYarnCostUSD: results.totalPreCostingValues.totalGreigeYarnCostUSD || 0,
+        greigeYarnCostPerYdUSD: results.totalPreCostingValues.greigeYarnCostPerYdUSD || 0,
+        weavingCostUSD: results.totalPreCostingValues.weavingCostUSD || 0,
+        breakEvenCostUSD: results.totalPreCostingValues.breakEvenCostUSD || 0,
+        pickRateUSD: results.totalPreCostingValues.pickRateUSD || 0,
+        totalGreigeCostUSD: results.totalPreCostingValues.totalGreigeCostUSD || 0,
+        totalWeavingCostUSD: results.totalPreCostingValues.totalWeavingCostUSD || 0,
+        netBreakEvenCostPerYdUSD: results.totalPreCostingValues.netBreakEvenCostPerYdUSD || 0,
+        upchargedNetProfitPerYdUSD: results.totalPreCostingValues.upchargedNetProfitPerYdUSD || 0,
+        
+        // Add all other calculated fields
+        greigeReqQuantity: results.orderParticulars.greigeReqQuantity || 0,
+        requiredWarpKg: results.orderParticulars.requiredWarpKg || 0,
+        requiredWeftKg: results.orderParticulars.requiredWeftKg || 0,
+        totalRequiredKg: results.orderParticulars.totalRequiredKg || 0,
+        warpGreigeConsump: results.orderParticulars.warpGreigeConsump || 0,
+        weftGreigeConsump: results.orderParticulars.weftGreigeConsump || 0,
+        totalGreigeConsump: results.orderParticulars.totalGreigeConsump || 0,
+        warpFinishConsump: results.orderParticulars.warpFinishConsump || 0,
+        weftFinishConsump: results.orderParticulars.weftFinishConsump || 0,
+        totalFinishConsump: results.orderParticulars.totalFinishConsump || 0,
+        greigeYarnCostPerYd: results.orderParticulars.greigeYarnCostPerYd || 0,
+        warpYnCost: results.costBreakdown.warpYnCost || 0,
+        weftYnCost: results.costBreakdown.weftYnCost || 0,
+        totalGreigeCost: results.costBreakdown.totalGreigeCost || 0,
+        yarnDyeCost: results.costBreakdown.yarnDyeCost || 0,
+        totalYnCost: results.costBreakdown.totalYnCost || 0,
+        weavingCost: results.costBreakdown.weavingCost || 0,
+        breakEvenCostYd: results.costBreakdown.breakEvenCostYd || 0,
+        salesPrice: results.costBreakdown.salesPrice || 0,
+        upchargeSalesPrice: results.costBreakdown.upchargeSalesPrice || 0,
+        totalGrWarpCost: results.budgetCost.totalGrWarpCost || 0,
+        totalGrWeftCost: results.budgetCost.totalGrWeftCost || 0,
+        graTotalGregCost: results.budgetCost.graTotalGregCost || 0,
+        totalYDyeingCost: results.budgetCost.totalYDyeingCost || 0,
+        totalWeavingCost: results.budgetCost.totalWeavingCost || 0,
+        totalDyeFinCost: results.budgetCost.totalDyeFinCost || 0,
+        totalCommercialCost: results.budgetCost.totalCommercialCost || 0,
+        grandTotalBECost: results.budgetCost.grandTotalBECost || 0,
+        netBreakEvenCostPerYd: results.budgetCost.netBreakEvenCostPerYd || 0,
+        netProfitPerYd: results.budgetCost.netProfitPerYd || 0,
+        grandTotalProfit: results.budgetCost.grandTotalProfit || 0,
+        totalSalesValue: results.budgetCost.totalSalesValue || 0,
+        upchargeNetProfit: results.budgetCost.upchargeNetProfit || 0,
+        upchargeGrandTotalProfit: results.budgetCost.upchargeGrandTotalProfit || 0,
+        upchargeTotalSalesValue: results.budgetCost.upchargeTotalSalesValue || 0,
+        totalPreCostTk: results.totalPreCostingValues.totalPreCostTk || 0,
+        totalPreCostUSD: results.totalPreCostingValues.totalPreCostUSD || 0,
+        totalUpchargePreCostTk: results.totalPreCostingValues.totalUpchargePreCostTk || 0,
+        totalUpchargePreCostUSD: results.totalPreCostingValues.totalUpchargePreCostUSD || 0,
+        
+        // Technical specs
+        warpTotalGSM: results.technicalSpecs.warpTotalGSM || 0,
+        weftTotalGSM: results.technicalSpecs.weftTotalGSM || 0,
+        totalGSM: results.technicalSpecs.totalGSM || 0,
+        weightFinishFabric: results.technicalSpecs.weightFinishFabric || 0,
+        warpCoverFactor: results.technicalSpecs.warpCoverFactor || 0,
+        weftCoverFactor: results.technicalSpecs.weftCoverFactor || 0,
+        totalCoverFactor: results.technicalSpecs.totalCoverFactor || 0,
+        
+        // Pattern calculations
+        warpRepeatSize: results.patternSummary.warpRepeatSize || 0,
+        weftRepeatSize: results.patternSummary.weftRepeatSize || 0,
+        warpRepeatNumber: results.patternSummary.warpRepeatNumber || 0,
+        weftRepeatNumber: results.patternSummary.weftRepeatNumber || 0,
+        warpRepeatEnds: results.patternSummary.warpRepeatEnds || 0
+    };
+    
+    let savedData = JSON.parse(localStorage.getItem('preCostingSavedData')) || [];
+
+    const existingIndex = savedData.findIndex(data => data.preCostingNo === enhancedFormData.preCostingNo);
+    if (existingIndex !== -1) {
+        savedData[existingIndex] = enhancedFormData;
+    } else {
+        savedData.push(enhancedFormData);
+    }
+
+    localStorage.setItem('preCostingSavedData', JSON.stringify(savedData));
+
+    // Extract the numeric part for the file name
+    const preCostingNumber = enhancedFormData.preCostingNo.replace('Pre/costing/No:', '');
+
+    const jsonString = JSON.stringify(enhancedFormData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `PreCosting_${preCostingNumber}.json`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    console.log('Saved Enhanced Data:', savedData);
+    alert('Data saved locally with all calculated values including USD conversions!');
+}
+
+// Show load modal with saved data
+function showLoadModal() {
+    if (!isLoggedIn) {
+        alert('Please log in to perform this action.');
+        return;
+    }
+
+    const loadList = document.getElementById('loadList');
+    if (!loadList) {
+        console.error('loadList element not found. Please ensure the modal HTML is correct.');
+        return;
+    }
+
+    let savedData = JSON.parse(localStorage.getItem('preCostingSavedData')) || [];
+    loadList.innerHTML = '';
+
+    if (savedData.length === 0) {
+        loadList.innerHTML = '<li class="list-group-item">No saved data found in session.</li>';
+    } else {
+        savedData.forEach((data, index) => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.innerHTML = `
+                Pre Costing No: ${data.preCostingNo} (Saved on ${new Date().toLocaleString()})
+                <div>
+                    <button class="btn btn-sm btn-primary load-data-btn me-2" data-index="${index}">Load</button>
+                    <button class="btn btn-sm btn-danger delete-data-btn" data-index="${index}">Delete</button>
+                </div>
+            `;
+            loadList.appendChild(li);
+        });
+    }
+
+    const loadModalElement = document.getElementById('loadModal');
+    if (!loadModalElement) {
+        console.error('loadModal element not found. Please ensure the modal HTML is correct.');
+        return;
+    }
+
+    const loadModal = new bootstrap.Modal(loadModalElement);
+    loadModal.show();
+
+    // Add event listeners for Load buttons
+    document.querySelectorAll('.load-data-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const index = btn.getAttribute('data-index');
+            loadData(index);
+            loadModal.hide();
+        });
+    });
+
+    // Add event listeners for Delete buttons
+    document.querySelectorAll('.delete-data-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const index = btn.getAttribute('data-index');
+            deleteData(index);
+            loadModal.hide();
+            showLoadModal();
+        });
+    });
+
+    // Add event listener for file input
+    const fileInput = document.getElementById('loadJsonFile');
+    if (fileInput) {
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const jsonData = JSON.parse(e.target.result);
+                    // Add the loaded data to localStorage to make it available for loading
+                    let savedData = JSON.parse(localStorage.getItem('preCostingSavedData')) || [];
+                    savedData.push(jsonData);
+                    localStorage.setItem('preCostingSavedData', JSON.stringify(savedData));
+
+                    // Refresh the modal to show the newly added data
+                    loadModal.hide();
+                    showLoadModal();
+
+                    // Optionally, load the data immediately
+                    loadData(savedData.length - 1);
+                } catch (error) {
+                    console.error('Error parsing JSON file:', error);
+                    alert('Failed to load JSON file. Please ensure it is a valid JSON file.');
+                }
+            };
+            reader.readAsText(file);
+        });
+    }
+}
+
+function deleteData(index) {
+    let savedData = JSON.parse(localStorage.getItem('preCostingSavedData')) || [];
+    if (index >= 0 && index < savedData.length) {
+        savedData.splice(index, 1); // Remove the entry at the specified index
+        localStorage.setItem('preCostingSavedData', JSON.stringify(savedData));
+        // alert('Data deleted successfully!');
+    } else {
+        alert('Error: Data not found.');
+    }
+}
+
+function loadData(index) {
+    const savedData = JSON.parse(localStorage.getItem('preCostingSavedData')) || [];
+    const data = savedData[index];
+    if (!data) {
+        alert('No data found to load.');
+        return;
+    }
+
+    // Construct currentPreCostingData in the same format as the backend data
+    const preCostingData = {
+        pre_costing_no: data.preCostingNo,
+        buyer: data.buyer || '',
+        construction: data.construction || '',
+        finish_width: data.finishWidth || 0,
+        total_ends: data.totalEnds || 0,
+        warp_crimp: data.warpCrimp || 0,
+        yd_allow: data.ydAllow || 0,
+        warp_wast: data.warpWast || 0,
+        weft_wast: data.weftWast || 0,
+        finish_allow: data.finishAllow || 0,
+        weaving_rate: data.weavingPickRate || 0,
+        dye_finish_rate: data.dyeingFinishingRate || 0,
+        commercial_cost: data.commercialCostInput || 0,
+        profit: data.profit || 0,
+        order_quantity: data.orderQuantity || 0,
+        pick_length: data.pickLength || 0,
+        pre_costing_date: data.preCostingDate || '',
+        dollar_rate_tk: data.dollarRateTk || 0,
+        epi: data.epi || 0,
+        ppi: data.ppi || 0,
+        weave_type: data.weaveType || '',
+        weft_crimp: data.weftCrimp || 0,
+        greige_width: data.greigeWidth || 0,
+        // NEW: Add ply fields from Basic Information
+        warp_count_1: data.warpCount1 || '',
+        warp_ply_1: data.warpPly1 || 1,
+        warp_count_2: data.warpCount2 || '',
+        warp_ply_2: data.warpPly2 || 1,
+        warp_count_3: data.warpCount3 || '',
+        warp_ply_3: data.warpPly3 || 1,
+        weft_count_1: data.weftCount1 || '',
+        weft_ply_1: data.weftPly1 || 1,
+        weft_count_2: data.weftCount2 || '',
+        weft_ply_2: data.weftPly2 || 1,
+        weft_count_3: data.weftCount3 || '',
+        weft_ply_3: data.weftPly3 || 1,
+        // Calculated fields
+        greige_req_quantity: data.greigeReqQuantity || 0,
+        required_warp_yarn: data.requiredWarpKg || 0,
+        required_weft_yarn: data.requiredWeftKg || 0,
+        total_required_yarn: data.totalRequiredKg || 0,
+        warp_greige_consump: data.warpGreigeConsump || 0,
+        weft_greige_consump: data.weftGreigeConsump || 0,
+        total_greige_consump: data.totalGreigeConsump || 0,
+        warp_finish_consump: data.warpFinishConsump || 0,
+        weft_finish_consump: data.weftFinishConsump || 0,
+        total_finish_consump: data.totalFinishConsump || 0,
+        total_greige_yarn_cost_per_yd: data.greigeYarnCostPerYd || 0,
+        warp_yarn_cost: data.warpYnCost || 0,
+        weft_yarn_cost: data.weftYnCost || 0,
+        greige_cost: data.totalGreigeCost || 0,
+        yarn_dyeing_cost: data.yarnDyeCost || 0,
+        total_yarn_cost: data.totalYnCost || 0,
+        weaving_cost: data.weavingCost || 0,
+        break_even_cost: data.breakEvenCostYd || 0,
+        sales_price: data.salesPrice || 0,
+        upcharged_sales_price: data.upchargeSalesPrice || 0,
+        total_warp_cost: data.totalGrWarpCost || 0,
+        total_weft_cost: data.totalGrWeftCost || 0,
+        total_greige_cost: data.graTotalGregCost || 0,
+        total_dyeing_cost: data.totalYDyeingCost || 0,
+        total_weaving_cost: data.totalWeavingCost || 0,
+        total_dye_finish_cost: data.totalDyeFinCost || 0,
+        total_commercial_cost: data.totalCommercialCost || 0,
+        grand_total_break_even_cost: data.grandTotalBECost || 0,
+        net_break_even_cost_per_yd: data.netBreakEvenCostPerYd || 0,
+        net_profit_per_yd: data.netProfitPerYd || 0,
+        grand_total_profit: data.grandTotalProfit || 0,
+        total_sales_value: data.totalSalesValue || 0,
+        upcharged_net_profit_per_yd: data.upchargeNetProfit || 0,
+        upcharged_grand_total_profit: data.upchargeGrandTotalProfit || 0,
+        upcharged_total_sales_value: data.upchargeTotalSalesValue || 0,
+        total_pre_cost_tk: data.totalPreCostTk || 0,
+        total_pre_cost_usd: data.totalPreCostUSD || 0,
+        total_upcharged_pre_cost_tk: data.totalUpchargePreCostTk || 0,
+        total_upcharged_pre_cost_usd: data.totalUpchargePreCostUSD || 0,
+        // NEW: Add USD fields
+        total_greige_yarn_cost_usd: data.totalGreigeYarnCostUSD || 0,
+        greige_yarn_cost_per_yd_usd: data.greigeYarnCostPerYdUSD || 0,
+        weaving_cost_usd: data.weavingCostUSD || 0,
+        break_even_cost_usd: data.breakEvenCostUSD || 0,
+        pick_rate_usd: data.pickRateUSD || 0,
+        total_greige_cost_usd: data.totalGreigeCostUSD || 0,
+        total_weaving_cost_usd: data.totalWeavingCostUSD || 0,
+        net_break_even_cost_per_yd_usd: data.netBreakEvenCostPerYdUSD || 0,
+        upcharged_net_profit_per_yd_usd: data.upchargedNetProfitPerYdUSD || 0
+    };
+
+    // UPDATED: Map warp details with ply
+    const warpDetails = (data.warpDetails || []).map(detail => ({
+        pre_costing_no: data.preCostingNo,
+        warp_count: detail.count || 0,
+        warp_ply: detail.ply || 1, // Include ply
+        repeat_breakdown: detail.repeatBreakdown || 0,
+        color_name: detail.colorName || '',
+        denting: detail.denting || 0,
+        rate_per_lbs: detail.ratePerLbs || 0,
+        dyeing_cost_per_kg: detail.dyeingCostPerKg || 0,
+        repeat_ends_per_color: 0,
+        pattern_total_ends: 0,
+        dent_numbers_in_full_width: 0,
+        greige_yarn_rate: 0,
+        consumption: 0,
+        yarn_cost: 0,
+        color_cost: 0,
+        warp_total_cost: 0,
+        required_greige: 0
+    }));
+
+    // UPDATED: Map weft details with ply
+    const weftDetails = (data.weftDetails || []).map(detail => ({
+        pre_costing_no: data.preCostingNo,
+        weft_count: detail.count || 0,
+        weft_ply: detail.ply || 1, // Include ply
+        repeat_breakdown: detail.repeatBreakdown || 0,
+        color_name: detail.colorName || '',
+        pick_density: detail.pickDensity || 0,
+        rate_per_lbs: detail.ratePerLbs || 0,
+        dyeing_cost_per_kg: detail.dyeingCostPerKg || 0,
+        repeat_picks_per_color: 0,
+        pattern_total_picks: 0,
+        greige_yarn_rate: 0,
+        consumption: 0,
+        yarn_cost: 0,
+        color_cost: 0,
+        weft_total_cost: 0,
+        required_greige: 0
+    }));
+
+    // Set currentPreCostingData with initial data
+    currentPreCostingData = {
+        preCostingData: preCostingData,
+        warpDetails: warpDetails,
+        weftDetails: weftDetails
+    };
+
+    // Autofill input fields
+    document.getElementById('preCostingNo').value = data.preCostingNo;
+    document.getElementById('buyer').value = data.buyer || '';
+    document.getElementById('construction').value = data.construction || '';
+    document.getElementById('finishWidth').value = data.finishWidth || '';
+    document.getElementById('totalEnds').value = data.totalEnds || '';
+    document.getElementById('warpCrimp').value = data.warpCrimp || '';
+    document.getElementById('ydAllow').value = data.ydAllow || '';
+    document.getElementById('warpWast').value = data.warpWast || '';
+    document.getElementById('weftWast').value = data.weftWast || '';
+    document.getElementById('finishAllow').value = data.finishAllow || '';
+    document.getElementById('weavingPickRate').value = data.weavingPickRate || '';
+    document.getElementById('dyeingFinishingRate').value = data.dyeingFinishingRate || '';
+    document.getElementById('commercialCostInput').value = data.commercialCostInput || '';
+    document.getElementById('profit').value = data.profit || '';
+    document.getElementById('orderQuantity').value = data.orderQuantity || '';
+    document.getElementById('pickLength').value = data.pickLength || '';
+    document.getElementById('preCostingDate').value = data.preCostingDate || '';
+    document.getElementById('dollarRateTk').value = data.dollarRateTk || '';
+    document.getElementById('epi').value = data.epi || '';
+    document.getElementById('ppi').value = data.ppi || '';
+    document.getElementById('weaveType').value = data.weaveType || '';
+    document.getElementById('weftCrimp').value = data.weftCrimp || '';
+    document.getElementById('greigeWidth').value = data.greigeWidth || '';
+
+    // NEW: Populate Basic Information ply fields
+    document.getElementById('warpCount1').value = data.warpCount1 || '';
+    document.getElementById('warpPly1').value = data.warpPly1 || '';
+    document.getElementById('warpCount2').value = data.warpCount2 || '';
+    document.getElementById('warpPly2').value = data.warpPly2 || '';
+    document.getElementById('warpCount3').value = data.warpCount3 || '';
+    document.getElementById('warpPly3').value = data.warpPly3 || '';
+    document.getElementById('weftCount1').value = data.weftCount1 || '';
+    document.getElementById('weftPly1').value = data.weftPly1 || '';
+    document.getElementById('weftCount2').value = data.weftCount2 || '';
+    document.getElementById('weftPly2').value = data.weftPly2 || '';
+    document.getElementById('weftCount3').value = data.weftCount3 || '';
+    document.getElementById('weftPly3').value = data.weftPly3 || '';
+
+    // Repopulate Warp and Weft tables
+    const warpTbody = document.getElementById('warpCalculationTable').querySelector('tbody');
+    const weftTbody = document.getElementById('weftCalculationTable').querySelector('tbody');
+    warpTbody.innerHTML = '';
+    weftTbody.innerHTML = '';
+
+    // UPDATED: Populate warp table with ply
+    if (data.warpDetails && data.warpDetails.length > 0) {
+        data.warpDetails.forEach(warpDetail => {
+            const newRow = document.createElement('tr');
+            newRow.className = 'pattern-row';
+            newRow.innerHTML = `
+                <td><input type="number" class="form-control" name="warp_count" value="${warpDetail.count || 0}"></td>
+                <td><input type="number" class="form-control" name="warp_ply" value="${warpDetail.ply || 1}"></td>
+                <td><input type="number" class="form-control" name="repeat_breakdown" value="${warpDetail.repeatBreakdown || 0}"></td>
+                <td><input type="text" class="form-control" name="color_name" value="${warpDetail.colorName || ''}"></td>
+                <td><input type="number" class="form-control" name="denting" value="${warpDetail.denting || 0}"></td>
+                <td><input type="number" class="form-control" name="rate_per_lbs" value="${warpDetail.ratePerLbs || 0}"></td>
+                <td><input type="number" class="form-control" name="dyeing_cost_per_kg" value="${warpDetail.dyeingCostPerKg || 0}"></td>
+                <td class="result-cell">0.00</td>
+                <td class="result-cell">0.00</td>
+                <td class="result-cell">0.00</td>
+                <td class="result-cell">0.0</td>
+                <td class="result-cell">0.0000</td>
+                <td class="result-cell">0.00</td>
+                <td class="result-cell">0.00</td>
+                <td class="result-cell">0.00</td>
+                <td class="result-cell">0.00</td>
+                <td><button class="btn btn-sm btn-danger remove-row"><i class="fas fa-trash"></i></button></td>
+            `;
+            warpTbody.appendChild(newRow);
+        });
+    } else {
+        addEmptyWarpRow(warpTbody);
+    }
+
+    // UPDATED: Populate weft table with ply
+    if (data.weftDetails && data.weftDetails.length > 0) {
+        data.weftDetails.forEach(weftDetail => {
+            const newRow = document.createElement('tr');
+            newRow.className = 'pattern-row';
+            newRow.innerHTML = `
+                <td><input type="number" class="form-control" name="weft_count" value="${weftDetail.count || 0}"></td>
+                <td><input type="number" class="form-control" name="weft_ply" value="${weftDetail.ply || 1}"></td>
+                <td><input type="number" class="form-control" name="repeat_breakdown" value="${weftDetail.repeatBreakdown || 0}"></td>
+                <td><input type="text" class="form-control" name="color_name" value="${weftDetail.colorName || ''}"></td>
+                <td><input type="number" class="form-control" name="pick_density" value="${weftDetail.pickDensity || 0}"></td>
+                <td><input type="number" class="form-control" name="rate_per_lbs" value="${weftDetail.ratePerLbs || 0}"></td>
+                <td><input type="number" class="form-control" name="dyeing_cost_per_kg" value="${weftDetail.dyeingCostPerKg || 0}"></td>
+                <td class="result-cell">0.00</td>
+                <td class="result-cell">0.00</td>
+                <td class="result-cell">0.0</td>
+                <td class="result-cell">0.0000</td>
+                <td class="result-cell">0.00</td>
+                <td class="result-cell">0.00</td>
+                <td class="result-cell">0.00</td>
+                <td class="result-cell">0.00</td>
+                <td><button class="btn btn-sm btn-danger remove-row"><i class="fas fa-trash"></i></button></td>
+            `;
+            weftTbody.appendChild(newRow);
+        });
+    } else {
+        addEmptyWeftRow(weftTbody);
+    }
+
+    // Recalculate to populate the calculated fields and update currentPreCostingData
+    const formData = getFormData();
+    const results = PreCostingCalculator.calculateFullPreCosting(formData);
+
+    // Update currentPreCostingData with calculated values
+    currentPreCostingData.warpDetails = formData.warpDetails.map((detail, index) => {
+        const pattern = results.warpPatterns.patterns[index] || {};
+        return {
+            ...detail,
+            pre_costing_no: data.preCostingNo,
+            repeat_ends_per_color: pattern.repeatEndsPerColor || 0,
+            pattern_total_ends: pattern.patternTotalEnds || 0,
+            dent_numbers_in_full_width: pattern.dentNumbersInFullWidth || 0,
+            greige_yarn_rate: pattern.greigeYarnRate || 0,
+            consumption: pattern.consumption || 0,
+            yarn_cost: pattern.yarnCost || 0,
+            color_cost: pattern.colorCost || 0,
+            warp_total_cost: pattern.warpTotalCost || 0,
+            required_greige: pattern.requiredGreige || 0
+        };
+    });
+
+    currentPreCostingData.weftDetails = formData.weftDetails.map((detail, index) => {
+        const pattern = results.weftPatterns.patterns[index] || {};
+        return {
+            ...detail,
+            pre_costing_no: data.preCostingNo,
+            repeat_picks_per_color: pattern.repeatPicksPerColor || 0,
+            pattern_total_picks: pattern.patternTotalPicks || 0,
+            greige_yarn_rate: pattern.greigeYarnRate || 0,
+            consumption: pattern.consumption || 0,
+            yarn_cost: pattern.yarnCost || 0,
+            color_cost: pattern.colorCost || 0,
+            weft_total_cost: pattern.weftTotalCost || 0,
+            required_greige: pattern.requiredGreige || 0
+        };
+    });
+
+    currentPreCostingData.preCostingData = {
+        ...currentPreCostingData.preCostingData,
+        greige_req_quantity: results.orderParticulars.greigeReqQuantity,
+        required_warp_yarn: results.orderParticulars.requiredWarpKg,
+        required_weft_yarn: results.orderParticulars.requiredWeftKg,
+        total_required_yarn: results.orderParticulars.totalRequiredKg,
+        warp_greige_consump: results.orderParticulars.warpGreigeConsump,
+        weft_greige_consump: results.orderParticulars.weftGreigeConsump,
+        total_greige_consump: results.orderParticulars.totalGreigeConsump,
+        warp_finish_consump: results.orderParticulars.warpFinishConsump,
+        weft_finish_consump: results.orderParticulars.weftFinishConsump,
+        total_finish_consump: results.orderParticulars.totalFinishConsump,
+        total_greige_yarn_cost_per_yd: results.orderParticulars.greigeYarnCostPerYd,
+        warp_yarn_cost: results.costBreakdown.warpYnCost,
+        weft_yarn_cost: results.costBreakdown.weftYnCost,
+        greige_cost: results.costBreakdown.totalGreigeCost,
+        yarn_dyeing_cost: results.costBreakdown.yarnDyeCost,
+        total_yarn_cost: results.costBreakdown.totalYnCost,
+        weaving_cost: results.costBreakdown.weavingCost,
+        break_even_cost: results.costBreakdown.breakEvenCostYd,
+        sales_price: results.costBreakdown.salesPrice,
+        upcharged_sales_price: results.costBreakdown.upchargeSalesPrice,
+        total_warp_cost: results.budgetCost.totalGrWarpCost,
+        total_weft_cost: results.budgetCost.totalGrWeftCost,
+        total_greige_cost: results.budgetCost.graTotalGregCost,
+        total_dyeing_cost: results.budgetCost.totalYDyeingCost,
+        total_weaving_cost: results.budgetCost.totalWeavingCost,
+        total_dye_finish_cost: results.budgetCost.totalDyeFinCost,
+        total_commercial_cost: results.budgetCost.totalCommercialCost,
+        grand_total_break_even_cost: results.budgetCost.grandTotalBECost,
+        net_break_even_cost_per_yd: results.budgetCost.netBreakEvenCostPerYd,
+        net_profit_per_yd: results.budgetCost.netProfitPerYd,
+        grand_total_profit: results.budgetCost.grandTotalProfit,
+        total_sales_value: results.budgetCost.totalSalesValue,
+        upcharged_net_profit_per_yd: results.budgetCost.upchargeNetProfit,
+        upcharged_grand_total_profit: results.budgetCost.upchargeGrandTotalProfit,
+        upcharged_total_sales_value: results.budgetCost.upchargeTotalSalesValue,
+        total_pre_cost_tk: results.totalPreCostingValues.totalPreCostTk,
+        total_pre_cost_usd: results.totalPreCostingValues.totalPreCostUSD,
+        total_upcharged_pre_cost_tk: results.totalPreCostingValues.totalUpchargePreCostTk,
+        total_upcharged_pre_cost_usd: results.totalPreCostingValues.totalUpchargePreCostUSD,
+        // NEW: Add USD fields to currentPreCostingData
+        total_greige_yarn_cost_usd: results.totalPreCostingValues.totalGreigeYarnCostUSD,
+        greige_yarn_cost_per_yd_usd: results.totalPreCostingValues.greigeYarnCostPerYdUSD,
+        weaving_cost_usd: results.totalPreCostingValues.weavingCostUSD,
+        break_even_cost_usd: results.totalPreCostingValues.breakEvenCostUSD,
+        pick_rate_usd: results.totalPreCostingValues.pickRateUSD,
+        total_greige_cost_usd: results.totalPreCostingValues.totalGreigeCostUSD,
+        total_weaving_cost_usd: results.totalPreCostingValues.totalWeavingCostUSD,
+        net_break_even_cost_per_yd_usd: results.totalPreCostingValues.netBreakEvenCostPerYdUSD,
+        upcharged_net_profit_per_yd_usd: results.totalPreCostingValues.upchargedNetProfitPerYdUSD
+    };
+
+    // Update UI with calculated results
+    updateWarpCalculationTable(results, formData);
+    updateWeftCalculationTable(results, formData);
+    updatePreCostResults(results);
+}
+
+
+// FIXED: addEmptyWarpRow function with ply column
+function addEmptyWarpRow(tbody) {
+    const newRow = document.createElement('tr');
+    newRow.className = 'pattern-row';
+    newRow.innerHTML = `
+        <td><input type="number" class="form-control" name="warp_count" value="" step="0.01" min="0"></td>
+        <td><input type="number" class="form-control" name="warp_ply" value="1" step="1" min="1"></td>
+        <td><input type="number" class="form-control" name="repeat_breakdown" value="" step="0.01" min="0"></td>
+        <td><input type="text" class="form-control" name="color_name" value=""></td>
+        <td><input type="number" class="form-control" name="denting" value="" step="0.01" min="0"></td>
+        <td><input type="number" class="form-control" name="rate_per_lbs" value="" step="0.01" min="0"></td>
+        <td><input type="number" class="form-control" name="dyeing_cost_per_kg" value="" step="0.01" min="0"></td>
+        <td class="result-cell">0.00</td>
+        <td class="result-cell">0.00</td>
+        <td class="result-cell">0.00</td>
+        <td class="result-cell">0.0</td>
+        <td class="result-cell">0.0000</td>
+        <td class="result-cell">0.00</td>
+        <td class="result-cell">0.00</td>
+        <td class="result-cell">0.00</td>
+        <td class="result-cell">0.00</td>
+        <td><button class="btn btn-sm btn-danger remove-row"><i class="fas fa-trash"></i></button></td>
+    `;
+    tbody.appendChild(newRow);
+
+    // Ensure the total row is moved to the bottom
+    const totalRow = tbody.querySelector('.total-row');
+    if (totalRow) {
+        tbody.removeChild(totalRow);
+        tbody.appendChild(totalRow);
+    }
+
+    debouncedCalculateForm();
+}
+
+// FIXED: addEmptyWeftRow function with ply column
+function addEmptyWeftRow(tbody) {
+    const newRow = document.createElement('tr');
+    newRow.className = 'pattern-row';
+    newRow.innerHTML = `
+        <td><input type="number" class="form-control" name="weft_count" value="" step="0.01" min="0"></td>
+        <td><input type="number" class="form-control" name="weft_ply" value="1" step="1" min="1"></td>
+        <td><input type="number" class="form-control" name="repeat_breakdown" value="" step="0.01" min="0"></td>
+        <td><input type="text" class="form-control" name="color_name" value=""></td>
+        <td><input type="number" class="form-control" name="pick_density" value="" step="0.01" min="0"></td>
+        <td><input type="number" class="form-control" name="rate_per_lbs" value="" step="0.01" min="0"></td>
+        <td><input type="number" class="form-control" name="dyeing_cost_per_kg" value="" step="0.01" min="0"></td>
+        <td class="result-cell">0.00</td>
+        <td class="result-cell">0.00</td>
+        <td class="result-cell">0.0</td>
+        <td class="result-cell">0.0000</td>
+        <td class="result-cell">0.00</td>
+        <td class="result-cell">0.00</td>
+        <td class="result-cell">0.00</td>
+        <td class="result-cell">0.00</td>
+        <td><button class="btn btn-sm btn-danger remove-row"><i class="fas fa-trash"></i></button></td>
+    `;
+    tbody.appendChild(newRow);
+
+    // Ensure the total row is moved to the bottom
+    const totalRow = tbody.querySelector('.total-row');
+    if (totalRow) {
+        tbody.removeChild(totalRow);
+        tbody.appendChild(totalRow);
+    }
+
+    debouncedCalculateForm();
+}
+
+// Initialize tables with one empty row each
+document.addEventListener('DOMContentLoaded', () => {
+    const warpTbody = document.getElementById('warpCalculationTable')?.querySelector('tbody');
+    const weftTbody = document.getElementById('weftCalculationTable')?.querySelector('tbody');
+    if (warpTbody && warpTbody.children.length === 0) {
+        addEmptyWarpRow(warpTbody);
+    }
+    if (weftTbody && weftTbody.children.length === 0) {
+        addEmptyWeftRow(weftTbody);
+    }
+});
+
+// Initialize event listeners on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+            loginModal.show();
+
+            document.getElementById('loginBtn').addEventListener('click', () => {
+                const passwordInput = document.getElementById('passwordInput').value;
+                const inputHash = md5(passwordInput);
+                if (inputHash === hashedPassword) {
+                    isLoggedIn = true;
+                    loginModal.hide();
+                    setupEventListeners();
+                    calculateForm();
+                } else {
+                    alert('Incorrect password!');
+                }
+            });
+
+            const warpTbody = document.getElementById('warpCalculationTable').querySelector('tbody');
+            const weftTbody = document.getElementById('weftCalculationTable').querySelector('tbody');
+            if (warpTbody.children.length === 0) addEmptyWarpRow(warpTbody);
+            if (weftTbody.children.length === 0) addEmptyWeftRow(weftTbody);
+        });
+</script>
+</body>
+</html>

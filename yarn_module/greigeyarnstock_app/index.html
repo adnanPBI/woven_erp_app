@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raw Yarn Stock Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-bg: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+            --container-bg: #252525;
+            --text-color: #e0e0e0;
+            --accent-color: #00c4ff;
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            --btn-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            --border-glow: rgba(0, 196, 255, 0.3);
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--primary-bg);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            min-height: 100vh;
+            overflow: auto;
+            background-attachment: fixed;
+        }
+
+        .main-container {
+            background: var(--container-bg);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border: 2px solid #3a3a3a;
+            max-width: 1600px;
+            margin: 0 auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 196, 255, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 196, 255, 0.03) 0%, transparent 20%);
+        }
+
+        .main-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.03) 50%, transparent 51%);
+            background-size: 10px 10px;
+            pointer-events: none;
+        }
+
+        /* Header Section */
+        .header-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 2;
+        }
+
+        .header-section::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 15%;
+            width: 70%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        }
+
+        .header-section h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-color);
+            text-shadow: var(--text-shadow);
+            margin: 0 0 10px 0;
+            background: linear-gradient(45deg, #FFA500, #FFD580);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .header-section h1 i {
+            background: linear-gradient(45deg, #FFA500, #FFD580);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-section p {
+            color: var(--text-color);
+            text-align: center;
+            margin: 0;
+            opacity: 0.8;
+        }
+
+        /* Search Section */
+        .search-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .search-section:hover {
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-glow);
+            border-color: rgba(0, 196, 255, 0.2);
+        }
+
+        .search-section h3 {
+            color: var(--accent-color);
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-controls {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .form-group label {
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            display: block;
+            font-weight: 600;
+        }
+
+        .form-control, .form-select {
+            background-color: #404040;
+            border: 1px solid #505050;
+            color: var(--text-color);
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #454545;
+            color: var(--text-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(0, 196, 255, 0.25);
+            outline: none;
+        }
+
+        .form-control:hover, .form-select:hover {
+            border-color: var(--accent-color);
+        }
+
+        /* Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: none;
+            color: #fff;
+            box-shadow: var(--btn-shadow);
+            font-size: 0.9rem;
+            padding: 10px 20px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.5s ease;
+            z-index: -1;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.6);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0a3a57, #0c8731, #09ad92) !important;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #1e3954, #3b80db) !important;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107, #fd7e14) !important;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057) !important;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #0d8991, #3bbcc4, #4fb4db) !important;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #991509, #e83e8c) !important;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading-spinner.active {
+            display: block;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Report Container */
+        .report-container {
+            display: none;
+            position: relative;
+            z-index: 2;
+        }
+
+        .report-container.active {
+            display: block;
+        }
+
+        /* Summary Section */
+        .summary-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .summary-section:hover {
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-glow);
+            border-color: rgba(0, 196, 255, 0.2);
+        }
+
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .summary-header h2 {
+            color: var(--accent-color);
+            font-size: 1.8rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Yarn Details Grid */
+        .yarn-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .yarn-detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .yarn-detail-label {
+            color: var(--accent-color);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .yarn-detail-value {
+            color: var(--text-color);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #3a3a3a;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-color);
+            transition: width 0.3s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .summary-card:hover::before {
+            width: 100%;
+            opacity: 0.1;
+        }
+
+        .summary-card.success::before {
+            background: var(--success-color);
+        }
+
+        .summary-card.warning::before {
+            background: var(--warning-color);
+        }
+
+        .summary-card.danger::before {
+            background: var(--danger-color);
+        }
+
+        .summary-card.info::before {
+            background: var(--info-color);
+        }
+
+        .summary-card-label {
+            color: var(--accent-color);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .summary-card-value {
+            color: var(--text-color);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .summary-card-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.75rem;
+        }
+
+        /* Transactions Section */
+        .transactions-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .transactions-section:hover {
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-glow);
+            border-color: rgba(0, 196, 255, 0.2);
+        }
+
+        .transactions-section h3 {
+            color: var(--accent-color);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Table Styles */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 10px;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .report-table thead {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        .report-table thead th {
+            color: var(--accent-color);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            padding: 15px 10px;
+            text-align: center;
+            border-bottom: 2px solid rgba(0, 196, 255, 0.3);
+        }
+
+        .report-table tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .report-table tbody tr:hover {
+            background: rgba(0, 196, 255, 0.1);
+            transform: scale(1.01);
+        }
+
+        .report-table tbody td {
+            padding: 12px 10px;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .report-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .no-data {
+            color: rgba(255, 255, 255, 0.5);
+            font-style: italic;
+            text-align: center;
+            padding: 30px;
+        }
+
+        /* Badge Styles */
+        .badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .badge-warning {
+            background: var(--warning-color);
+            color: #000;
+        }
+
+        .badge-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .badge-info {
+            background: var(--info-color);
+            color: white;
+        }
+
+        /* Alert Styles */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid;
+        }
+
+        .alert-info {
+            background: rgba(23, 162, 184, 0.1);
+            border-color: var(--info-color);
+            color: var(--info-color);
+        }
+
+        .alert-warning {
+            background: rgba(255, 193, 7, 0.1);
+            border-color: var(--warning-color);
+            color: var(--warning-color);
+        }
+
+        /* Highlight Classes */
+        .highlight-positive {
+            color: var(--success-color);
+            font-weight: 700;
+        }
+
+        .highlight-negative {
+            color: var(--danger-color);
+            font-weight: 700;
+        }
+
+        .highlight-zero {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .search-controls {
+                flex-direction: column;
+            }
+
+            .form-group {
+                min-width: 100%;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .yarn-details-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-section h1 {
+                font-size: 1.5rem;
+            }
+
+            .main-container {
+                padding: 15px;
+            }
+
+            .search-section, .summary-section, .transactions-section {
+                padding: 15px;
+            }
+
+            .report-table thead th {
+                font-size: 0.75rem;
+                padding: 10px 5px;
+            }
+
+            .report-table tbody td {
+                font-size: 0.8rem;
+                padding: 8px 5px;
+            }
+
+            .summary-card-value {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <h1>
+                <i class="fas fa-chart-line"></i>
+                Raw Yarn Stock Report
+            </h1>
+            <p>Comprehensive yarn inventory analysis with receive and issue transactions</p>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <h3>
+                <i class="fas fa-search"></i> Search Criteria
+            </h3>
+            
+            <div class="search-controls">
+                <div class="form-group">
+                    <label for="searchYarnLot">
+                        <i class="fas fa-box"></i> Yarn Lot Number
+                    </label>
+                    <select class="form-select" id="searchYarnLot">
+                        <option value="">Select Yarn Lot</option>
+                    </select>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="generateReportBtn">
+                        <i class="fas fa-file-alt"></i> Generate Report
+                    </button>
+                    <button class="btn btn-success" id="exportExcelBtn" style="display: none;">
+                        <i class="fas fa-file-excel"></i> Export to Excel
+                    </button>
+                    <button class="btn btn-warning" id="clearReportBtn" style="display: none;">
+                        <i class="fas fa-eraser"></i> Clear Report
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.history.back()">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="loading-spinner" id="loadingSpinner">
+            <div class="spinner-border" role="status"></div>
+            <p style="margin-top: 15px; color: var(--text-color);">Generating report...</p>
+        </div>
+
+        <!-- Report Container -->
+        <div class="report-container" id="reportContainer">
+            <!-- Summary Section -->
+            <div class="summary-section">
+                <div class="summary-header">
+                    <h2>
+                        <i class="fas fa-chart-pie"></i> Stock Summary
+                    </h2>
+                    <div id="reportTimestamp" style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem;"></div>
+                </div>
+
+                <!-- Yarn Details -->
+                <div class="yarn-details-grid" id="yarnDetailsGrid"></div>
+
+                <!-- Summary Cards -->
+                <div class="summary-grid" id="summaryGrid"></div>
+            </div>
+
+            <!-- Receive Transactions -->
+            <div class="transactions-section">
+                <h3>
+                    <i class="fas fa-download"></i> Receive Transactions
+                </h3>
+                <div class="table-responsive">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>PO Number</th>
+                                <th>Dispo Number</th>
+                                <th>Challan No</th>
+                                <th>Quantity (Kgs)</th>
+                                <th>Cumulative (Kgs)</th>
+                                <th>PI No</th>
+                            </tr>
+                        </thead>
+                        <tbody id="receiveTransactionsBody">
+                            <tr>
+                                <td colspan="7" class="no-data">No receive transactions found</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Issue Transactions -->
+            <div class="transactions-section">
+                <h3>
+                    <i class="fas fa-upload"></i> Issue Transactions
+                </h3>
+                <div class="table-responsive">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Issue Type</th>
+                                <th>Issued To</th>
+                                <th>Challan No</th>
+                                <th>Quantity (Kgs)</th>
+                                <th>Cumulative (Kgs)</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="issueTransactionsBody">
+                            <tr>
+                                <td colspan="7" class="no-data">No issue transactions found</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+    let currentReportData = null;
+
+// =====================================================
+// UTILITY FUNCTIONS
+// =====================================================
+
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return 'N/A';
+        
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        
+        return `${day}/${month}/${year}`;
+    } catch (e) {
+        console.error('Date formatting error:', e);
+        return 'N/A';
+    }
+}
+
+function formatNumber(number, decimals = 2) {
+    if (number === null || number === undefined) return '0.00';
+    return parseFloat(number).toFixed(decimals);
+}
+
+function getAgeingBadge(days) {
+    if (days <= 30) {
+        return '<span class="badge badge-success">Fresh</span>';
+    } else if (days <= 90) {
+        return '<span class="badge badge-info">Moderate</span>';
+    } else if (days <= 180) {
+        return '<span class="badge badge-warning">Aged</span>';
+    } else {
+        return '<span class="badge badge-danger">Old Stock</span>';
+    }
+}
+
+function getBalanceClass(balance) {
+    if (balance > 0) return 'highlight-positive';
+    if (balance < 0) return 'highlight-negative';
+    return 'highlight-zero';
+}
+
+function showLoading() {
+    document.getElementById('loadingSpinner').classList.add('active');
+    document.getElementById('reportContainer').classList.remove('active');
+}
+
+function hideLoading() {
+    document.getElementById('loadingSpinner').classList.remove('active');
+}
+
+function showReport() {
+    document.getElementById('reportContainer').classList.add('active');
+    document.getElementById('exportExcelBtn').style.display = 'inline-flex';
+    document.getElementById('clearReportBtn').style.display = 'inline-flex';
+}
+
+function hideReport() {
+    document.getElementById('reportContainer').classList.remove('active');
+    document.getElementById('exportExcelBtn').style.display = 'none';
+    document.getElementById('clearReportBtn').style.display = 'none';
+}
+
+// =====================================================
+// DATA FETCHING FUNCTIONS
+// =====================================================
+
+async function fetchYarnLots() {
+    try {
+        const response = await fetch('/main/api/yarn-stock-report/yarn-lots', {
+            method: 'GET',
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        const yarnLots = await response.json();
+        populateYarnLotDropdown(yarnLots);
+        
+    } catch (error) {
+        console.error('Error fetching yarn lots:', error);
+        alert('Failed to load yarn lots: ' + error.message);
+    }
+}
+
+function populateYarnLotDropdown(yarnLots) {
+    const select = document.getElementById('searchYarnLot');
+    
+    if (!select) return;
+    
+    select.innerHTML = '<option value="">Select Yarn Lot</option>';
+    
+    yarnLots.forEach(lot => {
+        const option = document.createElement('option');
+        option.value = lot.yarn_lot;
+        option.textContent = lot.display;
+        // Store additional data as data attributes
+        option.setAttribute('data-yarn-brand', lot.yarn_brand);
+        option.setAttribute('data-yarn-type', lot.yarn_type);
+        option.setAttribute('data-yarn-composition', lot.yarn_composition);
+        select.appendChild(option);
+    });
+    
+    console.log(`Loaded ${yarnLots.length} yarn lots with details`);
+}
+
+async function fetchStockReport(yarnLot) {
+    try {
+        showLoading();
+        
+        const encodedLot = encodeURIComponent(yarnLot);
+        const response = await fetch(`/main/api/yarn-stock-report/by-lot/${encodedLot}`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error('No data found for this yarn lot');
+            }
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Stock report data:', data);
+        
+        currentReportData = data;
+        displayReport(data);
+        
+    } catch (error) {
+        console.error('Error fetching stock report:', error);
+        alert('Failed to generate report: ' + error.message);
+        hideLoading();
+    }
+}
+
+// =====================================================
+// REPORT DISPLAY FUNCTIONS
+// =====================================================
+
+function displayReport(data) {
+    hideLoading();
+    showReport();
+    
+    // Set timestamp
+    const timestamp = new Date().toLocaleString();
+    document.getElementById('reportTimestamp').innerHTML = 
+        `<i class="fas fa-clock"></i> Generated: ${timestamp}`;
+    
+    // Display yarn details
+    displayYarnDetails(data.yarn_details, data.yarn_lot);
+    
+    // Display summary
+    displaySummary(data.summary);
+    
+    // Display transactions
+    displayReceiveTransactions(data.receive_transactions);
+    displayIssueTransactions(data.issue_transactions);
+    
+    // Scroll to report
+    document.getElementById('reportContainer').scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+    });
+}
+
+function displayYarnDetails(details, yarnLot) {
+    const grid = document.getElementById('yarnDetailsGrid');
+    
+    if (!grid || !details) return;
+    
+    const items = [
+        { label: 'Yarn Lot', value: yarnLot, icon: 'fa-box' },
+        { label: 'Yarn Count', value: details.yarn_count || 'N/A', icon: 'fa-sort-numeric-up' },
+        { label: 'Number of Ply', value: details.yarn_ply || 'N/A', icon: 'fa-random' },
+        { label: 'Yarn Brand', value: details.yarn_brand || 'N/A', icon: 'fa-tags' },
+        { label: 'Yarn Type', value: details.yarn_type || 'N/A', icon: 'fa-certificate' },
+        { label: 'Composition', value: details.yarn_composition || 'N/A', icon: 'fa-layer-group' },
+        { label: 'L/C Number', value: details.lc_no || 'N/A', icon: 'fa-file-contract' },
+        { label: 'Beneficiary', value: details.beneficiary_factory || 'N/A', icon: 'fa-industry' },
+        { label: 'Country of Origin', value: details.country_of_origin || 'N/A', icon: 'fa-globe' },
+        { label: 'Source', value: details.import_local_source || 'N/A', icon: 'fa-shipping-fast' }
+    ];
+    
+    grid.innerHTML = items.map(item => `
+        <div class="yarn-detail-item">
+            <div class="yarn-detail-label">
+                <i class="fas ${item.icon}"></i> ${item.label}
+            </div>
+            <div class="yarn-detail-value">${item.value}</div>
+        </div>
+    `).join('');
+}
+
+function displaySummary(summary) {
+    const grid = document.getElementById('summaryGrid');
+    
+    if (!grid || !summary) return;
+    
+    const balanceClass = getBalanceClass(summary.closing_balance);
+    const ageingBadge = getAgeingBadge(summary.ageing_days);
+    
+    const cards = [
+        {
+            label: 'Total Received',
+            value: `${formatNumber(summary.total_received)} Kgs`,
+            subtitle: `${summary.receive_transaction_count} transactions`,
+            icon: 'fa-download',
+            type: 'success'
+        },
+        {
+            label: 'Total Issued',
+            value: `${formatNumber(summary.total_issued)} Kgs`,
+            subtitle: `${summary.issue_transaction_count} transactions`,
+            icon: 'fa-upload',
+            type: 'info'
+        },
+        {
+            label: 'Closing Balance',
+            value: `${formatNumber(summary.closing_balance)} Kgs`,
+            subtitle: summary.closing_balance > 0 ? 'Stock Available' : 
+                      summary.closing_balance < 0 ? 'Over Issued' : 'Fully Consumed',
+            icon: 'fa-balance-scale',
+            type: summary.closing_balance > 0 ? 'success' : 
+                  summary.closing_balance < 0 ? 'danger' : 'warning',
+            valueClass: balanceClass
+        },
+        {
+            label: 'Ageing Time',
+            value: `${summary.ageing_days} Days`,
+            subtitle: ageingBadge,
+            icon: 'fa-clock',
+            type: summary.ageing_days <= 90 ? 'info' : 'warning'
+        },
+        {
+            label: 'First Receipt',
+            value: formatDate(summary.first_receive_date),
+            subtitle: 'Initial stock date',
+            icon: 'fa-calendar-plus',
+            type: 'info'
+        },
+        {
+            label: 'Last Receipt',
+            value: formatDate(summary.last_receive_date),
+            subtitle: 'Most recent receipt',
+            icon: 'fa-calendar-check',
+            type: 'info'
+        },
+        {
+            label: 'Last Issue',
+            value: formatDate(summary.last_issue_date),
+            subtitle: 'Most recent issue',
+            icon: 'fa-calendar-minus',
+            type: 'info'
+        },
+        {
+            label: 'Turnover Ratio',
+            value: summary.total_received > 0 ? 
+                   formatNumber((summary.total_issued / summary.total_received) * 100, 1) + '%' : 
+                   '0%',
+            subtitle: 'Issued vs Received',
+            icon: 'fa-percentage',
+            type: 'info'
+        }
+    ];
+    
+    grid.innerHTML = cards.map(card => `
+        <div class="summary-card ${card.type}">
+            <div class="summary-card-label">
+                <i class="fas ${card.icon}"></i>
+                ${card.label}
+            </div>
+            <div class="summary-card-value ${card.valueClass || ''}">${card.value}</div>
+            <div class="summary-card-subtitle">${card.subtitle}</div>
+        </div>
+    `).join('');
+}
+
+function displayReceiveTransactions(transactions) {
+    const tbody = document.getElementById('receiveTransactionsBody');
+    
+    if (!tbody) return;
+    
+    if (!transactions || transactions.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="no-data">
+                    <i class="fas fa-info-circle"></i> No receive transactions found
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    let cumulativeQty = 0;
+    
+    tbody.innerHTML = transactions.map(txn => {
+        cumulativeQty += txn.quantity;
+        
+        return `
+            <tr>
+                <td>${formatDate(txn.date)}</td>
+                <td>${txn.po_number || 'N/A'}</td>
+                <td>${txn.dispo_number || 'N/A'}</td>
+                <td>${txn.challan_no || 'N/A'}</td>
+                <td><strong>${formatNumber(txn.quantity)}</strong></td>
+                <td class="highlight-positive">${formatNumber(cumulativeQty)}</td>
+                <td>${txn.pi_no || 'N/A'}</td>
+            </tr>
+        `;
+    }).join('');
+    
+    // Add total row
+    tbody.innerHTML += `
+        <tr style="background: var(--input-bg); font-weight: 700;">
+            <td colspan="4" style="text-align: right;">TOTAL:</td>
+            <td><strong>${formatNumber(cumulativeQty)}</strong></td>
+            <td colspan="2"></td>
+        </tr>
+    `;
+}
+
+function displayIssueTransactions(transactions) {
+    const tbody = document.getElementById('issueTransactionsBody');
+    
+    if (!tbody) return;
+    
+    if (!transactions || transactions.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="no-data">
+                    <i class="fas fa-info-circle"></i> No issue transactions found
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    let cumulativeQty = 0;
+    
+    tbody.innerHTML = transactions.map(txn => {
+        cumulativeQty += txn.quantity;
+        
+        return `
+            <tr>
+                <td>${formatDate(txn.date)}</td>
+                <td>${txn.issue_type || 'N/A'}</td>
+                <td>${txn.issued_to || 'N/A'}</td>
+                <td>${txn.challan_no || 'N/A'}</td>
+                <td><strong>${formatNumber(txn.quantity)}</strong></td>
+                <td class="highlight-positive">${formatNumber(cumulativeQty)}</td>
+                <td>${txn.remarks || '-'}</td>
+            </tr>
+        `;
+    }).join('');
+    
+    // Add total row
+    tbody.innerHTML += `
+        <tr style="background: var(--input-bg); font-weight: 700;">
+            <td colspan="4" style="text-align: right;">TOTAL:</td>
+            <td><strong>${formatNumber(cumulativeQty)}</strong></td>
+            <td colspan="2"></td>
+        </tr>
+    `;
+}
+
+// =====================================================
+// EXPORT FUNCTIONS
+// =====================================================
+
+function exportToExcel() {
+    if (!currentReportData) {
+        alert('No report data to export');
+        return;
+    }
+    
+    try {
+        const wb = XLSX.utils.book_new();
+        
+        // ========================================
+        // Sheet 1: Summary
+        // ========================================
+        const summaryData = [
+            ['RAW YARN STOCK REPORT'],
+            ['Generated:', new Date().toLocaleString()],
+            [],
+            ['YARN DETAILS'],
+            ['Yarn Lot:', currentReportData.yarn_lot],
+            ['Yarn Count:', currentReportData.yarn_details.yarn_count || 'N/A'],
+            ['Number of Ply:', currentReportData.yarn_details.yarn_ply || 'N/A'],
+            ['Yarn Brand:', currentReportData.yarn_details.yarn_brand || 'N/A'],
+            ['Yarn Type:', currentReportData.yarn_details.yarn_type || 'N/A'],
+            ['Composition:', currentReportData.yarn_details.yarn_composition || 'N/A'],
+            ['L/C Number:', currentReportData.yarn_details.lc_no || 'N/A'],
+            ['Beneficiary:', currentReportData.yarn_details.beneficiary_factory || 'N/A'],
+            [],
+            ['STOCK SUMMARY'],
+            ['Total Received (Kgs):', currentReportData.summary.total_received],
+            ['Total Issued (Kgs):', currentReportData.summary.total_issued],
+            ['Closing Balance (Kgs):', currentReportData.summary.closing_balance],
+            ['Ageing Days:', currentReportData.summary.ageing_days],
+            ['First Receipt Date:', formatDate(currentReportData.summary.first_receive_date)],
+            ['Last Receipt Date:', formatDate(currentReportData.summary.last_receive_date)],
+            ['Last Issue Date:', formatDate(currentReportData.summary.last_issue_date)],
+            ['Receive Transactions:', currentReportData.summary.receive_transaction_count],
+            ['Issue Transactions:', currentReportData.summary.issue_transaction_count]
+        ];
+        
+        const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+        XLSX.utils.book_append_sheet(wb, summarySheet, 'Summary');
+        
+        // ========================================
+        // Sheet 2: Receive Transactions
+        // ========================================
+        const receiveHeaders = [
+            'Date', 'PO Number', 'Dispo Number', 'Challan No', 
+            'Quantity (Kgs)', 'Cumulative (Kgs)', 'PI No'
+        ];
+        
+        const receiveData = [receiveHeaders];
+        let cumulativeReceive = 0;
+        
+        currentReportData.receive_transactions.forEach(txn => {
+            cumulativeReceive += txn.quantity;
+            receiveData.push([
+                formatDate(txn.date),
+                txn.po_number || 'N/A',
+                txn.dispo_number || 'N/A',
+                txn.challan_no || 'N/A',
+                txn.quantity,
+                cumulativeReceive,
+                txn.pi_no || 'N/A'
+            ]);
+        });
+        
+        const receiveSheet = XLSX.utils.aoa_to_sheet(receiveData);
+        XLSX.utils.book_append_sheet(wb, receiveSheet, 'Receive Transactions');
+        
+        // ========================================
+        // Sheet 3: Issue Transactions
+        // ========================================
+        const issueHeaders = [
+            'Date', 'Issue Type', 'Issued To', 'Challan No', 
+            'Quantity (Kgs)', 'Cumulative (Kgs)', 'Remarks'
+        ];
+        
+        const issueData = [issueHeaders];
+        let cumulativeIssue = 0;
+        
+        currentReportData.issue_transactions.forEach(txn => {
+            cumulativeIssue += txn.quantity;
+            issueData.push([
+                formatDate(txn.date),
+                txn.issue_type || 'N/A',
+                txn.issued_to || 'N/A',
+                txn.challan_no || 'N/A',
+                txn.quantity,
+                cumulativeIssue,
+                txn.remarks || '-'
+            ]);
+        });
+        
+        const issueSheet = XLSX.utils.aoa_to_sheet(issueData);
+        XLSX.utils.book_append_sheet(wb, issueSheet, 'Issue Transactions');
+        
+        // ========================================
+        // Export File
+        // ========================================
+        const fileName = `Raw_Yarn_Stock_Report_${currentReportData.yarn_lot}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+        
+        console.log('Report exported successfully');
+        
+    } catch (error) {
+        console.error('Error exporting to Excel:', error);
+        alert('Failed to export report: ' + error.message);
+    }
+}
+
+function clearReport() {
+    if (confirm('Are you sure you want to clear the current report?')) {
+        currentReportData = null;
+        hideReport();
+        document.getElementById('searchYarnLot').value = '';
+        
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+// =====================================================
+// EVENT LISTENERS
+// =====================================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Raw Yarn Stock Report initialized');
+    
+    // Fetch yarn lots on load
+    fetchYarnLots();
+    
+    // Generate Report button
+    const generateBtn = document.getElementById('generateReportBtn');
+    if (generateBtn) {
+        generateBtn.addEventListener('click', function() {
+            const yarnLot = document.getElementById('searchYarnLot').value;
+            
+            if (!yarnLot) {
+                alert('Please select a yarn lot');
+                return;
+            }
+            
+            fetchStockReport(yarnLot);
+        });
+    }
+    
+    // Export Excel button
+    const exportBtn = document.getElementById('exportExcelBtn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportToExcel);
+    }
+    
+    // Clear Report button
+    const clearBtn = document.getElementById('clearReportBtn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearReport);
+    }
+    
+    // Enter key on select
+    const yarnLotSelect = document.getElementById('searchYarnLot');
+    if (yarnLotSelect) {
+        yarnLotSelect.addEventListener('change', function() {
+            if (this.value) {
+                // Auto-generate report on selection
+                fetchStockReport(this.value);
+            }
+        });
+    }
+});
+    
+</script>
+</body>
+</html>
