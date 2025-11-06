@@ -599,14 +599,12 @@ app.post('/main/api/logout', (req, res) => {
     });
 });
 
-// Get current user API
-app.get('/main/api/current-user', (req, res) => {
+// Get current user API - uses requireAuth middleware
+app.get('/main/api/current-user', requireAuth, (req, res) => {
     console.log('Session user:', req.session.user);
-    if (!req.session.user) {
-        return res.status(401).json({ error: 'Not logged in' });
-    }
     res.status(200).json({
         user: {
+            id: req.session.user.id,
             username: req.session.user.username,
             role: req.session.user.role,
             privileges: req.session.user.privileges,
@@ -663,24 +661,19 @@ app.get('/main/api/active-users', (req, res) => {
     }
 });
 
-// Get all users (for admin)
-app.get('/main/api/users', async (req, res) => {
-    if (!req.session.user || req.session.user.role !== 'admin') {
-        return res.status(403).json({ error: 'Access denied' });
-    }
+// Get all users (for admin) - uses requireAdmin middleware
+app.get('/main/api/users', requireAdmin, async (req, res) => {
     try {
-        const [users] = await pool.query('SELECT id, username FROM users WHERE role = "user"');
+        const [users] = await pool.query('SELECT id, username, role FROM users WHERE role = "user" ORDER BY username');
         res.status(200).json(users);
     } catch (error) {
+        console.error('Error fetching users:', error);
         res.status(500).json({ error: 'Failed to fetch users', details: error.message });
     }
 });
 
-// Get user privileges (for admin)
-app.get('/main/api/user-privileges/:userId', async (req, res) => {
-    if (!req.session.user || req.session.user.role !== 'admin') {
-        return res.status(403).json({ error: 'Access denied' });
-    }
+// Get user privileges (for admin) - uses requireAdmin middleware
+app.get('/main/api/user-privileges/:userId', requireAdmin, async (req, res) => {
     try {
         console.log('Fetching privileges for user ID:', req.params.userId);
         
@@ -720,11 +713,8 @@ app.get('/main/api/user-privileges/:userId', async (req, res) => {
 });
 
 // Update user privileges (for admin)
-app.post('/main/api/update-privileges', async (req, res) => {
-    if (!req.session.user || req.session.user.role !== 'admin') {
-        return res.status(403).json({ error: 'Access denied' });
-    }
-    
+// Update user privileges (admin only) - uses requireAdmin middleware
+app.post('/main/api/update-privileges', requireAdmin, async (req, res) => {
     const { userId, privileges } = req.body;
     console.log('Update privileges request received:', { userId, privilegesCount: privileges ? privileges.length : 0 });
     

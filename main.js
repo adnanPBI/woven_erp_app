@@ -10,6 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
          // Check if already logged in
          fetch('/main/api/current-user', { credentials: 'include' })
              .then(response => {
+                 // Don't throw error on 401 - just means not logged in
+                 if (response.status === 401) {
+                     return { user: null };
+                 }
                  if (!response.ok) {
                      throw new Error(`HTTP error! status: ${response.status}`);
                  }
@@ -26,7 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
              })
              .catch(error => {
                  console.error('Error checking current user:', error);
-                 alert(`Login check failed: ${error.message}`);
+                 // Only log errors, don't show alert for auth failures
+                 if (error.message && !error.message.includes('401')) {
+                     console.warn('Unexpected error during login check:', error.message);
+                 }
                  loginModal.show();
              });
 
@@ -163,7 +170,7 @@ function logDebug(context, message, data = null) {
     // Update active users count
     // Replace the updateActiveUsers function in main.js
 function updateActiveUsers() {
-    fetch('/main/api/active-users', { 
+    fetch('/main/api/active-users', {
         credentials: 'include',
         headers: {
             'Cache-Control': 'no-cache',
@@ -171,12 +178,21 @@ function updateActiveUsers() {
         }
     })
         .then(response => {
+            // Handle session expiry gracefully
+            if (response.status === 401) {
+                console.warn('Session expired, redirecting to login');
+                currentUser = null;
+                document.getElementById('mainContainer').style.display = 'none';
+                loginModal.show();
+                return null;
+            }
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             return response.json();
         })
         .then(data => {
+            if (!data) return; // Session expired, already handled
             // Update counter
             const userStatusElem = document.getElementById('userStatus');
             if (userStatusElem) {
@@ -305,43 +321,26 @@ function updateLoggedInUserDisplay() {
     try {
         // Create or update the username display
         let userDisplayElem = document.getElementById('currentUserDisplay');
-        
+
         if (!userDisplayElem) {
             // Create the element if it doesn't exist
             userDisplayElem = document.createElement('span');
             userDisplayElem.id = 'currentUserDisplay';
             userDisplayElem.className = 'badge bg-success me-2';
-            
+
             // Insert it before the Active Users display
             const userStatusElem = document.getElementById('userStatus');
             if (userStatusElem && userStatusElem.parentNode) {
                 userStatusElem.parentNode.insertBefore(userDisplayElem, userStatusElem);
             }
         }
-        
-        // Set the content
+
+        // Set the content with role-based styling
         if (currentUser && currentUser.username) {
-            userDisplayElem.innerHTML = `<i class="fas fa-user"></i> ${currentUser.username}`;
+            const roleClass = currentUser.role === 'admin' ? 'text-danger' : 'text-white';
+            userDisplayElem.innerHTML = `<i class="fas fa-user"></i> <span class="${roleClass}">${currentUser.username} (${currentUser.role})</span>`;
         } else {
             userDisplayElem.innerHTML = `<i class="fas fa-user"></i> Guest`;
-        }
-    } catch (error) {
-        console.error("Error updating user display:", error);
-    }
-}
-
-
-    // Add this function to update the current user display
-function updateLoggedInUserDisplay() {
-    try {
-        const userDisplayElem = document.getElementById('currentUserDisplay');
-        if (userDisplayElem) {
-            if (currentUser && currentUser.username) {
-                const roleClass = currentUser.role === 'admin' ? 'text-danger' : 'text-white';
-                userDisplayElem.innerHTML = `<i class="fas fa-user"></i> <span class="${roleClass}">${currentUser.username}</span>`;
-            } else {
-                userDisplayElem.innerHTML = `<i class="fas fa-user"></i> Guest`;
-            }
         }
     } catch (error) {
         console.error("Error updating user display:", error);
@@ -353,6 +352,14 @@ function updateLoggedInUserDisplay() {
          document.getElementById('userPrivilegeBtn').addEventListener('click', () => {
              fetch('/main/api/users', { credentials: 'include' })
                  .then(response => {
+                     // Handle session expiry
+                     if (response.status === 401) {
+                         console.warn('Session expired, redirecting to login');
+                         currentUser = null;
+                         document.getElementById('mainContainer').style.display = 'none';
+                         loginModal.show();
+                         throw new Error('Session expired');
+                     }
                      if (!response.ok) {
                          throw new Error(`HTTP error! status: ${response.status}`);
                      }
@@ -393,13 +400,21 @@ document.getElementById('userSelect').addEventListener('change', (e) => {
     const privilegesList = document.getElementById('privilegesList');
     privilegesList.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p>Loading privileges...</p></div>';
 
-    fetch(`/main/api/user-privileges/${userId}`, { 
+    fetch(`/main/api/user-privileges/${userId}`, {
         credentials: 'include',
         headers: {
             'Cache-Control': 'no-cache'
         }
     })
         .then(response => {
+            // Handle session expiry
+            if (response.status === 401) {
+                console.warn('Session expired, redirecting to login');
+                currentUser = null;
+                document.getElementById('mainContainer').style.display = 'none';
+                loginModal.show();
+                throw new Error('Session expired');
+            }
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
