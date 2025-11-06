@@ -1,3 +1,6 @@
+// Load environment variables first
+require('dotenv').config();
+
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
@@ -10,24 +13,42 @@ const fs = require('fs');
 // Initialize the Express app
 const app = express();
 
-// MySQL connection configuration
+// Validate required environment variables
+const requiredEnvVars = ['DB_USER', 'DB_PASSWORD', 'DB_NAME', 'SESSION_SECRET'];
+const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+if (missingVars.length > 0) {
+    console.error('ERROR: Missing required environment variables:', missingVars.join(', '));
+    console.error('Please create a .env file based on .env.example');
+    process.exit(1);
+}
+
+// MySQL connection configuration using environment variables
 const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'ppjbyqnv_admin',
-    password: 'Adnan2016',
-    database: 'ppjbyqnv_precosting_db',
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
     charset: 'utf8mb4',
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT) || 10,
     queueLimit: 0,
 });
 
 // Session store
 const sessionStore = new MySQLStore({}, pool);
 
-// FIXED: Enhanced CORS settings for proper session handling
+// CORS configuration - environment-based
+const corsOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',')
+    : ['http://precostingdatabase.com', 'https://precostingdatabase.com'];
+
+// Add localhost only in development
+if (process.env.NODE_ENV === 'development') {
+    corsOrigins.push('http://localhost:3000', 'http://127.0.0.1:3000');
+}
+
 app.use(cors({
-    origin: ['http://precostingdatabase.com', 'https://precostingdatabase.com', 'http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: corsOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
     credentials: true,
@@ -36,37 +57,103 @@ app.use(cors({
 }));
 
 app.use(express.json());
-// FIXED: Enhanced session configuration
+
+// Enhanced session configuration with environment variables
+const isProduction = process.env.NODE_ENV === 'production';
 app.use(session({
-    key: 'precosting_session',
-    secret: '3f8d7b2a1c9e6f5a0b4d2c8e1f7a3b5d9e0f2c4a6b8d1e3f5a7c9e2b4d6f8a0',
+    key: process.env.SESSION_KEY || 'precosting_session',
+    secret: process.env.SESSION_SECRET,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
-    cookie: { 
-        secure: false,
+    cookie: {
+        secure: process.env.COOKIE_SECURE === 'true' || isProduction,
         httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000,
-        sameSite: 'lax' // ADDED: This helps with session handling
+        maxAge: parseInt(process.env.SESSION_MAX_AGE) || 24 * 60 * 60 * 1000,
+        sameSite: process.env.COOKIE_SAME_SITE || (isProduction ? 'strict' : 'lax')
     },
-    rolling: true // ADDED: Refreshes session on each request
+    rolling: true
 }));
 
-// FIXED: Enhanced session validation middleware
+// Authentication middleware
+const requireAuth = (req, res, next) => {
+    if (!req.session || !req.session.user) {
+        return res.status(401).json({
+            success: false,
+            message: 'Authentication required'
+        });
+    }
+    next();
+};
+
+// Admin authentication middleware
+const requireAdmin = (req, res, next) => {
+    if (!req.session || !req.session.user) {
+        return res.status(401).json({
+            success: false,
+            message: 'Authentication required'
+        });
+    }
+    if (req.session.user.role !== 'admin') {
+        return res.status(403).json({
+            success: false,
+            message: 'Admin access required'
+        });
+    }
+    next();
+};
+
+// Input validation middleware
+const validateInput = (req, res, next) => {
+    // Sanitize string inputs to prevent XSS
+    const sanitizeString = (str) => {
+        if (typeof str !== 'string') return str;
+        return str.trim().replace(/<script[^>]*>.*?<\/script>/gi, '');
+    };
+
+    // Recursively sanitize object
+    const sanitizeObject = (obj) => {
+        if (typeof obj !== 'object' || obj === null) return obj;
+
+        const sanitized = Array.isArray(obj) ? [] : {};
+        for (const key in obj) {
+            if (typeof obj[key] === 'string') {
+                sanitized[key] = sanitizeString(obj[key]);
+            } else if (typeof obj[key] === 'object') {
+                sanitized[key] = sanitizeObject(obj[key]);
+            } else {
+                sanitized[key] = obj[key];
+            }
+        }
+        return sanitized;
+    };
+
+    if (req.body) {
+        req.body = sanitizeObject(req.body);
+    }
+    if (req.query) {
+        req.query = sanitizeObject(req.query);
+    }
+    next();
+};
+
+// Apply input validation to all routes
+app.use(validateInput);
+
+// Enhanced session validation middleware
 app.use((req, res, next) => {
     // Skip session check for login/register routes
     if (req.path === '/main/api/login' || req.path === '/main/api/register') {
         return next();
     }
-    
-    // Enhanced session logging for API routes
-    if (req.path.includes('/api/')) {
+
+    // Enhanced session logging for API routes (only in development)
+    if (req.path.includes('/api/') && process.env.NODE_ENV === 'development') {
         console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
         console.log(`  Session ID: ${req.sessionID}`);
         console.log(`  Session exists: ${!!req.session}`);
         console.log(`  Has user: ${!!req.session?.user}`);
-        console.log(`  Cookie: ${JSON.stringify(req.session?.cookie)}`);
-        
+
         if (req.session?.user) {
             console.log(`  User: ${req.session.user.username}, Role: ${req.session.user.role}`);
         } else if (req.path.includes('/api/') && !req.path.includes('/debug/')) {
@@ -168,8 +255,8 @@ pool.getConnection()
         console.error('Error connecting to MySQL:', err.stack);
     });
 
-// Session debugging endpoint
-app.get('/main/api/debug/session-info', (req, res) => {
+// Session debugging endpoint - requires admin authentication in production
+app.get('/main/api/debug/session-info', isProduction ? requireAdmin : (req, res, next) => next(), (req, res) => {
     try {
         res.json({
             sessionID: req.sessionID,
@@ -196,8 +283,8 @@ app.get('/main/api/debug/session-info', (req, res) => {
     }
 });
 
-// Diagnostic route for file system information
-app.get('/main/api/debug/file-check', (req, res) => {
+// Diagnostic route for file system information - requires admin authentication in production
+app.get('/main/api/debug/file-check', isProduction ? requireAdmin : (req, res, next) => next(), (req, res) => {
     try {
         const basePath = path.resolve(__dirname, 'orderinformation_module/dispocreate_app');
         const indexPath = path.join(basePath, 'index.html');
@@ -225,8 +312,8 @@ app.get('/main/api/debug/file-check', (req, res) => {
     }
 });
 
-// API endpoint to check table structure
-app.get('/main/api/debug/check-tables', async (req, res) => {
+// API endpoint to check table structure - requires admin authentication in production
+app.get('/main/api/debug/check-tables', isProduction ? requireAdmin : (req, res, next) => next(), async (req, res) => {
     let connection;
     try {
         connection = await pool.getConnection();
@@ -291,10 +378,7 @@ app.get('/main/api/debug/check-tables', async (req, res) => {
 });
 
 // Debug endpoint to check PO and Dispo table data
-app.get('/main/api/debug/po-dispo-table-check', async (req, res) => {
-    if (!req.session.user) {
-        return res.status(401).json({ error: 'Not logged in' });
-    }
+app.get('/main/api/debug/po-dispo-table-check', isProduction ? requireAdmin : requireAuth, async (req, res) => {
     
     let connection;
     try {
