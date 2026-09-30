@@ -1,0 +1,10 @@
+{
+  "policy_version": "3.2.3-hybrid-1",
+  "profiles": {
+    "yarn-receive": ["yarn_receive_form"],
+    "yarn-issue": ["yarn_issue_form"],
+    "warping": ["warping_form"],
+    "sizing": ["sizing_form"],
+    "greige-delivery": ["greige_delivery_form"]
+  }
+}

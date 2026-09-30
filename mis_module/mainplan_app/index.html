@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dispo Wise Plan - Main Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-bg: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+            --container-bg: #252525;
+            --text-color: #e0e0e0;
+            --accent-color: #00c4ff;
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            --btn-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            --border-glow: rgba(0, 196, 255, 0.3);
+        }
+        
+        .form-container .vertical-layout .column hr {
+            border: 0;
+            border-top: 1px solid #555;
+            margin: 15px 0;
+            width: 100%;
+        }
+
+        .form-container .vertical-layout {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            align-items: start;
+        }
+
+        .vertical-layout .column {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            min-height: 100%;
+            min-width: 0;
+        }
+
+        body {
+            background: var(--primary-bg);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            height: 100vh;
+            overflow: auto;
+            background-attachment: fixed;
+        }
+        
+        .section-header-height {
+            min-height: 24px;
+            line-height: 24px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .main-container {
+            background: var(--container-bg);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border: 2px solid #3a3a3a;
+            height: auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 196, 255, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 196, 255, 0.03) 0%, transparent 20%);
+        }
+
+        .main-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.03) 50%, transparent 51%);
+            background-size: 10px 10px;
+            pointer-events: none;
+        }
+
+        .header-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 18px 15px;
+            border-radius: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 1050;
+            overflow: visible;
+        }
+
+        .header-title {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .header-controls::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 15%;
+            width: 70%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        }
+
+        .header-controls h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--text-color);
+            text-shadow: var(--text-shadow);
+            margin: 0;
+            background: linear-gradient(45deg, #FFA500, #FFD580);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .header-controls .btn, .header-controls .btn.dropdown-toggle {
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: none;
+            color: #fff;
+            box-shadow: var(--btn-shadow);
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            font-weight: 600;
+            white-space: nowrap;
+            min-width: 140px;
+            text-align: center;
+        }
+
+        .btn-info { background: linear-gradient(135deg, #0d8991, #3bbcc4, #4fb4db) !important; }
+        .btn-warning { background: linear-gradient(135deg, #ffc107, #fd7e14) !important; }
+        .btn-primary { background: linear-gradient(135deg, #0a3a57, #0c8731, #09ad92) !important; }
+        .btn-success { background: linear-gradient(135deg, #1e3954, #3b80db) !important; }
+        .btn-danger { background: linear-gradient(135deg, #991509, #e83e8c) !important; }
+        .btn-tertiary { background: linear-gradient(125deg, #090669, #394f99) !important; }
+        .btn-secondary { background: linear-gradient(135deg, #6c757d, #495057) !important; }
+
+        .header-controls .btn::before, .header-controls .btn.dropdown-toggle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.5s ease;
+            z-index: -1;
+        }
+
+        .header-controls .btn:hover, .header-controls .btn.dropdown-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.6);
+        }
+
+        .header-controls .btn:hover::before, .header-controls .btn.dropdown-toggle:hover::before {
+            left: 100%;
+        }
+
+        .header-controls .btn i { margin-right: 6px; }
+        
+        .dropdown {
+         position: relative;
+          }
+
+        .dropdown-menu {
+            background: #303030;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            z-index: 1051;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .dropdown-item {
+            color: var(--text-color);
+            font-size: 0.8rem;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+            white-space: nowrap; /* Prevent wrapping */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            
+        }
+
+        .dropdown-item:hover {
+            background: #404040;
+            color: #ffffff;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Single-line dropdown item layout */
+.dropdown-item-singleline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+    
+
+      .dropdown-item-field {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dropdown-item-field strong {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.dropdown-separator {
+    color: var(--accent-color);
+    font-weight: 700;
+    margin: 0 4px;
+}
+
+/* Responsive dropdown for smaller screens */
+@media (max-width: 768px) {
+    .dropdown-menu {
+        min-width: 100%;
+        max-width: 95vw;
+    }
+    
+    .dropdown-item {
+        font-size: 0.75rem;
+        padding: 6px 10px;
+    }
+}
+
+        .form-container {
+            background: #252525;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .form-container:hover {
+            background: #2D2D2D;
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-glow);
+            border-color: rgba(0, 196, 255, 0.2);
+        }
+
+        .form-label {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 0;
+            font-size: 0.8rem;
+            width: 40%;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .form-control, .form-select {
+            background-color: #404040;
+            border: 1px solid #505050;
+            color: var(--text-color);
+            border-radius: 10px;
+            padding: 6px 10px;
+            height: 35px;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            width: 60%;
+        }
+
+        .form-group i.fa-calendar-alt,
+        .form-group i.fa-calendar-check {
+            color: var(--accent-color) !important;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] { -moz-appearance: textfield; }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #454545;
+            color: var(--text-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(0, 196, 255, 0.25);
+        }
+
+        .form-control:hover, .form-select:hover { border-color: var(--accent-color); }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 10px;
+            position: relative;
+        }
+
+        .form-group i {
+            position: absolute;
+            right: 10px;
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .form-group .form-control, .form-group .form-select { padding-right: 30px; }
+
+        .form-group .form-control:focus ~ i,
+        .form-group .form-select:focus ~ i {
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+        
+        html, body {
+            scroll-behavior: auto !important;
+            overflow-x: hidden;
+        }
+
+        html { scroll-padding-top: 0; }
+        body { position: relative; }
+
+        .result-field {
+            background-color: #d68733 !important;
+            border: none;
+            color: #000 !important;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+        }
+
+        .form-group textarea.form-control {
+            width: 60%;
+            height: auto;
+            min-height: 35px;
+            resize: vertical;
+        }
+
+        @media (max-width: 1200px) {
+            .button-row { justify-content: center; gap: 6px; }
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+                min-width: 120px;
+            }
+            .vertical-layout { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 992px) {
+            .button-row { flex-direction: column; align-items: stretch; gap: 8px; }
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                width: 100%;
+                max-width: 200px;
+                margin: 0 auto;
+            }
+            .vertical-layout { grid-template-columns: 1fr; }
+            .form-group { flex-direction: column; align-items: stretch; gap: 5px; }
+            .form-label { width: 100%; }
+            .form-control, .form-select, .form-group textarea.form-control { width: 100%; }
+            .form-group i {
+                position: absolute;
+                right: 10px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                font-size: 0.75rem;
+                padding: 6px 10px;
+                min-width: 100px;
+            }
+            .form-label { font-size: 0.75rem; }
+            .form-control, .form-select {
+                font-size: 0.8rem;
+                padding: 5px 8px;
+                height: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header-controls">
+            <div class="header-title">
+                <h1>Dispo Wise Main Plan Entry Form</h1>
+            </div>
+            <div class="header-buttons">
+                <div class="button-row">
+                    <div class="dropdown">
+                        <button class="btn btn-info dropdown-toggle" type="button" id="searchDispoNumberDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-search"></i> Search Dispo Number
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="searchDispoNumberDropdown" id="searchDispoNumberMenu">
+                            <li><a class="dropdown-item disabled" href="#">No dispo numbers available</a></li>
+                        </ul>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-tertiary dropdown-toggle" type="button" id="searchDispoPlanDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-folder-open"></i> Search Dispo Plan
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="searchDispoPlanDropdown" id="searchDispoPlanMenu">
+                            <li><a class="dropdown-item disabled" href="#">No saved plans available</a></li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-warning" id="clearFormBtn"><i class="fas fa-eraser"></i> Clear Form</button>
+                </div>
+                
+                <div class="button-row">
+                    <button class="btn btn-primary" id="saveBtn"><i class="fas fa-save"></i> Save Record</button>
+                    <button class="btn btn-primary" id="updateBtn"><i class="fas fa-refresh"></i> Update Record</button>
+                    <button class="btn btn-success" id="exportBtn"><i class="fas fa-file-excel"></i> Export to Excel</button>
+                    <button class="btn btn-danger" id="deleteBtn"><i class="fas fa-trash-alt"></i> Delete Record</button>
+                    <a href="#" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+                </div>
+            </div>
+        </div>
+
+        <form id="dispoPlanForm">
+            <div class="form-container">
+                <div class="vertical-layout">
+                    <!-- Column 1 -->
+                    <div class="column">
+                        <div class="form-group">
+                            <label for="poIssueDate" class="form-label">PO Issue Date</label>
+                            <input type="date" class="form-control" id="poIssueDate" name="po_issue_date">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="poReceivedDate" class="form-label">PO Received Date</label>
+                            <input type="date" class="form-control" id="poReceivedDate" name="po_received_date">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ppSampleDeliveryDate" class="form-label">PP Sample Delivery Date</label>
+                            <input type="date" class="form-control" id="ppSampleDeliveryDate" name="pp_sample_delivery_date">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bulkFabricDeliveryDate" class="form-label">Bulk Fabric Delivery Date</label>
+                            <input type="date" class="form-control" id="bulkFabricDeliveryDate" name="bulk_fabric_delivery_date">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="poRevisedDate" class="form-label">PO Revised Date</label>
+                            <input type="date" class="form-control" id="poRevisedDate" name="po_revised_date">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bulkRevisedNo" class="form-label">Bulk Revised No.</label>
+                            <input type="text" class="form-control" id="bulkRevisedNo" name="bulk_revised_no">
+                            <i class="fas fa-hashtag"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bulkRevisedReason" class="form-label">Bulk Revised Reason</label>
+                            <input type="text" class="form-control" id="bulkRevisedReason" name="bulk_revised_reason">
+                            <i class="fas fa-comment"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reproductionRevisedNo" class="form-label">Reproduction Revised No.</label>
+                            <input type="text" class="form-control" id="reproductionRevisedNo" name="reproduction_revised_no">
+                            <i class="fas fa-hashtag"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reproductionRevisedReason" class="form-label">Reproduction Revised Reason</label>
+                            <input type="text" class="form-control" id="reproductionRevisedReason" name="reproduction_revised_reason">
+                            <i class="fas fa-comment"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="poNo" class="form-label">PO No.</label>
+                            <input type="text" class="form-control" id="poNo" name="po_no">
+                            <i class="fas fa-file-invoice"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="piUnitLcUnit" class="form-label">PI Unit/LC Unit</label>
+                            <input type="text" class="form-control" id="piUnitLcUnit" name="pi_unit_lc_unit">
+                            <i class="fas fa-building"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="orderNo" class="form-label">Order No</label>
+                            <input type="text" class="form-control" id="orderNo" name="order_no">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="accountHolder" class="form-label">Account Holder</label>
+                            <input type="text" class="form-control" id="accountHolder" name="account_holder">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="buyer" class="form-label">Buyer</label>
+                            <input type="text" class="form-control" id="buyer" name="buyer">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="garmentsName" class="form-label">Garments Name</label>
+                            <input type="text" class="form-control" id="garmentsName" name="garments_name">
+                            <i class="fas fa-tshirt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="customerRefStl" class="form-label">Customer Ref/Stl</label>
+                            <input type="text" class="form-control" id="customerRefStl" name="customer_ref_stl">
+                            <i class="fas fa-tag"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="buyerColorReference" class="form-label">Buyer Color Reference</label>
+                            <input type="text" class="form-control" id="buyerColorReference" name="buyer_color_reference">
+                            <i class="fas fa-palette"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="weave" class="form-label">Weave</label>
+                            <input type="text" class="form-control" id="weave" name="weave">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="finishType" class="form-label">Finish Type</label>
+                            <input type="text" class="form-control" id="finishType" name="finish_type">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="marketingReffTrackingNo" class="form-label">Marketing Reff/Tracking No</label>
+                            <input type="text" class="form-control" id="marketingReffTrackingNo" name="marketing_reff_tracking_no">
+                            <i class="fas fa-bullhorn"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="deskLoomStrikeOffNo" class="form-label">Desk Loom/Strike Off No</label>
+                            <input type="text" class="form-control" id="deskLoomStrikeOffNo" name="desk_loom_strike_off_no">
+                            <i class="fas fa-desktop"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="endUse" class="form-label">End Use</label>
+                            <input type="text" class="form-control" id="endUse" name="end_use">
+                            <i class="fas fa-flag"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="orderType" class="form-label">Order Type</label>
+                            <select class="form-select" id="orderType" name="order_type">
+                                <option value="">Select Type</option>
+                                <option value="Bulk">Bulk</option>
+                                <option value="Sample">Sample</option>
+                                <option value="Re-order">Re-order</option>
+                            </select>
+                            <i class="fas fa-list"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="yarnType" class="form-label">Yarn Type</label>
+                            <input type="text" class="form-control" id="yarnType" name="yarn_type">
+                            <i class="fas fa-wool-ball"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fabricType" class="form-label">Fabric Type</label>
+                            <input type="text" class="form-control" id="fabricType" name="fabric_type">
+                            <i class="fas fa-tshirt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="processType" class="form-label">Process Type</label>
+                            <input type="text" class="form-control" id="processType" name="process_type">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="printMethod" class="form-label">Print Method</label>
+                            <input type="text" class="form-control" id="printMethod" name="print_method">
+                            <i class="fas fa-print"></i>
+                        </div>
+
+                        
+                    </div>
+
+                    <!-- Column 2 -->
+                    <div class="column">
+                        <div class="form-group">
+                            <label for="dispoNo" class="form-label">Dispo No.</label>
+                            <input type="text" class="form-control result-field" id="dispoNo" name="dispo_no">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="stickerConstruction" class="form-label">Sticker Construction</label>
+                            <input type="text" class="form-control" id="stickerConstruction" name="sticker_construction">
+                            <i class="fas fa-sticky-note"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="productionConstruction" class="form-label">Production Construction</label>
+                            <input type="text" class="form-control" id="productionConstruction" name="production_construction">
+                            <i class="fas fa-industry"></i>
+                        </div>
+                        <div class="form-group">
+                            <label for="stickerComposition" class="form-label">Sticker Composition</label>
+                            <input type="text" class="form-control" id="stickerComposition" name="sticker_composition">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fabricComposition" class="form-label">Fabric Composition</label>
+                            <textarea class="form-control" id="fabricComposition" name="fabric_composition" rows="1"></textarea>
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="finishEPI" class="form-label">Finish EPI</label>
+                            <input type="number" step="0.01" class="form-control" id="finishEPI" name="finish_epi">
+                            <i class="fas fa-grip-lines-vertical"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="finishPPI" class="form-label">Finish PPI</label>
+                            <input type="number" step="0.01" class="form-control" id="finishPPI" name="finish_ppi">
+                            <i class="fas fa-grip-lines"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="greyEPI" class="form-label">Grey EPI</label>
+                            <input type="number" step="0.01" class="form-control" id="greyEPI" name="grey_epi">
+                            <i class="fas fa-grip-lines-vertical"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="greyPPI" class="form-label">Grey PPI</label>
+                            <input type="number" step="0.01" class="form-control" id="greyPPI" name="grey_ppi">
+                            <i class="fas fa-grip-lines"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="poQuantityYds" class="form-label">PO Quantity (Yds)</label>
+                            <input type="number" step="0.01" class="form-control" id="poQuantityYds" name="po_quantity_yds">
+                            <i class="fas fa-ruler-combined"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dispoQuantityYds" class="form-label">Dispo Quantity (Yds)</label>
+                            <input type="number" step="0.01" class="form-control" id="dispoQuantityYds" name="dispo_quantity_yds">
+                            <i class="fas fa-ruler-combined"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="adjustQuantityYds" class="form-label">Adjust Quantity (Yds)</label>
+                            <input type="number" step="0.01" class="form-control" id="adjustQuantityYds" name="adjust_quantity_yds">
+                            <i class="fas fa-adjust"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="finishingProcessLoss" class="form-label">Finishing Process Loss</label>
+                            <input type="number" step="0.01" class="form-control" id="finishingProcessLoss" name="finishing_process_loss">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="warpYarnDyeingAllowance" class="form-label">Warp Yarn Dyeing Allowance</label>
+                            <input type="number" step="0.01" class="form-control" id="warpYarnDyeingAllowance" name="warp_yarn_dyeing_allowance">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="weftYarnDyeingAllowance" class="form-label">Weft Yarn Dyeing Allowance</label>
+                            <input type="number" step="0.01" class="form-control" id="weftYarnDyeingAllowance" name="weft_yarn_dyeing_allowance">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="printingAllowance" class="form-label">Printing Allowance</label>
+                            <input type="number" step="0.01" class="form-control" id="printingAllowance" name="printing_allowance">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loomConstruction" class="form-label">Loom Construction</label>
+                            <input type="text" class="form-control" id="loomConstruction" name="loom_construction">
+                            <i class="fas fa-industry"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loomContraction" class="form-label">Loom Contraction</label>
+                            <input type="number" step="0.01" class="form-control" id="loomContraction" name="loom_contraction">
+                            <i class="fas fa-compress-arrows-alt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lowerBeamCrimp" class="form-label">Lower Beam Crimp</label>
+                            <input type="number" step="0.01" class="form-control" id="lowerBeamCrimp" name="lower_beam_crimp">
+                            <i class="fas fa-wave-square"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="leftSelvedgeSpecification" class="form-label">Left Selvedge (Specification)</label>
+                            <input type="text" class="form-control" id="leftSelvedgeSpecification" name="left_selvedge_specification">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="rightSelvedgeSpecification" class="form-label">Right Selvedge (Specification)</label>
+                            <input type="text" class="form-control" id="rightSelvedgeSpecification" name="right_selvedge_specification">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="selvedgeWidth" class="form-label">Selvedge Width (mm)</label>
+                            <input type="number" step="0.01" class="form-control" id="selvedgeWidth" name="selvedge_width">
+                            <i class="fas fa-ruler-horizontal"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="selvedgeEndsPerDent" class="form-label">Selvedge Ends Per Dent</label>
+                            <input type="number" step="1" class="form-control" id="selvedgeEndsPerDent" name="selvedge_ends_per_dent">
+                            <i class="fas fa-sort-numeric-up"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="totalEndsOfBody" class="form-label">Total Ends of Body</label>
+                            <input type="number" step="1" class="form-control" id="totalEndsOfBody" name="total_ends_of_body">
+                            <i class="fas fa-stream"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="requiredPrintProductionMeter" class="form-label">Required Print Production (Meter)</label>
+                            <input type="number" step="0.01" class="form-control" id="requiredPrintProductionMeter" name="required_print_production_meter">
+                            <i class="fas fa-print"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="requiredGreigeProductionMeter" class="form-label">Required Greige Production (Meter)</label>
+                            <input type="number" step="0.01" class="form-control" id="requiredGreigeProductionMeter" name="required_greige_production_meter">
+                            <i class="fas fa-ruler-combined"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="requiredLoomProductionMeter" class="form-label">Required Loom Production (Meter)</label>
+                            <input type="number" step="0.01" class="form-control" id="requiredLoomProductionMeter" name="required_loom_production_meter">
+                            <i class="fas fa-industry"></i>
+                        </div>
+
+                        
+
+                        
+                    </div>
+
+                    <!-- Column 3 -->
+                    <div class="column">
+                        <div class="form-group">
+                            <label for="requiredWarpLengthMeter" class="form-label">Required Warp Length (Meter)</label>
+                            <input type="number" step="0.01" class="form-control" id="requiredWarpLengthMeter" name="required_warp_length_meter">
+                            <i class="fas fa-ruler-vertical"></i>
+                        </div>
+                        <div class="form-group">
+                            <label for="finishWidthInch" class="form-label">Finish Width (Inch)</label>
+                            <input type="number" step="0.01" class="form-control" id="finishWidthInch" name="finish_width_inch">
+                            <i class="fas fa-arrows-alt-h"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cuttableWidthInch" class="form-label">Cuttable Width (Inch)</label>
+                            <input type="number" step="0.01" class="form-control" id="cuttableWidthInch" name="cuttable_width_inch">
+                            <i class="fas fa-arrows-alt-h"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="greyWidthInch" class="form-label">Grey Width (Inch)</label>
+                            <input type="number" step="0.01" class="form-control" id="greyWidthInch" name="grey_width_inch">
+                            <i class="fas fa-arrows-alt-h"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reedWidthInch" class="form-label">Reed Width (Inch)</label>
+                            <input type="number" step="0.01" class="form-control" id="reedWidthInch" name="reed_width_inch">
+                            <i class="fas fa-arrows-alt-h"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="totalEnds" class="form-label">Total Ends</label>
+                            <input type="number" step="1" class="form-control" id="totalEnds" name="total_ends">
+                            <i class="fas fa-stream"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="noOfSectionInLowerBeam" class="form-label">No. of section in Lower Beam</label>
+                            <input type="number" step="1" class="form-control" id="noOfSectionInLowerBeam" name="no_of_section_in_lower_beam">
+                            <i class="fas fa-th"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="creelRepeatOfLowerBeam" class="form-label">Creel Repeat Of Lower Beam</label>
+                            <input type="number" step="1" class="form-control" id="creelRepeatOfLowerBeam" name="creel_repeat_of_lower_beam">
+                            <i class="fas fa-redo"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reedCount" class="form-label">Reed Count</label>
+                            <input type="text" class="form-control" id="reedCount" name="reed_count">
+                            <i class="fas fa-align-justify"></i>
+                        </div>
+                        <div class="form-group">
+                            <label for="endsPerDent" class="form-label">Ends Per Dent</label>
+                            <input type="number" step="0.01" class="form-control" id="endsPerDent" name="ends_per_dent">
+                            <i class="fas fa-sort-numeric-up"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="flangeToFlange" class="form-label">Flange To Flange</label>
+                            <input type="number" step="0.01" class="form-control" id="flangeToFlange" name="flange_to_flange">
+                            <i class="fas fa-ruler"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="warpCoverFactor" class="form-label">Warp Cover Factor</label>
+                            <input type="number" step="0.01" class="form-control" id="warpCoverFactor" name="warp_cover_factor">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="weftCoverFactor" class="form-label">Weft Cover Factor</label>
+                            <input type="number" step="0.01" class="form-control" id="weftCoverFactor" name="weft_cover_factor">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="totalCoverFactor" class="form-label">Total Cover Factor</label>
+                            <input type="number" step="0.01" class="form-control result-field" id="totalCoverFactor" name="total_cover_factor" readonly>
+                            <i class="fas fa-calculator"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="warpConsumption" class="form-label">Warp Consumption</label>
+                            <input type="number" step="0.01" class="form-control" id="warpConsumption" name="warp_consumption">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="weftConsumption" class="form-label">Weft Consumption</label>
+                            <input type="number" step="0.01" class="form-control" id="weftConsumption" name="weft_consumption">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="totalConsumption" class="form-label">Total Consumption</label>
+                            <input type="number" step="0.01" class="form-control result-field" id="totalConsumption" name="total_consumption" readonly>
+                            <i class="fas fa-calculator"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="rpm" class="form-label">RPM</label>
+                            <input type="number" step="1" class="form-control" id="rpm" name="rpm">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="eff" class="form-label">Eff</label>
+                            <input type="number" step="0.01" class="form-control" id="eff" name="eff">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="yarnDyeingLeadTime" class="form-label">Yarn Dyeing Lead Time</label>
+                            <input type="number" step="1" class="form-control" id="yarnDyeingLeadTime" name="yarn_dyeing_lead_time">
+                            <i class="fas fa-clock"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dyedYarnAdvanceDaysForInhouse" class="form-label">Dyed yarn Advance Days for inhouse</label>
+                            <input type="number" step="1" class="form-control" id="dyedYarnAdvanceDaysForInhouse" name="dyed_yarn_advance_days_for_inhouse">
+                            <i class="fas fa-calendar-plus"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="totalGreigeLot" class="form-label">Total Greige Lot</label>
+                            <input type="number" step="1" class="form-control" id="totalGreigeLot" name="total_greige_lot">
+                            <i class="fas fa-boxes"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="finishingLeadTime" class="form-label">Finishing Lead Time</label>
+                            <input type="number" step="1" class="form-control" id="finishingLeadTime" name="finishing_lead_time">
+                            <i class="fas fa-clock"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="finalLoomProductionDate" class="form-label">Final Loom Production Date</label>
+                            <input type="date" class="form-control" id="finalLoomProductionDate" name="final_loom_production_date">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loomStartDate" class="form-label">Loom Start Date</label>
+                            <input type="date" class="form-control" id="loomStartDate" name="loom_start_date">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="startUpDays" class="form-label">Start up days</label>
+                            <input type="number" step="1" class="form-control" id="startUpDays" name="start_up_days">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="perDayRunLoomInStartup" class="form-label">Per day run loom in Startup</label>
+                            <input type="number" step="1" class="form-control" id="perDayRunLoomInStartup" name="per_day_run_loom_in_startup">
+                            <i class="fas fa-calendar-week"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/main/public/js/erp-smart-dropdown.js"></script>
+<script src="/main/public/js/erp-async-search-dropdown.js"></script>
+    <script>
+        let currentRecordId = null;
+
+        // ========== CALCULATION FUNCTIONS ==========
+        function calculateTotalConsumption() {
+            const warpConsumption = parseFloat(document.getElementById('warpConsumption')?.value) || 0;
+            const weftConsumption = parseFloat(document.getElementById('weftConsumption')?.value) || 0;
+            
+            const total = warpConsumption + weftConsumption;
+            const totalField = document.getElementById('totalConsumption');
+            if (totalField) totalField.value = total.toFixed(2);
+        }
+
+        function calculateTotalCoverFactor() {
+            const warpCoverFactor = parseFloat(document.getElementById('warpCoverFactor')?.value) || 0;
+            const weftCoverFactor = parseFloat(document.getElementById('weftCoverFactor')?.value) || 0;
+            
+            const total = warpCoverFactor + weftCoverFactor;
+            const totalField = document.getElementById('totalCoverFactor');
+            if (totalField) totalField.value = total.toFixed(2);
+        }
+
+       // ========== FETCH SAVED DISPO PLANS - UPDATED FOR SINGLE ROW ==========
+async function fetchDispoPlanRecords() {
+    try {
+        const response = await fetch('/main/api/dispo-plan/dispo-numbers', {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+        const records = await response.json();
+        const planMenu = document.getElementById('searchDispoPlanMenu');
+
+        if (!planMenu) return;
+
+        if (records.length === 0) {
+            planMenu.innerHTML = '<li><a class="dropdown-item disabled" href="#">No saved plans available</a></li>';
+        } else {
+            planMenu.innerHTML = records.map(record => {
+                const displayHTML = `
+                    <div class="dropdown-item-singleline">
+                        <span class="dropdown-item-field"><strong>Dispo:</strong> ${record.dispo_no || 'N/A'}</span>
+                        <span class="dropdown-separator">|</span>
+                        <span class="dropdown-item-field"><strong>PO:</strong> ${record.po_no || 'N/A'}</span>
+                        <span class="dropdown-separator">|</span>
+                        <span class="dropdown-item-field"><strong>Construction:</strong> ${record.production_construction || 'N/A'}</span>
+                        <span class="dropdown-separator">|</span>
+                        <span class="dropdown-item-field"><strong>Buyer:</strong> ${record.buyer || 'N/A'}</span>
+                    </div>
+                `;
+                return `<li><a class="dropdown-item" href="#" data-plan-id="${record.id}">${displayHTML}</a></li>`;
+            }).join('');
+        }
+
+        attachDispoPlanListeners();
+
+    } catch (error) {
+        console.error('Failed to load saved dispo plans:', error);
+    }
+}
+
+        // ========== ATTACH DISPO PLAN DROPDOWN LISTENERS ==========
+        function attachDispoPlanListeners() {
+            document.querySelectorAll('#searchDispoPlanMenu .dropdown-item').forEach(item => {
+                const newItem = item.cloneNode(true);
+                item.parentNode.replaceChild(newItem, item);
+
+                newItem.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const planId = this.getAttribute('data-plan-id');
+                    if (planId && !this.classList.contains('disabled')) {
+                        const dropdown = bootstrap.Dropdown.getInstance(document.getElementById('searchDispoPlanDropdown'));
+                        if (dropdown) dropdown.hide();
+
+                        await loadRecord(planId);
+                    }
+                });
+            });
+        }
+
+        // ========== FETCH DISPO NUMBERS FOR SEARCH - UPDATED FOR SINGLE ROW ==========
+async function fetchDispoNumbers() {
+    try {
+        const response = await fetch('/main/api/dispo/dispo-numbers-with-dates', {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+        const records = await response.json();
+        const dispoMenu = document.getElementById('searchDispoNumberMenu');
+
+        if (!dispoMenu) return;
+
+        if (records.length === 0) {
+            dispoMenu.innerHTML = '<li><a class="dropdown-item disabled" href="#">No dispo numbers available</a></li>';
+        } else {
+            dispoMenu.innerHTML = records.map(record => {
+                const displayHTML = `
+                    <div class="dropdown-item-singleline">
+                        <span class="dropdown-item-field"><strong>Dispo:</strong> ${record.dispo_number || 'N/A'}</span>
+                        <span class="dropdown-separator">|</span>
+                        <span class="dropdown-item-field"><strong>PO:</strong> ${record.po_no || 'N/A'}</span>
+                        <span class="dropdown-separator">|</span>
+                        <span class="dropdown-item-field"><strong>Construction:</strong> ${record.production_construction || 'N/A'}</span>
+                        <span class="dropdown-separator">|</span>
+                        <span class="dropdown-item-field"><strong>Buyer:</strong> ${record.buyer_name || 'N/A'}</span>
+                    </div>
+                `;
+                return `<li><a class="dropdown-item" href="#" data-dispo-number="${record.dispo_number}">${displayHTML}</a></li>`;
+            }).join('');
+        }
+
+        attachDispoNumberListeners();
+
+    } catch (error) {
+        console.error('Failed to load dispo numbers:', error);
+    }
+}
+
+        // ========== ATTACH DROPDOWN LISTENERS ==========
+        function attachDispoNumberListeners() {
+            document.querySelectorAll('#searchDispoNumberMenu .dropdown-item').forEach(item => {
+                const newItem = item.cloneNode(true);
+                item.parentNode.replaceChild(newItem, item);
+
+                newItem.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const dispoNumber = this.getAttribute('data-dispo-number');
+                    if (dispoNumber && !this.classList.contains('disabled')) {
+                        const dropdown = bootstrap.Dropdown.getInstance(document.getElementById('searchDispoNumberDropdown'));
+                        if (dropdown) dropdown.hide();
+
+                        await loadRecordByDispoNumber(dispoNumber);
+                    }
+                });
+            });
+        }
+
+        // ========== FETCH AND POPULATE COMPLETE DISPO DATA FROM DISPO SYSTEM ==========
+        async function fetchAndPopulateDispoData(dispoNumber) {
+            try {
+                const response = await fetch(`/main/api/dispo/fetch/${encodeURIComponent(dispoNumber)}`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    console.warn('Dispo data not found in dispo system');
+                    document.getElementById('dispoNo').value = dispoNumber;
+                    return;
+                }
+
+                const responseData = await response.json();
+                const dispoData = responseData.dispoData;
+
+                if (!dispoData) {
+                    console.warn('No dispoData in response');
+                    document.getElementById('dispoNo').value = dispoNumber;
+                    return;
+                }
+
+                // Always set dispo_no field
+                document.getElementById('dispoNo').value = dispoNumber;
+
+                // Populate fields - only fill if empty to preserve existing data
+                // Helper function to format dates properly
+                const formatDate = (dateString) => {
+                    if (!dateString) return '';
+                    try {
+                        const date = new Date(dateString);
+                        return date.toISOString().split('T')[0];
+                    } catch (e) {
+                        return '';
+                    }
+                };
+
+                if (dispoData.po_issue_date && !document.getElementById('poIssueDate').value) {
+                    document.getElementById('poIssueDate').value = formatDate(dispoData.po_issue_date);
+                }
+                if (dispoData.bulk_delivery_date && !document.getElementById('bulkFabricDeliveryDate').value) {
+                    document.getElementById('bulkFabricDeliveryDate').value = formatDate(dispoData.bulk_delivery_date);
+                }
+                if (dispoData.po_no && !document.getElementById('poNo').value) {
+                    document.getElementById('poNo').value = dispoData.po_no;
+                }
+                if (dispoData.order_no && !document.getElementById('orderNo').value) {
+                    document.getElementById('orderNo').value = dispoData.order_no;
+                }
+                if (dispoData.account_holder && !document.getElementById('accountHolder').value) {
+                    document.getElementById('accountHolder').value = dispoData.account_holder;
+                }
+                if (dispoData.buyer_name && !document.getElementById('buyer').value) {
+                    document.getElementById('buyer').value = dispoData.buyer_name;
+                }
+                if (dispoData.buyer_style_ref && !document.getElementById('customerRefStl').value) {
+                    document.getElementById('customerRefStl').value = dispoData.buyer_style_ref;
+                }
+                if (dispoData.weave_type && !document.getElementById('weave').value) {
+                    document.getElementById('weave').value = dispoData.weave_type;
+                }
+                if (dispoData.finish_type && !document.getElementById('finishType').value) {
+                    document.getElementById('finishType').value = dispoData.finish_type;
+                }
+                if (dispoData.end_use && !document.getElementById('endUse').value) {
+                    document.getElementById('endUse').value = dispoData.end_use;
+                }
+                if (dispoData.order_type && !document.getElementById('orderType').value) {
+                    document.getElementById('orderType').value = dispoData.order_type;
+                }
+                if (dispoData.yarn_type && !document.getElementById('yarnType').value) {
+                    document.getElementById('yarnType').value = dispoData.yarn_type;
+                }
+                if (dispoData.fabric_type && !document.getElementById('fabricType').value) {
+                    document.getElementById('fabricType').value = dispoData.fabric_type;
+                }
+                if (dispoData.process_type && !document.getElementById('processType').value) {
+                    document.getElementById('processType').value = dispoData.process_type;
+                }
+                if (dispoData.print_method && !document.getElementById('printMethod').value) {
+                    document.getElementById('printMethod').value = dispoData.print_method;
+                }
+                if (dispoData.sticker_construction && !document.getElementById('stickerConstruction').value) {
+                    document.getElementById('stickerConstruction').value = dispoData.sticker_construction;
+                }
+                if (dispoData.production_construction && !document.getElementById('productionConstruction').value) {
+                    document.getElementById('productionConstruction').value = dispoData.production_construction;
+                }
+                if (dispoData.sticker_composition && !document.getElementById('stickerComposition').value) {
+                    document.getElementById('stickerComposition').value = dispoData.sticker_composition;
+                }
+                if (dispoData.fabric_composition && !document.getElementById('fabricComposition').value) {
+                    document.getElementById('fabricComposition').value = dispoData.fabric_composition;
+                }
+                if (dispoData.finish_epi && !document.getElementById('finishEPI').value) {
+                    document.getElementById('finishEPI').value = dispoData.finish_epi;
+                }
+                if (dispoData.finish_ppi && !document.getElementById('finishPPI').value) {
+                    document.getElementById('finishPPI').value = dispoData.finish_ppi;
+                }
+                if (dispoData.grey_epi && !document.getElementById('greyEPI').value) {
+                    document.getElementById('greyEPI').value = dispoData.grey_epi;
+                }
+                if (dispoData.grey_ppi && !document.getElementById('greyPPI').value) {
+                    document.getElementById('greyPPI').value = dispoData.grey_ppi;
+                }
+                if (dispoData.po_qty_yds && !document.getElementById('poQuantityYds').value) {
+                    document.getElementById('poQuantityYds').value = dispoData.po_qty_yds;
+                }
+                if (dispoData.finish_qty_yds && !document.getElementById('dispoQuantityYds').value) {
+                    document.getElementById('dispoQuantityYds').value = dispoData.finish_qty_yds;
+                }
+                if (dispoData.adjust_qty_yds && !document.getElementById('adjustQuantityYds').value) {
+                    document.getElementById('adjustQuantityYds').value = dispoData.adjust_qty_yds;
+                }
+                if (dispoData.finishing_process_loss && !document.getElementById('finishingProcessLoss').value) {
+                    document.getElementById('finishingProcessLoss').value = dispoData.finishing_process_loss;
+                }
+                if (dispoData.warp_yd_allowance && !document.getElementById('warpYarnDyeingAllowance').value) {
+                    document.getElementById('warpYarnDyeingAllowance').value = dispoData.warp_yd_allowance;
+                }
+                if (dispoData.weft_yd_allowance && !document.getElementById('weftYarnDyeingAllowance').value) {
+                    document.getElementById('weftYarnDyeingAllowance').value = dispoData.weft_yd_allowance;
+                }
+                if (dispoData.print_allowance && !document.getElementById('printingAllowance').value) {
+                    document.getElementById('printingAllowance').value = dispoData.print_allowance;
+                }
+                if (dispoData.development_id && !document.getElementById('deskLoomStrikeOffNo').value) {
+                    document.getElementById('deskLoomStrikeOffNo').value = dispoData.development_id;
+                }
+                if (dispoData.handloom_number && !document.getElementById('marketingReffTrackingNo').value) {
+                    document.getElementById('marketingReffTrackingNo').value = dispoData.handloom_number;
+                }
+                if (dispoData.production_construction && !document.getElementById('loomConstruction').value) {
+                    document.getElementById('loomConstruction').value = dispoData.production_construction;
+                }
+                if (dispoData.loom_contraction && !document.getElementById('loomContraction').value) {
+                    document.getElementById('loomContraction').value = dispoData.loom_contraction;
+                }
+                if (dispoData.lower_beam_crimp && !document.getElementById('lowerBeamCrimp').value) {
+                    document.getElementById('lowerBeamCrimp').value = dispoData.lower_beam_crimp;
+                }
+                if (dispoData.actual_section && !document.getElementById('noOfSectionInLowerBeam').value) {
+                    document.getElementById('noOfSectionInLowerBeam').value = dispoData.actual_section;
+                }
+                if (dispoData.selvedge_width && !document.getElementById('selvedgeWidth').value) {
+                    document.getElementById('selvedgeWidth').value = dispoData.selvedge_width;
+                }
+                if (dispoData.selvedge_ends_per_dent && !document.getElementById('selvedgeEndsPerDent').value) {
+                    document.getElementById('selvedgeEndsPerDent').value = dispoData.selvedge_ends_per_dent;
+                }
+                if (dispoData.dispo_overall_width && !document.getElementById('finishWidthInch').value) {
+                    document.getElementById('finishWidthInch').value = dispoData.dispo_overall_width;
+                }
+                if (dispoData.dispo_cuttable_width && !document.getElementById('cuttableWidthInch').value) {
+                    document.getElementById('cuttableWidthInch').value = dispoData.dispo_cuttable_width;
+                }
+                if (dispoData.grey_width_inch && !document.getElementById('greyWidthInch').value) {
+                    document.getElementById('greyWidthInch').value = dispoData.grey_width_inch;
+                }
+                if (dispoData.beam_total_ends && !document.getElementById('totalEnds').value) {
+                    document.getElementById('totalEnds').value = dispoData.beam_total_ends;
+                }
+                if (dispoData.body_ends && !document.getElementById('totalEndsOfBody').value) {
+                    document.getElementById('totalEndsOfBody').value = dispoData.body_ends;
+                }
+                if (dispoData.reed_count && !document.getElementById('reedCount').value) {
+                    document.getElementById('reedCount').value = dispoData.reed_count;
+                }
+                if (dispoData.ends_per_dent && !document.getElementById('endsPerDent').value) {
+                    document.getElementById('endsPerDent').value = dispoData.ends_per_dent;
+                }
+                if (dispoData.reed_space_inch && !document.getElementById('reedWidthInch').value) {
+                    document.getElementById('reedWidthInch').value = dispoData.reed_space_inch;
+                }
+                if (dispoData.warp_cover_factor && !document.getElementById('warpCoverFactor').value) {
+                    document.getElementById('warpCoverFactor').value = dispoData.warp_cover_factor;
+                }
+                if (dispoData.weft_cover_factor && !document.getElementById('weftCoverFactor').value) {
+                    document.getElementById('weftCoverFactor').value = dispoData.weft_cover_factor;
+                }
+                if (dispoData.warp_consumption_yds && !document.getElementById('warpConsumption').value) {
+                    document.getElementById('warpConsumption').value = dispoData.warp_consumption_yds;
+                }
+                if (dispoData.weft_consumption_yds && !document.getElementById('weftConsumption').value) {
+                    document.getElementById('weftConsumption').value = dispoData.weft_consumption_yds;
+                }
+                if (dispoData.loom_production_mtr && !document.getElementById('requiredLoomProductionMeter').value) {
+                    document.getElementById('requiredLoomProductionMeter').value = dispoData.loom_production_mtr;
+                }
+                if (dispoData.grey_qty_mtr && !document.getElementById('requiredGreigeProductionMeter').value) {
+                    document.getElementById('requiredGreigeProductionMeter').value = dispoData.grey_qty_mtr;
+                }
+                if (dispoData.print_qty_mtr && !document.getElementById('requiredPrintProductionMeter').value) {
+                    document.getElementById('requiredPrintProductionMeter').value = dispoData.print_qty_mtr;
+                }
+                if (dispoData.warp_beam_length && !document.getElementById('requiredWarpLengthMeter').value) {
+                    document.getElementById('requiredWarpLengthMeter').value = dispoData.warp_beam_length;
+                }
+                if (dispoData.left_selvedge_spec && !document.getElementById('leftSelvedgeSpecification').value) {
+                    document.getElementById('leftSelvedgeSpecification').value = dispoData.left_selvedge_spec;
+                }
+                if (dispoData.right_selvedge_spec && !document.getElementById('rightSelvedgeSpecification').value) {
+                    document.getElementById('rightSelvedgeSpecification').value = dispoData.right_selvedge_spec;
+                }
+                if (dispoData.creel_repeat && !document.getElementById('creelRepeatOfLowerBeam').value) {
+                    document.getElementById('creelRepeatOfLowerBeam').value = dispoData.creel_repeat;
+                }
+
+                // Recalculate totals
+                calculateTotalConsumption();
+                calculateTotalCoverFactor();
+
+                console.log('Dispo data populated from dispo_form_data for:', dispoNumber);
+
+            } catch (error) {
+                console.error('Error fetching dispo data:', error);
+                document.getElementById('dispoNo').value = dispoNumber;
+            }
+        }
+
+        // ========== LOAD RECORD BY DISPO NUMBER ==========
+        // ========== FIXED: Load Record By Dispo Number (ONLY loads dispo data, never plan data) ==========
+async function loadRecordByDispoNumber(dispoNumber) {
+    try {
+        // IMPORTANT: Always load ONLY dispo data, never check for existing plan
+        // This ensures "Search Dispo Number" only populates dispo fields
+        console.log('Loading dispo data (not plan) from dispo_form_data:', dispoNumber);
+        
+        // Clear the form first to remove any previous plan data
+        const form = document.getElementById('dispoPlanForm');
+        if (form) form.reset();
+        
+        // Reset calculated fields
+        calculateTotalConsumption();
+        calculateTotalCoverFactor();
+        
+        // Fetch and populate ONLY dispo data from dispo_form_data table
+        await fetchAndPopulateDispoData(dispoNumber);
+
+        // Update the button text
+        const searchButton = document.getElementById('searchDispoNumberDropdown');
+        if (searchButton) {
+            searchButton.innerHTML = `<i class="fas fa-search"></i> Dispo: ${dispoNumber}`;
+        }
+
+        // Clear the current record ID since we're not loading a saved plan
+        currentRecordId = null;
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    } catch (error) {
+        console.error('Error loading dispo:', error);
+        alert('Failed to load dispo: ' + error.message);
+    }
+}
+
+        // ========== LOAD RECORD BY ID ==========
+        async function loadRecord(recordId) {
+            try {
+                const response = await fetch(`/main/api/dispo-plan/fetch-by-id/${recordId}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+                const data = await response.json();
+
+                currentRecordId = data.id;
+
+                const form = document.getElementById('dispoPlanForm');
+                if (form) {
+                    for (const [key, value] of Object.entries(data)) {
+                        const input = form.querySelector(`[name="${key}"]`);
+                        if (input) {
+                            if (input.type === 'date' && value) {
+                                try {
+                                    input.value = new Date(value).toISOString().split('T')[0];
+                                } catch (e) {
+                                    input.value = '';
+                                }
+                            } else {
+                                input.value = value || '';
+                            }
+                        }
+                    }
+                }
+
+                if (data.dispo_no) {
+                    await fetchAndPopulateDispoData(data.dispo_no);
+                }
+
+                calculateTotalConsumption();
+                calculateTotalCoverFactor();
+
+                const searchButton = document.getElementById('searchDispoNumberDropdown');
+                if (searchButton && data.dispo_no) {
+                    searchButton.innerHTML = `<i class="fas fa-search"></i> Dispo: ${data.dispo_no}`;
+                }
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            } catch (error) {
+                console.error('Error loading record:', error);
+                alert('Failed to load record: ' + error.message);
+            }
+        }
+
+        // ========== DOM CONTENT LOADED ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            ['warpConsumption', 'weftConsumption'].forEach(id => {
+                const field = document.getElementById(id);
+                if (field) {
+                    field.addEventListener('input', calculateTotalConsumption);
+                    field.addEventListener('change', calculateTotalConsumption);
+                }
+            });
+
+            ['warpCoverFactor', 'weftCoverFactor'].forEach(id => {
+                const field = document.getElementById(id);
+                if (field) {
+                    field.addEventListener('input', calculateTotalCoverFactor);
+                    field.addEventListener('change', calculateTotalCoverFactor);
+                }
+            });
+
+            document.getElementById('clearFormBtn')?.addEventListener('click', function() {
+                const form = document.getElementById('dispoPlanForm');
+                if (form) form.reset();
+                
+                currentRecordId = null;
+                
+                const searchButton = document.getElementById('searchDispoNumberDropdown');
+                if (searchButton) {
+                    searchButton.innerHTML = '<i class="fas fa-search"></i> Search Dispo Number';
+                }
+                
+                calculateTotalConsumption();
+                calculateTotalCoverFactor();
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            document.getElementById('saveBtn')?.addEventListener('click', async function() {
+                try {
+                    const form = document.getElementById('dispoPlanForm');
+                    const formData = new FormData(form);
+                    const data = {};
+                    
+                    for (let [key, value] of formData.entries()) {
+                        data[key] = value;
+                    }
+                    
+                    console.log('Saving payload:', data);
+                    
+                    const response = await fetch('/main/api/dispo-plan/save', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (!response.ok) {
+                        console.error('Server error details:', result);
+                        throw new Error(result.message || result.error || `HTTP error! Status: ${response.status}`);
+                    }
+                    
+                    currentRecordId = result.id;
+                    alert('Data saved successfully!');
+                    console.log('Save successful:', result);
+                    
+                    fetchDispoNumbers();
+                    fetchDispoPlanRecords();
+                    
+                } catch (error) {
+                    console.error('Error saving data:', error);
+                    alert('Failed to save data: ' + error.message);
+                }
+            });
+
+            document.getElementById('updateBtn')?.addEventListener('click', async function() {
+                if (!currentRecordId) {
+                    alert('No record selected for update. Please search and load a record first.');
+                    return;
+                }
+                
+                try {
+                    const form = document.getElementById('dispoPlanForm');
+                    const formData = new FormData(form);
+                    const data = {};
+                    
+                    for (let [key, value] of formData.entries()) {
+                        data[key] = value;
+                    }
+                    
+                    console.log('Updating payload:', data);
+                    
+                    const response = await fetch(`/main/api/dispo-plan/update/${currentRecordId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    
+                    const result = await response.json();
+                    alert('Data updated successfully!');
+                    console.log('Update successful:', result);
+                    
+                    fetchDispoNumbers();
+                    fetchDispoPlanRecords();
+                    
+                } catch (error) {
+                    console.error('Error updating data:', error);
+                    alert('Failed to update data: ' + error.message);
+                }
+            });
+
+            document.getElementById('exportBtn')?.addEventListener('click', async function() {
+                try {
+                    const response = await fetch('/main/api/dispo-plan/export-excel', {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = 'dispo_plan_records.csv';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    console.log('Export successful');
+                } catch (error) {
+                    console.error('Error exporting data:', error);
+                    alert('Failed to export data: ' + error.message);
+                }
+            });
+
+            document.getElementById('deleteBtn')?.addEventListener('click', async function() {
+                if (!currentRecordId) {
+                    alert('No record selected for deletion. Please search and load a record first.');
+                    return;
+                }
+
+                if (!confirm(`Are you sure you want to delete this record? This action cannot be undone.`)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/main/api/dispo-plan/delete/${currentRecordId}`, {
+                        method: 'DELETE',
+                        credentials: 'include'
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+                    const result = await response.json();
+                    alert('Record deleted successfully!');
+                    console.log('Delete successful:', result);
+                    
+                    document.getElementById('clearFormBtn').click();
+                    fetchDispoNumbers();
+                    fetchDispoPlanRecords();
+                    
+                } catch (error) {
+                    console.error('Error deleting record:', error);
+                    alert('Failed to delete record: ' + error.message);
+                }
+            });
+
+            setTimeout(() => {
+                fetchDispoNumbers();
+                fetchDispoPlanRecords();
+            }, 100);
+
+            calculateTotalConsumption();
+            calculateTotalCoverFactor();
+
+            console.log('Dispo Wise Plan Form initialized successfully');
+        });
+    </script>
+</body>
+</html>

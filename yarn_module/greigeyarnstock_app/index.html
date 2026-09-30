@@ -657,6 +657,19 @@
                 font-size: 1.5rem;
             }
         }
+
+        .erp-stock-search-input {
+            margin-bottom: 8px;
+            border-color: rgba(0, 196, 255, 0.45) !important;
+        }
+
+        .erp-stock-search-help {
+            display: block;
+            margin-top: 6px;
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.82rem;
+        }
+
     </style>
 </head>
 <body>
@@ -681,9 +694,11 @@
                     <label for="searchYarnLot">
                         <i class="fas fa-box"></i> Yarn Lot Number
                     </label>
+                    <input class="form-control erp-stock-search-input" id="searchYarnLotText" type="text" autocomplete="off" placeholder="Type to search yarn lot, brand, count, PO or dispo...">
                     <select class="form-select" id="searchYarnLot">
                         <option value="">Select Yarn Lot</option>
                     </select>
+                    <small class="erp-stock-search-help" id="searchYarnLotHelp">Showing latest 10 records. Type to search all records.</small>
                 </div>
 
                 <div class="action-buttons">
@@ -854,13 +869,24 @@ function hideReport() {
     document.getElementById('clearReportBtn').style.display = 'none';
 }
 
+function stockDebounce(fn, wait = 250) {
+    let timer;
+    return function(...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), wait);
+    };
+}
+
 // =====================================================
 // DATA FETCHING FUNCTIONS
 // =====================================================
 
-async function fetchYarnLots() {
+async function fetchYarnLots(q = '') {
     try {
-        const response = await fetch('/main/api/yarn-stock-report/yarn-lots', {
+        const searchText = (q || '').trim();
+        const params = new URLSearchParams({ limit: searchText ? '35' : '10' });
+        if (searchText) params.set('q', searchText);
+        const response = await fetch(`/main/api/yarn-stock-report/yarn-lots-search?${params.toString()}`, {
             method: 'GET',
             credentials: 'include'
         });
@@ -896,6 +922,8 @@ function populateYarnLotDropdown(yarnLots) {
         select.appendChild(option);
     });
     
+    const help = document.getElementById('searchYarnLotHelp');
+    if (help) help.textContent = q && q.trim() ? `Showing ${yarnLots.length} matching record${yarnLots.length === 1 ? '' : 's'}.` : `Showing latest ${yarnLots.length} record${yarnLots.length === 1 ? '' : 's'}. Type to search all records.`;
     console.log(`Loaded ${yarnLots.length} yarn lots with details`);
 }
 
@@ -1290,8 +1318,15 @@ function clearReport() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Raw Yarn Stock Report initialized');
     
-    // Fetch yarn lots on load
+    // Fetch limited latest yarn lots on load, then search server-side as the user types.
     fetchYarnLots();
+
+    const yarnLotSearchInput = document.getElementById('searchYarnLotText');
+    if (yarnLotSearchInput) {
+        yarnLotSearchInput.addEventListener('input', stockDebounce(function() {
+            fetchYarnLots(this.value || '');
+        }, 250));
+    }
     
     // Generate Report button
     const generateBtn = document.getElementById('generateReportBtn');

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yarn Received Form</title>
+    <title>Greige Yarn Receive Form</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -379,10 +379,10 @@
             display: none;
         }
 
-        /* Vertical Layout - Two columns */
+        /* Vertical Layout - THREE columns */
         .vertical-layout {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 10px;
         }
 
@@ -528,6 +528,11 @@
                 padding: 6px 12px;
                 min-width: 120px;
             }
+
+            /* Three columns for medium screens */
+            .vertical-layout {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
         }
 
         @media (max-width: 992px) {
@@ -543,6 +548,30 @@
                 margin: 0 auto;
             }
 
+            /* Two columns for tablets */
+            .vertical-layout {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                font-size: 0.75rem;
+                padding: 6px 10px;
+                min-width: 100px;
+            }
+
+            .form-label {
+                font-size: 0.75rem;
+            }
+
+            .form-control, .form-select {
+                font-size: 0.8rem;
+                padding: 5px 8px;
+                height: 32px;
+            }
+
+            /* Single column for mobile */
             .vertical-layout {
                 grid-template-columns: 1fr;
             }
@@ -568,31 +597,13 @@
                 transform: translateY(-50%);
             }
         }
-
-        @media (max-width: 768px) {
-            .header-controls .btn, .header-controls .btn.dropdown-toggle {
-                font-size: 0.75rem;
-                padding: 6px 10px;
-                min-width: 100px;
-            }
-
-            .form-label {
-                font-size: 0.75rem;
-            }
-
-            .form-control, .form-select {
-                font-size: 0.8rem;
-                padding: 5px 8px;
-                height: 32px;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="main-container">
         <div class="header-controls">
             <div class="header-title">
-                <h1>Yarn Receive Form</h1>
+                <h1>Greige Yarn Receive Form</h1>
             </div>
             <div class="header-buttons">
                 <!-- First Row - Added Search Yarn Lot dropdown -->
@@ -672,8 +683,8 @@
                                 <table class="table table-dark table-bordered table-input-sm" id="yarnReceivedTable">
                                     <thead>
                                         <tr>
-                                            <th class="date-column">Date</th>
-                                            <th class="quantity-column">Quantity (Kgs)</th>
+                                            <th class="date-column">Yarn Receive Date</th>
+                                            <th class="quantity-column">Yarn Receive Quantity (Kgs)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -749,10 +760,10 @@
                 </div>
             </div>
 
-            <!-- Form Fields in Horizontal Layout -->
+            <!-- Form Fields in Horizontal Layout - THREE COLUMNS -->
             <div class="form-container">
                 <div class="vertical-layout">
-                    <!-- Left Column -->
+                    <!-- First Column -->
                     <div class="column">
                         <div class="form-group">
                             <label for="yarnCount" class="form-label">Yarn Count</label>
@@ -778,143 +789,152 @@
                         </div>
 
                         <div class="form-group">
-    <label for="receivedAgainstPONo" class="form-label">Received Against PO NO</label>
-    <select class="form-select result-field" id="receivedAgainstPONo" name="received_against_po_no" enabled>
-        
-    </select>
-</div>
+                            <label for="receivedAgainstPONo" class="form-label">Received Against PO NO</label>
+                            <select class="form-select result-field" id="receivedAgainstPONo" name="received_against_po_no" enabled>
+                            </select>
+                        </div>
 
-                       <div class="form-group">
+                        <div class="form-group">
                             <label for="receivedAgainstDispoNos" class="form-label">Received Against Dispo NO(s)</label>
                             <select class="form-select result-field" id="receivedAgainstDispoNos" name="received_against_dispo_nos" enabled>
-                                
-                                
                             </select>
-                            
                         </div>
 
                         <div class="form-group">
                             <label for="piNo" class="form-label">PI NO</label>
                             <input type="text" class="form-control" id="piNo" name="pi_no" value="">
                             <i class="fas fa-file-invoice"></i>
-                        </div>
+                            </div>
 
-                        <div class="form-group">
-                            <label for="receivedStartDate" class="form-label">Received Start Date</label>
-                            <input type="date" class="form-control" id="receivedStartDate" name="received_start_date" value="">
-                            <i class="fas fa-calendar-alt"></i>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="yarnType" class="form-label">Yarn Type</label>
-                            <input type="text" class="form-control" id="yarnType" name="yarn_type" value="">
-                            <i class="fas fa-certificate"></i>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="yarnComposition" class="form-label">Yarn Composition</label>
-                            <input type="text" class="form-control" id="yarnComposition" name="yarn_composition" value="">
-                            <i class="fas fa-layer-group"></i>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="lastReceivedDate" class="form-label">Last Received Date</label>
-                            <input type="date" class="form-control" id="lastReceivedDate" name="last_received_date" value="">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
-                        <div class="form-group">
-                            <label for="dispoNosForYarnLot" class="form-label">Dispo No(s) Related To The Yarn Lot</label>
-                            <textarea class="form-control result-field" id="dispoNosForYarnLot" name="dispo_nos_for_yarn_lot" rows="2"></textarea>
-                            <i class="fas fa-list"></i>
-                        </div>
+                    <div class="form-group">
+                        <label for="receivedStartDate" class="form-label">Received Start Date</label>
+                        <input type="date" class="form-control" id="receivedStartDate" name="received_start_date" value="">
+                        <i class="fas fa-calendar-alt"></i>
                     </div>
 
-                    <!-- Right Column -->
-                    <div class="column">
-                        <div class="form-group">
-                            <label for="yarnBrand" class="form-label">Yarn Brand</label>
-                            <input type="text" class="form-control" id="yarnBrand" name="yarn_brand" value="">
-                            <i class="fas fa-tags"></i>
-                        </div>
+                    <div class="form-group">
+                        <label for="yarnType" class="form-label">Yarn Type</label>
+                        <input type="text" class="form-control" id="yarnType" name="yarn_type" value="">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                </div>
 
-                        <div class="form-group">
-                            <label for="yarnLot" class="form-label">Yarn Lot</label>
-                            <input type="text" class="form-control" id="yarnLot" name="yarn_lot" value="">
-                            <i class="fas fa-boxes-stacked"></i>
-                        </div>
-                        <div class="form-group">
-                            <label for="lcNo" class="form-label">L/C NO</label>
-                            <input type="text" class="form-control" id="lcNo" name="lc_no" value="">
-                            <i class="fas fa-file-contract"></i>
-                        </div>
+                <!-- Second Column -->
+                <div class="column">
+                    <div class="form-group">
+                        <label for="yarnComposition" class="form-label">Yarn Composition</label>
+                        <input type="text" class="form-control" id="yarnComposition" name="yarn_composition" value="">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
 
-                        <div class="form-group">
-                            <label for="piLcRate" class="form-label">PI/LC Rate (USD)</label>
-                            <input type="number" step="0.01" class="form-control" id="piLcRate" name="pi_lc_rate" value="">
-                            <i class="fas fa-dollar-sign"></i>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="dollarLcRate" class="form-label">Dollar rate in Taka</label>
-                            <input type="number" step="0.01" class="form-control" id="dollarLcRate" name="dollar_rate" value="">
-                            <i class="fas">৳</i>
-                        </div>
+                    <div class="form-group">
+                        <label for="lastReceivedDate" class="form-label">Last Received Date</label>
+                        <input type="date" class="form-control" id="lastReceivedDate" name="last_received_date" value="">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
 
-                        <div class="form-group">
-                            <label for="rateCostSheet" class="form-label">Rate(Kgs) as per Cost sheet(USD)</label>
-                            <input type="number" step="0.01" class="form-control" id="rateCostSheet" name="rate_cost_sheet" value="">
-                            <i class="fas fa-dollar-sign"></i>
-                        </div>
+                    <div class="form-group">
+                        <label for="yarnBrand" class="form-label">Yarn Brand</label>
+                        <input type="text" class="form-control" id="yarnBrand" name="yarn_brand" value="">
+                        <i class="fas fa-tags"></i>
+                    </div>
 
-                        <div class="form-group">
-                            <label for="countryOfOrigin" class="form-label">Country of Origin</label>
-                            <input type="text" class="form-control" id="countryOfOrigin" name="country_of_origin" value="">
-                            <i class="fas fa-globe"></i>
-                        </div>
+                    <div class="form-group">
+                        <label for="yarnLot" class="form-label">Yarn Lot</label>
+                        <input type="text" class="form-control" id="yarnLot" name="yarn_lot" value="">
+                        <i class="fas fa-boxes-stacked"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="lcNo" class="form-label">L/C NO</label>
+                        <input type="text" class="form-control" id="lcNo" name="lc_no" value="">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
 
-                        <div class="form-group">
-                            <label for="importLocalSource" class="form-label">Import/Local Source</label>
-                            <input type="text" class="form-control" id="importLocalSource" name="import_local_source" value="">
-                            <i class="fas fa-shipping-fast"></i>
-                        </div>
+                    <div class="form-group">
+                        <label for="piLcRate" class="form-label">PI/LC Rate (USD)</label>
+                        <input type="number" step="0.01" class="form-control" id="piLcRate" name="pi_lc_rate" value="">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dollarLcRate" class="form-label">Dollar rate in Taka</label>
+                        <input type="number" step="0.01" class="form-control" id="dollarLcRate" name="dollar_rate" value="">
+                        <i class="fas">৳</i>
+                    </div>
 
-                        <div class="form-group">
-                            <label for="receiptQtyKgs" class="form-label">Receipt Quantity (Kgs)</label>
-                            <input type="number" step="0.01" class="form-control" id="receiptQtyKgs" name="receipt_qty_kgs" value="">
-                            <i class="fas fa-weight"></i>
-                        </div>
+                    <div class="form-group">
+                        <label for="rateCostSheet" class="form-label">Rate(Kgs) as per Cost sheet(USD)</label>
+                        <input type="number" step="0.01" class="form-control" id="rateCostSheet" name="rate_cost_sheet" value="">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
 
-                        <div class="form-group">
-                            <label for="totalTakaBD" class="form-label">Total Taka (BD)</label>
-                            <input type="number" step="0.01" class="form-control" id="totalTakaBD" name="total_taka_bd" value="">
-                            <i class="fas">৳</i>
-                        </div>
+                    <div class="form-group">
+                        <label for="countryOfOrigin" class="form-label">Country of Origin</label>
+                        <input type="text" class="form-control" id="countryOfOrigin" name="country_of_origin" value="">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                </div>
 
-                        <div class="form-group">
-                            <label for="lcUnit" class="form-label">L/C Unit</label>
-                            <input type="text" class="form-control" id="lcUnit" name="lc_unit" value="">
-                            <i class="fas fa-building"></i>
-                        </div>
+                <!-- Third Column -->
+                <div class="column">
+                    <div class="form-group">
+                        <label for="importLocalSource" class="form-label">Import/Local Source</label>
+                        <input type="text" class="form-control" id="importLocalSource" name="import_local_source" value="">
+                        <i class="fas fa-shipping-fast"></i>
+                    </div>
 
-                        <div class="form-group">
-                            <label for="challanNo" class="form-label">Challan/Invoice No</label>
-                            <input type="text" class="form-control" id="challanNo" name="challan_no" value="">
-                            <i class="fas fa-receipt"></i>
-                        </div>
+                    <div class="form-group">
+                        <label for="receiptQtyKgs" class="form-label">Receipt Quantity (Kgs)</label>
+                        <input type="number" step="0.01" class="form-control" id="receiptQtyKgs" name="receipt_qty_kgs" value="">
+                        <i class="fas fa-weight"></i>
+                    </div>
 
-                        <div class="form-group">
-                            <label for="specialNotes" class="form-label">Special Notes</label>
-                            <textarea class="form-control" id="specialNotes" name="special_notes" rows="1" placeholder="Enter special notes..."></textarea>
-                            <i class="fas fa-sticky-note"></i>
-                        </div>
+                    <div class="form-group">
+                        <label for="totalTakaBD" class="form-label">Total Taka (BD)</label>
+                        <input type="number" step="0.01" class="form-control" id="totalTakaBD" name="total_taka_bd" value="">
+                        <i class="fas">৳</i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lcUnit" class="form-label">L/C Unit</label>
+                        <input type="text" class="form-control" id="lcUnit" name="lc_unit" value="">
+                        <i class="fas fa-building"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="challanNo" class="form-label">Challan/Invoice No</label>
+                        <input type="text" class="form-control" id="challanNo" name="challan_no" value="">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="floorReturnKg" class="form-label">Yarn returned from floor (Kgs)</label>
+                        <input type="text" class="form-control" id="floorReturnKg" name="floor_return_kg" value="">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                      
+                    <div class="form-group">
+                        <label for="dispoNosForYarnLot" class="form-label">Dispo No(s) Related To The Yarn Lot</label>
+                        <textarea class="form-control result-field" id="dispoNosForYarnLot" name="dispo_nos_for_yarn_lot" rows="2"></textarea>
+                        <i class="fas fa-list"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="specialNotes" class="form-label">Special Notes</label>
+                        <textarea class="form-control" id="specialNotes" name="special_notes" rows="1" placeholder="Enter special notes..."></textarea>
+                        <i class="fas fa-sticky-note"></i>
                     </div>
                 </div>
             </div>
-        </form>
-    </div>
+        </div>
+    </form>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/main/public/js/erp-smart-dropdown.js"></script>
+<script src="/main/public/js/erp-async-search-dropdown.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 // Global variable to track current record ID for updates
 let currentRecordId = null;

@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finish Fabric Stock Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-bg: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+            --container-bg: #252525;
+            --text-color: #e0e0e0;
+            --accent-color: #ff6b35;
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            --btn-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            --border-glow: rgba(255, 107, 53, 0.3);
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--primary-bg);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            min-height: 100vh;
+            overflow: auto;
+            background-attachment: fixed;
+        }
+
+        .main-container {
+            background: var(--container-bg);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border: 2px solid #3a3a3a;
+            max-width: 1600px;
+            margin: 0 auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 107, 53, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 107, 53, 0.03) 0%, transparent 20%);
+        }
+
+        .main-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.03) 50%, transparent 51%);
+            background-size: 10px 10px;
+            pointer-events: none;
+        }
+
+        /* Header Section */
+        .header-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 2;
+        }
+
+        .header-section::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 15%;
+            width: 70%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        }
+
+        .header-section h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-color);
+            text-shadow: var(--text-shadow);
+            margin: 0 0 10px 0;
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .header-section h1 i {
+            background: linear-gradient(45deg, #ff6b35, #f7931e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-section p {
+            color: var(--text-color);
+            text-align: center;
+            margin: 0;
+            opacity: 0.8;
+        }
+
+        /* Search Section */
+        .search-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .search-section:hover {
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-glow);
+            border-color: rgba(255, 107, 53, 0.2);
+        }
+
+        .search-section h3 {
+            color: var(--accent-color);
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-controls {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .form-group label {
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            display: block;
+            font-weight: 600;
+        }
+
+        .form-control, .form-select {
+            background-color: #404040;
+            border: 1px solid #505050;
+            color: var(--text-color);
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #454545;
+            color: var(--text-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(255, 107, 53, 0.25);
+            outline: none;
+        }
+
+        .form-control:hover, .form-select:hover {
+            border-color: var(--accent-color);
+        }
+
+        /* Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: none;
+            color: #fff;
+            box-shadow: var(--btn-shadow);
+            font-size: 0.9rem;
+            padding: 10px 20px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.5s ease;
+            z-index: -1;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.6);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b35, #f7931e, #ff6b35) !important;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #1e3954, #3b80db) !important;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107, #fd7e14) !important;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057) !important;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #0d8991, #3bbcc4, #4fb4db) !important;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #991509, #e83e8c) !important;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading-spinner.active {
+            display: block;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Report Container */
+        .report-container {
+            display: none;
+            position: relative;
+            z-index: 2;
+        }
+
+        .report-container.active {
+            display: block;
+        }
+
+        /* Summary Section */
+        .summary-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .summary-section:hover {
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-glow);
+            border-color: rgba(255, 107, 53, 0.2);
+        }
+
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .summary-header h2 {
+            color: var(--accent-color);
+            font-size: 1.8rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Dispo Details Grid */
+        .dispo-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .dispo-detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .dispo-detail-label {
+            color: var(--accent-color);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .dispo-detail-value {
+            color: var(--text-color);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #3a3a3a;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-color);
+            transition: width 0.3s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .summary-card:hover::before {
+            width: 100%;
+            opacity: 0.1;
+        }
+
+        .summary-card.success::before {
+            background: var(--success-color);
+        }
+
+        .summary-card.warning::before {
+            background: var(--warning-color);
+        }
+
+        .summary-card.danger::before {
+            background: var(--danger-color);
+        }
+
+        .summary-card.info::before {
+            background: var(--info-color);
+        }
+
+        .summary-card-label {
+            color: var(--accent-color);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .summary-card-value {
+            color: var(--text-color);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .summary-card-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.75rem;
+        }
+
+        /* Transactions Section */
+        .transactions-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .transactions-section:hover {
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-glow);
+            border-color: rgba(255, 107, 53, 0.2);
+        }
+
+        .transactions-section h3 {
+            color: var(--accent-color);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Table Styles */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 10px;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .report-table thead {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        .report-table thead th {
+            color: var(--accent-color);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            padding: 15px 10px;
+            text-align: center;
+            border-bottom: 2px solid rgba(255, 107, 53, 0.3);
+        }
+
+        .report-table tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .report-table tbody tr:hover {
+            background: rgba(255, 107, 53, 0.1);
+            transform: scale(1.01);
+        }
+
+        .report-table tbody td {
+            padding: 12px 10px;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .report-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .no-data {
+            color: rgba(255, 255, 255, 0.5);
+            font-style: italic;
+            text-align: center;
+            padding: 30px;
+        }
+
+        /* Badge Styles */
+        .badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .badge-warning {
+            background: var(--warning-color);
+            color: #000;
+        }
+
+        .badge-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .badge-info {
+            background: var(--info-color);
+            color: white;
+        }
+
+        /* Highlight Classes */
+        .highlight-positive {
+            color: var(--success-color);
+            font-weight: 700;
+        }
+
+        .highlight-negative {
+            color: var(--danger-color);
+            font-weight: 700;
+        }
+
+        .highlight-zero {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .search-controls {
+                flex-direction: column;
+            }
+
+            .form-group {
+                min-width: 100%;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dispo-details-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-section h1 {
+                font-size: 1.5rem;
+            }
+
+            .main-container {
+                padding: 15px;
+            }
+
+            .search-section, .summary-section, .transactions-section {
+                padding: 15px;
+            }
+
+            .report-table thead th {
+                font-size: 0.75rem;
+                padding: 10px 5px;
+            }
+
+            .report-table tbody td {
+                font-size: 0.8rem;
+                padding: 8px 5px;
+            }
+
+            .summary-card-value {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <h1>
+                <i class="fas fa-tshirt"></i>
+                Finish Fabric Stock Report
+            </h1>
+            <p>Comprehensive finish fabric inventory analysis with receive and delivery transactions</p>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <h3>
+                <i class="fas fa-search"></i> Search Criteria
+            </h3>
+            
+            <div class="search-controls">
+                <div class="form-group">
+                    <label for="searchDispoNumber">
+                        <i class="fas fa-file-alt"></i> Dispo Number
+                    </label>
+                    <select class="form-select" id="searchDispoNumber">
+                        <option value="">Select Dispo Number</option>
+                    </select>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="generateReportBtn">
+                        <i class="fas fa-file-alt"></i> Generate Report
+                    </button>
+                    <button class="btn btn-success" id="exportExcelBtn" style="display: none;">
+                        <i class="fas fa-file-excel"></i> Export to Excel
+                    </button>
+                    <button class="btn btn-warning" id="clearReportBtn" style="display: none;">
+                        <i class="fas fa-eraser"></i> Clear Report
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.history.back()">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="loading-spinner" id="loadingSpinner">
+            <div class="spinner-border" role="status"></div>
+            <p style="margin-top: 15px; color: var(--text-color);">Generating report...</p>
+        </div>
+
+        <!-- Report Container -->
+        <div class="report-container" id="reportContainer">
+            <!-- Summary Section -->
+            <div class="summary-section">
+                <div class="summary-header">
+                    <h2>
+                        <i class="fas fa-chart-pie"></i> Finish Stock Summary
+                    </h2>
+                    <div id="reportTimestamp" style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem;"></div>
+                </div>
+
+                <!-- Dispo Details -->
+                <div class="dispo-details-grid" id="dispoDetailsGrid"></div>
+
+                <!-- Summary Cards -->
+                <div class="summary-grid" id="summaryGrid"></div>
+            </div>
+
+            <!-- Finish Receive Transactions -->
+            <div class="transactions-section">
+                <h3>
+                    <i class="fas fa-download"></i> Finish Fabric Receive Transactions
+                </h3>
+                <div class="table-responsive">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Challan No</th>
+                                <th>A-Grade (Yds)</th>
+                                <th>B-Grade (Yds)</th>
+                                <th>C-Grade (Yds)</th>
+                                <th>Reject (Yds)</th>
+                                <th>Total (Yds)</th>
+                                <th>Cumulative (Yds)</th>
+                                <th>Price/Yds</th>
+                            </tr>
+                        </thead>
+                        <tbody id="receiveTransactionsBody">
+                            <tr>
+                                <td colspan="9" class="no-data">No finish receive transactions found</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Finish Delivery Transactions -->
+            <div class="transactions-section">
+                <h3>
+                    <i class="fas fa-truck"></i> Finish Fabric Delivery Transactions
+                </h3>
+                <div class="table-responsive">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Challan No</th>
+                                <th>Fresh Qty (Yds)</th>
+                                <th>Reject Qty (Yds)</th>
+                                <th>Total (Yds)</th>
+                                <th>Cumulative (Yds)</th>
+                                <th>Fresh Price/Yds</th>
+                                <th>Reject Price/Yds</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deliveryTransactionsBody">
+                            <tr>
+                                <td colspan="8" class="no-data">No finish delivery transactions found</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+    let currentReportData = null;
+
+    // =====================================================
+    // UTILITY FUNCTIONS
+    // =====================================================
+
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+        
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'N/A';
+            
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            
+            return `${day}/${month}/${year}`;
+        } catch (e) {
+            console.error('Date formatting error:', e);
+            return 'N/A';
+        }
+    }
+
+    function formatNumber(number, decimals = 2) {
+        if (number === null || number === undefined || isNaN(number)) return '0.00';
+        return parseFloat(number).toFixed(decimals);
+    }
+
+    function getStockStatusBadge(balance) {
+        if (balance > 1000) {
+            return '<span class="badge badge-success">High Stock</span>';
+        } else if (balance > 100) {
+            return '<span class="badge badge-info">Normal Stock</span>';
+        } else if (balance > 0) {
+            return '<span class="badge badge-warning">Low Stock</span>';
+        } else {
+            return '<span class="badge badge-danger">Out of Stock</span>';
+        }
+    }
+
+    function getBalanceClass(balance) {
+        if (balance > 0) return 'highlight-positive';
+        if (balance < 0) return 'highlight-negative';
+        return 'highlight-zero';
+    }
+
+    function showLoading() {
+        document.getElementById('loadingSpinner').classList.add('active');
+        document.getElementById('reportContainer').classList.remove('active');
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingSpinner').classList.remove('active');
+    }
+
+    function showReport() {
+        document.getElementById('reportContainer').classList.add('active');
+        document.getElementById('exportExcelBtn').style.display = 'inline-flex';
+        document.getElementById('clearReportBtn').style.display = 'inline-flex';
+    }
+
+    function hideReport() {
+        document.getElementById('reportContainer').classList.remove('active');
+        document.getElementById('exportExcelBtn').style.display = 'none';
+        document.getElementById('clearReportBtn').style.display = 'none';
+    }
+
+    // =====================================================
+    // DATA FETCHING FUNCTIONS
+    // =====================================================
+
+    async function fetchDispoNumbers() {
+        try {
+            const response = await fetch('/main/api/finish-stock-report/dispo-numbers', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            const dispoNumbers = await response.json();
+            populateDispoDropdown(dispoNumbers);
+            
+        } catch (error) {
+            console.error('Error fetching dispo numbers:', error);
+            // Fallback: try to get dispos from finish_receive_form or finish_delivery_form
+            console.log('Attempting fallback fetch...');
+            await fetchDispoNumbersFallback();
+        }
+    }
+
+    async function fetchDispoNumbersFallback() {
+        try {
+            // Try fetching from dispo_form_data as fallback
+            const response = await fetch('/main/api/dispo/numbers', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                const dispoNumbers = await response.json();
+                // Convert to expected format if needed
+                const formattedDispos = dispoNumbers.map(dispo => ({
+                    dispo_number: typeof dispo === 'string' ? dispo : dispo.dispo_number,
+                    buyer: dispo.buyer || 'N/A',
+                    production_construction: dispo.production_construction || 'N/A'
+                }));
+                populateDispoDropdown(formattedDispos);
+            }
+        } catch (error) {
+            console.error('Fallback fetch also failed:', error);
+            alert('Failed to load dispo numbers. Please check server connection.');
+        }
+    }
+
+    function populateDispoDropdown(dispoNumbers) {
+        const select = document.getElementById('searchDispoNumber');
+        
+        if (!select) return;
+        
+        select.innerHTML = '<option value="">Select Dispo Number</option>';
+        
+        // Handle both array of strings and array of objects
+        const validDispos = dispoNumbers.filter(dispo => {
+            if (typeof dispo === 'string') {
+                return dispo && dispo.trim() !== '';
+            }
+            return dispo && dispo.dispo_number && dispo.dispo_number.trim() !== '';
+        });
+        
+        console.log(`Populating dropdown with ${validDispos.length} dispo numbers`);
+        
+        validDispos.forEach((dispo, index) => {
+            const option = document.createElement('option');
+            
+            if (typeof dispo === 'string') {
+                option.value = dispo;
+                option.textContent = dispo;
+            } else {
+                option.value = dispo.dispo_number;
+                const buyer = dispo.buyer || 'N/A';
+                const construction = dispo.production_construction || 'N/A';
+                option.textContent = `${dispo.dispo_number} - ${buyer} - ${construction}`;
+                option.setAttribute('data-buyer', buyer);
+                option.setAttribute('data-construction', construction);
+            }
+            
+            select.appendChild(option);
+        });
+        
+        console.log(`Dropdown populated with ${validDispos.length} options`);
+    }
+
+    async function fetchStockReport(dispoNumber) {
+        try {
+            showLoading();
+            
+            const encodedDispo = encodeURIComponent(dispoNumber);
+            const response = await fetch(`/main/api/finish-stock-report/by-dispo/${encodedDispo}`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('No data found for this dispo number');
+                }
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('Finish Stock report data:', data);
+            
+            currentReportData = data;
+            displayReport(data);
+            
+        } catch (error) {
+            console.error('Error fetching finish stock report:', error);
+            alert('Failed to generate report: ' + error.message);
+            hideLoading();
+        }
+    }
+
+    // =====================================================
+    // REPORT DISPLAY FUNCTIONS
+    // =====================================================
+
+    function displayReport(data) {
+        hideLoading();
+        showReport();
+        
+        // Set timestamp
+        const timestamp = new Date().toLocaleString();
+        document.getElementById('reportTimestamp').innerHTML = 
+            `<i class="fas fa-clock"></i> Generated: ${timestamp}`;
+        
+        // Display dispo details
+        displayDispoDetails(data.dispo_details, data.dispo_number);
+        
+        // Display summary
+        displaySummary(data.summary);
+        
+        // Display transactions
+        displayReceiveTransactions(data.receive_transactions);
+        displayDeliveryTransactions(data.delivery_transactions);
+        
+        // Scroll to report
+        document.getElementById('reportContainer').scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+    }
+
+    function displayDispoDetails(details, dispoNumber) {
+        const grid = document.getElementById('dispoDetailsGrid');
+        
+        if (!grid) return;
+        
+        // Default empty object if details not provided
+        details = details || {};
+        
+        const items = [
+            { label: 'Dispo Number', value: dispoNumber || 'N/A', icon: 'fa-file-alt' },
+            { label: 'PO Number', value: details.po_number || 'N/A', icon: 'fa-file-contract' },
+            { label: 'Buyer', value: details.buyer || 'N/A', icon: 'fa-user-tie' },
+            { label: 'Account Holder', value: details.account_holder || 'N/A', icon: 'fa-user' },
+            { label: 'Production Construction', value: details.production_construction || 'N/A', icon: 'fa-industry' },
+            { label: 'Fabric Composition', value: details.fabric_composition || 'N/A', icon: 'fa-layer-group' },
+            { label: 'Weave', value: details.weave || 'N/A', icon: 'fa-project-diagram' },
+            { label: 'Finish Type', value: details.finish_type || 'N/A', icon: 'fa-check-circle' },
+            { label: 'Order Type', value: details.order_type || 'N/A', icon: 'fa-shopping-cart' },
+            { label: 'End Use', value: details.end_use || 'N/A', icon: 'fa-bullseye' },
+            { label: 'PO Quantity (Yds)', value: formatNumber(details.po_quantity_yds) || 'N/A', icon: 'fa-ruler' },
+            { label: 'Dispo Quantity (Yds)', value: formatNumber(details.dispo_quantity_yds) || 'N/A', icon: 'fa-ruler-combined' }
+        ];
+        
+        grid.innerHTML = items.map(item => `
+            <div class="dispo-detail-item">
+                <div class="dispo-detail-label">
+                    <i class="fas ${item.icon}"></i> ${item.label}
+                </div>
+                <div class="dispo-detail-value">${item.value}</div>
+            </div>
+        `).join('');
+    }
+
+    function displaySummary(summary) {
+        const grid = document.getElementById('summaryGrid');
+        
+        if (!grid) return;
+        
+        // Default empty object if summary not provided
+        summary = summary || {};
+        
+        const closingBalance = parseFloat(summary.closing_balance || 0);
+        const balanceClass = getBalanceClass(closingBalance);
+        const stockBadge = getStockStatusBadge(closingBalance);
+        
+        // Calculate values based on Excel formulas
+        const totalReceive = parseFloat(summary.total_finish_receive || 0);
+        const totalDelivery = parseFloat(summary.total_finish_delivery || 0);
+        const totalReject = parseFloat(summary.total_reject_stock || 0);
+        const freshStock = parseFloat(summary.fresh_stock || (closingBalance - totalReject));
+        const balanceToDelivery = parseFloat(summary.balance_to_delivery || 0);
+        const balanceToProduction = parseFloat(summary.balance_to_production || 0);
+        
+        const cards = [
+            {
+                label: 'GD wise Total Finish Receive (Yds)',
+                value: `${formatNumber(totalReceive)} Yds`,
+                subtitle: `${summary.receive_transaction_count || 0} transactions`,
+                icon: 'fa-download',
+                type: 'success'
+            },
+            {
+                label: 'GD wise Total Finish Delivery (Yds)',
+                value: `${formatNumber(totalDelivery)} Yds`,
+                subtitle: `${summary.delivery_transaction_count || 0} transactions`,
+                icon: 'fa-truck',
+                type: 'info'
+            },
+            {
+                label: 'Closing Balance',
+                value: `${formatNumber(closingBalance)} Yds`,
+                subtitle: stockBadge,
+                icon: 'fa-balance-scale',
+                type: closingBalance > 0 ? 'success' : closingBalance < 0 ? 'danger' : 'warning',
+                valueClass: balanceClass
+            },
+            {
+                label: 'Total Reject Stock (Yds)',
+                value: `${formatNumber(totalReject)} Yds`,
+                subtitle: 'Rejected fabric',
+                icon: 'fa-times-circle',
+                type: 'danger'
+            },
+            {
+                label: 'Fresh Stock (Yds)',
+                value: `${formatNumber(freshStock)} Yds`,
+                subtitle: 'Closing - Reject',
+                icon: 'fa-box',
+                type: 'success'
+            },
+            {
+                label: 'Balance to Delivery (Yds)',
+                value: `${formatNumber(balanceToDelivery)} Yds`,
+                subtitle: 'PO Qty - Delivered',
+                icon: 'fa-truck-loading',
+                type: balanceToDelivery > 0 ? 'warning' : 'success'
+            },
+            {
+                label: 'Balance to Production (Yds)',
+                value: `${formatNumber(balanceToProduction)} Yds`,
+                subtitle: 'Dispo Qty - Received',
+                icon: 'fa-industry',
+                type: balanceToProduction > 0 ? 'warning' : 'success'
+            },
+            {
+                label: 'A-Grade Total (Yds)',
+                value: `${formatNumber(summary.total_a_grade || 0)} Yds`,
+                subtitle: 'Premium quality',
+                icon: 'fa-star',
+                type: 'success'
+            }
+        ];
+        
+        grid.innerHTML = cards.map(card => `
+            <div class="summary-card ${card.type}">
+                <div class="summary-card-label">
+                    <i class="fas ${card.icon}"></i>
+                    ${card.label}
+                </div>
+                <div class="summary-card-value ${card.valueClass || ''}">${card.value}</div>
+                <div class="summary-card-subtitle">${card.subtitle}</div>
+            </div>
+        `).join('');
+    }
+
+    function displayReceiveTransactions(transactions) {
+        const tbody = document.getElementById('receiveTransactionsBody');
+        
+        if (!tbody) return;
+        
+        if (!transactions || transactions.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="no-data">
+                        <i class="fas fa-info-circle"></i> No finish receive transactions found
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        let cumulativeQty = 0;
+        
+        tbody.innerHTML = transactions.map(txn => {
+            const aGrade = parseFloat(txn.receive_qty_a_grade || 0);
+            const bGrade = parseFloat(txn.receive_qty_b_grade || 0);
+            const cGrade = parseFloat(txn.receive_qty_c_grade || 0);
+            const reject = parseFloat(txn.receive_qty_reject || 0);
+            const totalYds = aGrade + bGrade + cGrade + reject;
+            cumulativeQty += totalYds;
+            
+            return `
+                <tr>
+                    <td>${formatDate(txn.finish_receive_date)}</td>
+                    <td>${txn.challan_no || 'N/A'}</td>
+                    <td>${formatNumber(aGrade)}</td>
+                    <td>${formatNumber(bGrade)}</td>
+                    <td>${formatNumber(cGrade)}</td>
+                    <td>${formatNumber(reject)}</td>
+                    <td><strong>${formatNumber(totalYds)}</strong></td>
+                    <td class="highlight-positive">${formatNumber(cumulativeQty)}</td>
+                    <td>${formatNumber(txn.finish_fabric_price_per_yds)}</td>
+                </tr>
+            `;
+        }).join('');
+        
+        // Add total row
+        const totals = transactions.reduce((acc, t) => {
+            acc.aGrade += parseFloat(t.receive_qty_a_grade || 0);
+            acc.bGrade += parseFloat(t.receive_qty_b_grade || 0);
+            acc.cGrade += parseFloat(t.receive_qty_c_grade || 0);
+            acc.reject += parseFloat(t.receive_qty_reject || 0);
+            return acc;
+        }, { aGrade: 0, bGrade: 0, cGrade: 0, reject: 0 });
+        
+        tbody.innerHTML += `
+            <tr style="background: rgba(255, 107, 53, 0.1); font-weight: 700;">
+                <td style="text-align: right;" colspan="2">TOTAL:</td>
+                <td>${formatNumber(totals.aGrade)}</td>
+                <td>${formatNumber(totals.bGrade)}</td>
+                <td>${formatNumber(totals.cGrade)}</td>
+                <td>${formatNumber(totals.reject)}</td>
+                <td><strong>${formatNumber(cumulativeQty)}</strong></td>
+                <td colspan="2"></td>
+            </tr>
+        `;
+    }
+
+    function displayDeliveryTransactions(transactions) {
+        const tbody = document.getElementById('deliveryTransactionsBody');
+        
+        if (!tbody) return;
+        
+        if (!transactions || transactions.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="no-data">
+                        <i class="fas fa-info-circle"></i> No finish delivery transactions found
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        let cumulativeQty = 0;
+        
+        tbody.innerHTML = transactions.map(txn => {
+            const freshQty = parseFloat(txn.delivered_finish_qty_fresh_yds || 0);
+            const rejectQty = parseFloat(txn.delivered_finish_qty_reject_yds || 0);
+            const totalYds = freshQty + rejectQty;
+            cumulativeQty += totalYds;
+            
+            return `
+                <tr>
+                    <td>${formatDate(txn.finish_delivery_date)}</td>
+                    <td>${txn.challan_no || 'N/A'}</td>
+                    <td>${formatNumber(freshQty)}</td>
+                    <td>${formatNumber(rejectQty)}</td>
+                    <td><strong>${formatNumber(totalYds)}</strong></td>
+                    <td class="highlight-positive">${formatNumber(cumulativeQty)}</td>
+                    <td>${formatNumber(txn.delivered_fresh_finish_price_per_yds)}</td>
+                    <td>${formatNumber(txn.delivered_reject_finish_price_per_yds)}</td>
+                </tr>
+            `;
+        }).join('');
+        
+        // Add total row
+        const totalFresh = transactions.reduce((sum, t) => sum + parseFloat(t.delivered_finish_qty_fresh_yds || 0), 0);
+        const totalReject = transactions.reduce((sum, t) => sum + parseFloat(t.delivered_finish_qty_reject_yds || 0), 0);
+        
+        tbody.innerHTML += `
+            <tr style="background: rgba(255, 107, 53, 0.1); font-weight: 700;">
+                <td colspan="2" style="text-align: right;">TOTAL:</td>
+                <td>${formatNumber(totalFresh)}</td>
+                <td>${formatNumber(totalReject)}</td>
+                <td><strong>${formatNumber(cumulativeQty)}</strong></td>
+                <td colspan="3"></td>
+            </tr>
+        `;
+    }
+
+    // =====================================================
+    // EXPORT FUNCTIONS
+    // =====================================================
+
+    function exportToExcel() {
+        if (!currentReportData) {
+            alert('No report data to export');
+            return;
+        }
+        
+        try {
+            const wb = XLSX.utils.book_new();
+            
+            // ========================================
+            // Sheet 1: Summary
+            // ========================================
+            const summaryData = [
+                ['FINISH FABRIC STOCK REPORT'],
+                ['Generated:', new Date().toLocaleString()],
+                [],
+                ['DISPO DETAILS'],
+                ['Dispo Number:', currentReportData.dispo_number],
+                ['PO Number:', currentReportData.dispo_details?.po_number || 'N/A'],
+                ['Buyer:', currentReportData.dispo_details?.buyer || 'N/A'],
+                ['Account Holder:', currentReportData.dispo_details?.account_holder || 'N/A'],
+                ['Production Construction:', currentReportData.dispo_details?.production_construction || 'N/A'],
+                ['Fabric Composition:', currentReportData.dispo_details?.fabric_composition || 'N/A'],
+                ['Weave:', currentReportData.dispo_details?.weave || 'N/A'],
+                ['Finish Type:', currentReportData.dispo_details?.finish_type || 'N/A'],
+                [],
+                ['STOCK SUMMARY'],
+                ['GD wise Total Finish Receive (Yds):', currentReportData.summary?.total_finish_receive || 0],
+                ['GD wise Total Finish Delivery (Yds):', currentReportData.summary?.total_finish_delivery || 0],
+                ['Closing Balance (Yds):', currentReportData.summary?.closing_balance || 0],
+                ['Total Reject Stock (Yds):', currentReportData.summary?.total_reject_stock || 0],
+                ['Fresh Stock (Yds):', currentReportData.summary?.fresh_stock || 0],
+                ['Balance to Delivery (Yds):', currentReportData.summary?.balance_to_delivery || 0],
+                ['Balance to Production (Yds):', currentReportData.summary?.balance_to_production || 0],
+                ['Total A-Grade (Yds):', currentReportData.summary?.total_a_grade || 0],
+                ['Total B-Grade (Yds):', currentReportData.summary?.total_b_grade || 0],
+                ['Total C-Grade (Yds):', currentReportData.summary?.total_c_grade || 0],
+                ['Receive Transactions:', currentReportData.summary?.receive_transaction_count || 0],
+                ['Delivery Transactions:', currentReportData.summary?.delivery_transaction_count || 0]
+            ];
+            
+            const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+            XLSX.utils.book_append_sheet(wb, summarySheet, 'Summary');
+            
+            // ========================================
+            // Sheet 2: Finish Receive Transactions
+            // ========================================
+            const receiveHeaders = [
+                'Date', 'Challan No', 'A-Grade (Yds)', 'B-Grade (Yds)', 'C-Grade (Yds)',
+                'Reject (Yds)', 'Total (Yds)', 'Cumulative (Yds)', 'Price/Yds'
+            ];
+            
+            const receiveData = [receiveHeaders];
+            let cumulativeReceive = 0;
+            
+            if (currentReportData.receive_transactions) {
+                currentReportData.receive_transactions.forEach(txn => {
+                    const aGrade = parseFloat(txn.receive_qty_a_grade || 0);
+                    const bGrade = parseFloat(txn.receive_qty_b_grade || 0);
+                    const cGrade = parseFloat(txn.receive_qty_c_grade || 0);
+                    const reject = parseFloat(txn.receive_qty_reject || 0);
+                    const totalYds = aGrade + bGrade + cGrade + reject;
+                    cumulativeReceive += totalYds;
+                    
+                    receiveData.push([
+                        formatDate(txn.finish_receive_date),
+                        txn.challan_no || 'N/A',
+                        aGrade.toFixed(2),
+                        bGrade.toFixed(2),
+                        cGrade.toFixed(2),
+                        reject.toFixed(2),
+                        totalYds.toFixed(2),
+                        cumulativeReceive.toFixed(2),
+                        txn.finish_fabric_price_per_yds || 0
+                    ]);
+                });
+            }
+            
+            const receiveSheet = XLSX.utils.aoa_to_sheet(receiveData);
+            XLSX.utils.book_append_sheet(wb, receiveSheet, 'Receive Transactions');
+            
+            // ========================================
+            // Sheet 3: Finish Delivery Transactions
+            // ========================================
+            const deliveryHeaders = [
+                'Date', 'Challan No', 'Fresh Qty (Yds)', 'Reject Qty (Yds)',
+                'Total (Yds)', 'Cumulative (Yds)', 'Fresh Price/Yds', 'Reject Price/Yds'
+            ];
+            
+            const deliveryData = [deliveryHeaders];
+            let cumulativeDelivery = 0;
+            
+            if (currentReportData.delivery_transactions) {
+                currentReportData.delivery_transactions.forEach(txn => {
+                    const freshQty = parseFloat(txn.delivered_finish_qty_fresh_yds || 0);
+                    const rejectQty = parseFloat(txn.delivered_finish_qty_reject_yds || 0);
+                    const totalYds = freshQty + rejectQty;
+                    cumulativeDelivery += totalYds;
+                    
+                    deliveryData.push([
+                        formatDate(txn.finish_delivery_date),
+                        txn.challan_no || 'N/A',
+                        freshQty.toFixed(2),
+                        rejectQty.toFixed(2),
+                        totalYds.toFixed(2),
+                        cumulativeDelivery.toFixed(2),
+                        txn.delivered_fresh_finish_price_per_yds || 0,
+                        txn.delivered_reject_finish_price_per_yds || 0
+                    ]);
+                });
+            }
+            
+            const deliverySheet = XLSX.utils.aoa_to_sheet(deliveryData);
+            XLSX.utils.book_append_sheet(wb, deliverySheet, 'Delivery Transactions');
+            
+            // ========================================
+            // Export File
+            // ========================================
+            const fileName = `Finish_Fabric_Stock_Report_${currentReportData.dispo_number}_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            
+            console.log('Report exported successfully');
+            
+        } catch (error) {
+            console.error('Error exporting to Excel:', error);
+            alert('Failed to export report: ' + error.message);
+        }
+    }
+
+    function clearReport() {
+        if (confirm('Are you sure you want to clear the current report?')) {
+            currentReportData = null;
+            hideReport();
+            document.getElementById('searchDispoNumber').value = '';
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    // =====================================================
+    // EVENT LISTENERS
+    // =====================================================
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Finish Fabric Stock Report initialized');
+        
+        // Fetch dispo numbers on load
+        fetchDispoNumbers();
+        
+        // Generate Report button
+        const generateBtn = document.getElementById('generateReportBtn');
+        if (generateBtn) {
+            generateBtn.addEventListener('click', function() {
+                const dispoNumber = document.getElementById('searchDispoNumber').value;
+                
+                if (!dispoNumber) {
+                    alert('Please select a dispo number');
+                    return;
+                }
+                
+                fetchStockReport(dispoNumber);
+            });
+        }
+        
+        // Export Excel button
+        const exportBtn = document.getElementById('exportExcelBtn');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', exportToExcel);
+        }
+        
+        // Clear Report button
+        const clearBtn = document.getElementById('clearReportBtn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', clearReport);
+        }
+        
+        // Auto-generate report on selection
+        const dispoSelect = document.getElementById('searchDispoNumber');
+        if (dispoSelect) {
+            dispoSelect.addEventListener('change', function() {
+                if (this.value) {
+                    fetchStockReport(this.value);
+                }
+            });
+        }
+    });
+    </script>
+</body>
+</html>

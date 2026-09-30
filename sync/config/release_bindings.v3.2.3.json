@@ -1,0 +1,25 @@
+{
+  "binding_version": "3.2.3-hybrid-release-bindings-1",
+  "release_patch_revision": "20260812b",
+  "cli_version": "5.6.0-production-migration-v3.2.3-hybrid",
+  "contract_file": "mappings/mapping-contract-v2.json",
+  "contract_file_sha256": "404f3abdc837e3d3ab19114bfa0b3c8cab39e0e9f5924aa645f638634dd1b1c2",
+  "contract_published_sha256": "480dbef41c0e06192ae91348564e6647dd4d454cb5c23268571b41a01e87674a",
+  "normalization_policy_file": "config/normalization_policy.v3.2.3.json",
+  "normalization_policy_sha256": "c8c121863838ba5aa32efd4c99a11eb819ebcf2ba40d0b20c9c806983f308020",
+  "provenance_policy_file": "config/provenance_policy.v3.2.3.json",
+  "provenance_policy_sha256": "6e8185fb600e0fb707da28c4481a783994a86b1a9adfae87bc3b19de372300c2",
+  "critical_files": {
+    "package.json": "49f0cc416036419448c82cd6e701d12393fbd958428a8b8bc7be2086cf8cd2f3",
+    "lib/source_manifest.js": "184756c18e668a5ec231dabe757c3dad4a74480a294cc03a527d04bc1b250db8",
+    "scripts/v3/certify_sources.js": "e16bd1ee862c6b0ce1360391face782e91cd8b6484a351b6f82abee4c809f7a3",
+    "scripts/v3/certify_sources_v323.js": "c7e064e2ff6a6e40d665a0949fd2963913debf7026d86ded14a49d114cc0a367",
+    "scripts/v3/normalize_sources_v323.js": "bd065ea53fe8b29e185dc0926432d2941b40f2b08a4bd9cc60043b5db8262842",
+    "scripts/v3/activate_certified_sources_v323.js": "280adaa9afc804f135c26cec27e8d6e2c559a9197958bad8da74cb7fde251e4b",
+    "scripts/v3/review_normalization_v323.js": "07fcb9660b1c761a3563bd641a08b9f4dca1386f89f525b7b9396619cff5ed0f",
+    "scripts/v3/approve_source_manifest.js": "c3b30511a7a1e2f3249e658272876de6696fe2ec942a953f8d82618b488fdbdc",
+    "scripts/v3/validate_source_manifest.js": "44eb1f62ae035fbaa2c62c833bbaa1b4f34eda9dd46b268b5f342cddae7a78fe",
+    "scripts/v3/verify_release_v323.js": "8146ed141514937410478c6810dde820e34f628f3518cee82c4381bfe5acc91f",
+    "tests/v3/manifest_12126_blocker_regression.test.js": "3667076aecd3fd3f7b864246ac7be69c09d01d76cddf2d599f6043517a362409"
+  }
+}

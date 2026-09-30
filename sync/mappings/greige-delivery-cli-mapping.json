@@ -1,0 +1,565 @@
+{
+  "profile": {
+    "id": "greige-delivery",
+    "name": "Greige Delivery Import",
+    "sourceFile": "Greige delivery database.csv",
+    "googleSheetSource": null
+  },
+  "source": {
+    "filePath": "/home/weavonpq/import_mapper_cli/csv_files/Greige delivery database.csv",
+    "configuredFilePath": "/home/weavonpq/import_mapper_cli/csv_files/Greige delivery database.csv",
+    "usedLocalReference": false,
+    "headers": [
+      "Delivery Date",
+      "Challan No",
+      "Total No of Than/Roll",
+      "Dispo No",
+      "Buyer",
+      "Customer Ref/Stl",
+      "Weave",
+      "Production Construction",
+      "Fabric Composition",
+      "Special Note",
+      "Delivery Quantity\"A\"Grade",
+      "Delivery Quantity\"B\"Grade",
+      "Delivery Quantity\"C\"Grade",
+      "Delivery Quantity Reject",
+      "Created By",
+      "Last Modified date",
+      "Search Column"
+    ],
+    "rawHeaders": [
+      "Delivery Date",
+      "Challan No",
+      "Total No of Than/Roll",
+      "Dispo No",
+      "Buyer",
+      "Customer Ref/Stl",
+      "Weave",
+      "Production Construction",
+      "Fabric Composition",
+      "Special Note",
+      "Delivery Quantity\"A\"Grade",
+      "Delivery Quantity\"B\"Grade",
+      "Delivery Quantity\"C\"Grade",
+      "Delivery Quantity Reject",
+      "Created By",
+      "Last Modified date",
+      "Search Column"
+    ],
+    "duplicateHeaders": [],
+    "rowCount": 30296,
+    "sourceType": "csv",
+    "googleSheetSource": null,
+    "headerMode": "csv-file",
+    "headerCount": 17
+  },
+  "version": "3.2.0-consolidated",
+  "exportedAt": "2026-07-26T04:44:56.899822Z",
+  "mappings": [
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_form_step",
+      "target_table": "greige_delivery_form",
+      "target_field": "dispo_number",
+      "source_column": "Dispo No",
+      "source_columns": [
+        "Dispo No"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_form_step",
+      "target_table": "greige_delivery_form",
+      "target_field": "delivery_date",
+      "source_column": "Delivery Date",
+      "source_columns": [
+        "Delivery Date"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_form_step",
+      "target_table": "greige_delivery_form",
+      "target_field": "challan_no",
+      "source_column": "Challan No",
+      "source_columns": [
+        "Challan No"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_form_step",
+      "target_table": "greige_delivery_form",
+      "target_field": "total_no_of_than_roll",
+      "source_column": "Total No of Than/Roll",
+      "source_columns": [
+        "Total No of Than/Roll"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_form_step",
+      "target_table": "greige_delivery_form",
+      "target_field": "po_number",
+      "source_column": "",
+      "source_columns": [],
+      "mapping_type": "lookup",
+      "storage_mapping_type": "lookup",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_form_step",
+      "target_table": "greige_delivery_form",
+      "target_field": "buyer",
+      "source_column": "Buyer",
+      "source_columns": [
+        "Buyer",
+        "Dispo No"
+      ],
+      "mapping_type": "lookup",
+      "storage_mapping_type": "lookup",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "",
+      "executable_fallbacks": [
+        {
+          "source": "Buyer"
+        },
+        {
+          "lookup": {
+            "table": "dispo_plan_form",
+            "key_field": "dispo_no",
+            "source_column": "Dispo No",
+            "result_field": "buyer"
+          }
+        },
+        {
+          "lookup": {
+            "table": "dispo_form_data",
+            "key_field": "dispo_number",
+            "source_column": "Dispo No",
+            "result_field": "buyer_name"
+          }
+        }
+      ],
+      "allow_null": false
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_form_step",
+      "target_table": "greige_delivery_form",
+      "target_field": "production_construction",
+      "source_column": "Production Construction",
+      "source_columns": [
+        "Production Construction",
+        "Dispo No"
+      ],
+      "mapping_type": "lookup",
+      "storage_mapping_type": "lookup",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "",
+      "executable_fallbacks": [
+        {
+          "source": "Production Construction"
+        },
+        {
+          "lookup": {
+            "table": "dispo_plan_form",
+            "key_field": "dispo_no",
+            "source_column": "Dispo No",
+            "result_field": "production_construction"
+          }
+        },
+        {
+          "lookup": {
+            "table": "dispo_form_data",
+            "key_field": "dispo_number",
+            "source_column": "Dispo No",
+            "result_field": "production_construction"
+          }
+        }
+      ],
+      "allow_null": false
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_form_step",
+      "target_table": "greige_delivery_form",
+      "target_field": "fabric_composition",
+      "source_column": "Fabric Composition",
+      "source_columns": [
+        "Fabric Composition",
+        "Dispo No"
+      ],
+      "mapping_type": "lookup",
+      "storage_mapping_type": "lookup",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "",
+      "executable_fallbacks": [
+        {
+          "source": "Fabric Composition"
+        },
+        {
+          "lookup": {
+            "table": "dispo_plan_form",
+            "key_field": "dispo_no",
+            "source_column": "Dispo No",
+            "result_field": "fabric_composition"
+          }
+        },
+        {
+          "lookup": {
+            "table": "dispo_form_data",
+            "key_field": "dispo_number",
+            "source_column": "Dispo No",
+            "result_field": "fabric_composition"
+          }
+        }
+      ],
+      "allow_null": false
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_form_step",
+      "target_table": "greige_delivery_form",
+      "target_field": "delivery_quantity_a_grade",
+      "source_column": "Delivery Quantity\"A\"Grade",
+      "source_columns": [
+        "Delivery Quantity\"A\"Grade"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_form_step",
+      "target_table": "greige_delivery_form",
+      "target_field": "delivery_quantity_b_grade",
+      "source_column": "Delivery Quantity\"B\"Grade",
+      "source_columns": [
+        "Delivery Quantity\"B\"Grade"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_form_step",
+      "target_table": "greige_delivery_form",
+      "target_field": "delivery_quantity_c_grade",
+      "source_column": "Delivery Quantity\"C\"Grade",
+      "source_columns": [
+        "Delivery Quantity\"C\"Grade"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_form_step",
+      "target_table": "greige_delivery_form",
+      "target_field": "delivery_quantity_reject",
+      "source_column": "Delivery Quantity Reject",
+      "source_columns": [
+        "Delivery Quantity Reject"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_form_step",
+      "target_table": "greige_delivery_form",
+      "target_field": "customer_ref",
+      "source_column": "Customer Ref/Stl",
+      "source_columns": [
+        "Customer Ref/Stl"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_form_step",
+      "target_table": "greige_delivery_form",
+      "target_field": "weave",
+      "source_column": "Weave",
+      "source_columns": [
+        "Weave"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_form_step",
+      "target_table": "greige_delivery_form",
+      "target_field": "special_note",
+      "source_column": "Special Note",
+      "source_columns": [
+        "Special Note"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_breakdown_step",
+      "target_table": "greige_delivery_breakdown",
+      "target_field": "dispo_number",
+      "source_column": "Dispo No",
+      "source_columns": [
+        "Dispo No"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_breakdown_step",
+      "target_table": "greige_delivery_breakdown",
+      "target_field": "greige_delivery_date",
+      "source_column": "Delivery Date",
+      "source_columns": [
+        "Delivery Date"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_breakdown_step",
+      "target_table": "greige_delivery_breakdown",
+      "target_field": "greige_folding_date",
+      "source_column": "",
+      "source_columns": [
+        "Dispo No",
+        "Delivery Date"
+      ],
+      "mapping_type": "computed",
+      "storage_mapping_type": "computed",
+      "formula": "sourceLatestDate(\"folding\", source(\"Dispo No\"), source(\"Delivery Date\"))",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "sourceLatestDate(\"folding\", source(\"Dispo No\"), source(\"Delivery Date\"))",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_breakdown_step",
+      "target_table": "greige_delivery_breakdown",
+      "target_field": "greige_folding_qty_yds",
+      "source_column": "",
+      "source_columns": [
+        "Dispo No",
+        "Delivery Date"
+      ],
+      "mapping_type": "computed",
+      "storage_mapping_type": "computed",
+      "formula": "sourceCumulative(\"folding\", source(\"Dispo No\"), source(\"Delivery Date\"))",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "sourceCumulative(\"folding\", source(\"Dispo No\"), source(\"Delivery Date\"))",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_breakdown_step",
+      "target_table": "greige_delivery_breakdown",
+      "target_field": "greige_delivery_qty_yds",
+      "source_column": "",
+      "source_columns": [
+        "Dispo No",
+        "Delivery Date",
+        "Challan No"
+      ],
+      "mapping_type": "computed",
+      "storage_mapping_type": "computed",
+      "formula": "sourceCumulative(\"delivery\", source(\"Dispo No\"), source(\"Delivery Date\"), source(\"Challan No\"))",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "sourceCumulative(\"delivery\", source(\"Dispo No\"), source(\"Delivery Date\"), source(\"Challan No\"))",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "greige-delivery",
+      "source_file": "Greige delivery database.csv",
+      "step_id": "gd_breakdown_step",
+      "target_table": "greige_delivery_breakdown",
+      "target_field": "delivery_balance",
+      "source_column": "",
+      "source_columns": [],
+      "mapping_type": "computed",
+      "storage_mapping_type": "computed",
+      "formula": "greige_folding_qty_yds-greige_delivery_qty_yds",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    }
+  ]
+}

@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Log Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-bg: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+            --container-bg: #252525;
+            --text-color: #e0e0e0;
+            --accent-color: #00c4ff;
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            --btn-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            --border-glow: rgba(0, 196, 255, 0.3);
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--primary-bg);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            min-height: 100vh;
+            overflow: auto;
+            background-attachment: fixed;
+        }
+
+        .main-container {
+            background: var(--container-bg);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border: 2px solid #3a3a3a;
+            max-width: 1600px;
+            margin: 0 auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 196, 255, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 196, 255, 0.03) 0%, transparent 20%);
+        }
+
+        .main-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.03) 50%, transparent 51%);
+            background-size: 10px 10px;
+            pointer-events: none;
+        }
+
+        /* Header Section */
+        .header-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 2;
+        }
+
+        .header-section::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 15%;
+            width: 70%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        }
+
+        .header-section h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-color);
+            text-shadow: var(--text-shadow);
+            margin: 0 0 10px 0;
+            background: linear-gradient(45deg, #FFA500, #FFD580);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .header-section h1 i {
+            background: linear-gradient(45deg, #FFA500, #FFD580);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-section p {
+            color: var(--text-color);
+            text-align: center;
+            margin: 0;
+            opacity: 0.8;
+        }
+
+        /* Search Section */
+        .search-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .search-section:hover {
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-glow);
+            border-color: rgba(0, 196, 255, 0.2);
+        }
+
+        .search-section h3 {
+            color: var(--accent-color);
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-controls {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .form-group label {
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            display: block;
+            font-weight: 600;
+        }
+
+        .form-control, .form-select {
+            background-color: #404040;
+            border: 1px solid #505050;
+            color: var(--text-color);
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #454545;
+            color: var(--text-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(0, 196, 255, 0.25);
+            outline: none;
+        }
+
+        .form-control:hover, .form-select:hover {
+            border-color: var(--accent-color);
+        }
+
+        /* Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: none;
+            color: #fff;
+            box-shadow: var(--btn-shadow);
+            font-size: 0.9rem;
+            padding: 10px 20px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.5s ease;
+            z-index: -1;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.6);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0a3a57, #0c8731, #09ad92) !important;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #1e3954, #3b80db) !important;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107, #fd7e14) !important;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057) !important;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #0d8991, #3bbcc4, #4fb4db) !important;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #991509, #e83e8c) !important;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading-spinner.active {
+            display: block;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Report Container */
+        .report-container {
+            display: none;
+            position: relative;
+            z-index: 2;
+        }
+
+        .report-container.active {
+            display: block;
+        }
+
+        /* Summary Section */
+        .summary-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .summary-section:hover {
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-glow);
+            border-color: rgba(0, 196, 255, 0.2);
+        }
+
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .summary-header h2 {
+            color: var(--accent-color);
+            font-size: 1.8rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Details Grid */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .detail-label {
+            color: var(--accent-color);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .detail-value {
+            color: var(--text-color);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        /* Table Styles */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 10px;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .report-table thead {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        .report-table thead th {
+            color: var(--accent-color);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            padding: 15px 10px;
+            text-align: center;
+            border-bottom: 2px solid rgba(0, 196, 255, 0.3);
+        }
+
+        .report-table tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .report-table tbody tr:hover {
+            background: rgba(0, 196, 255, 0.1);
+            transform: scale(1.01);
+        }
+
+        .report-table tbody td {
+            padding: 12px 10px;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .report-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .report-table tfoot {
+            background: rgba(0, 196, 255, 0.1);
+            font-weight: 700;
+        }
+
+        .report-table tfoot td {
+            padding: 15px 10px;
+            color: var(--text-color);
+            font-size: 0.95rem;
+            text-align: center;
+            border-top: 2px solid rgba(0, 196, 255, 0.3);
+        }
+
+        .no-data {
+            color: rgba(255, 255, 255, 0.5);
+            font-style: italic;
+            text-align: center;
+            padding: 30px;
+        }
+
+        /* Highlight Classes */
+        .highlight-positive {
+            color: var(--success-color);
+            font-weight: 700;
+        }
+
+        .highlight-negative {
+            color: var(--danger-color);
+            font-weight: 700;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .search-controls {
+                flex-direction: column;
+            }
+
+            .form-group {
+                min-width: 100%;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-section h1 {
+                font-size: 1.5rem;
+            }
+
+            .main-container {
+                padding: 15px;
+            }
+
+            .search-section, .summary-section {
+                padding: 15px;
+            }
+
+            .report-table thead th {
+                font-size: 0.75rem;
+                padding: 10px 5px;
+            }
+
+            .report-table tbody td {
+                font-size: 0.8rem;
+                padding: 8px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <h1>
+                <i class="fas fa-clipboard-list"></i>
+                Daily Log Report
+            </h1>
+            <p>Comprehensive beam production and loom operation tracking</p>
+        </div>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <h3>
+                <i class="fas fa-search"></i> Search Criteria
+            </h3>
+            
+            <div class="search-controls">
+                <div class="form-group">
+                    <label for="searchDispoNumber">
+                        <i class="fas fa-file-alt"></i> Dispo Number
+                    </label>
+                    <select class="form-select" id="searchDispoNumber">
+                        <option value="">Select Dispo Number</option>
+                    </select>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="generateReportBtn">
+                        <i class="fas fa-file-alt"></i> Generate Report
+                    </button>
+                    <button class="btn btn-success" id="exportExcelBtn" style="display: none;">
+                        <i class="fas fa-file-excel"></i> Export to Excel
+                    </button>
+                    <button class="btn btn-warning" id="clearReportBtn" style="display: none;">
+                        <i class="fas fa-eraser"></i> Clear Report
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.history.back()">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="loading-spinner" id="loadingSpinner">
+            <div class="spinner-border" role="status"></div>
+            <p style="margin-top: 15px; color: var(--text-color);">Generating report...</p>
+        </div>
+
+        <!-- Report Container -->
+        <div class="report-container" id="reportContainer">
+            <!-- Summary Section -->
+            <div class="summary-section">
+                <div class="summary-header">
+                    <h2>
+                        <i class="fas fa-info-circle"></i> Production Details
+                    </h2>
+                    <div id="reportTimestamp" style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem;"></div>
+                </div>
+
+                <!-- Production Details -->
+                <div class="details-grid" id="detailsGrid"></div>
+            </div>
+
+            <!-- Daily Log Table -->
+            <div class="summary-section">
+                <h3 style="color: var(--accent-color); font-size: 1.5rem; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-table"></i> Daily Log Entries
+                </h3>
+                <div class="table-responsive">
+                    <table class="report-table">
+                        <thead>
+                            <tr>
+                                <th>Dispo No</th>
+                                <th>PO NO</th>
+                                <th>Buyer</th>
+                                <th>Fabric Construction</th>
+                                <th>Finish Width</th>
+                                <th>Fabric Composition</th>
+                                <th>Weave Design</th>
+                                <th>Total Ends</th>
+                                <th>Reed Count</th>
+                                <th>Order Reference</th>
+                                <th>Beam Start Date</th>
+                                <th>Beam Start Time</th>
+                                <th>Loom No</th>
+                                <th>Total Run</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dailyLogBody">
+                            <tr>
+                                <td colspan="14" class="no-data">
+                                    <i class="fas fa-info-circle"></i> No daily log entries found
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot id="dailyLogFooter" style="display: none;">
+                            <tr>
+                                <td colspan="13" style="text-align: right; font-weight: 700;">GRAND TOTAL:</td>
+                                <td id="grandTotalRun">0</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+    let currentReportData = null;
+
+    // =====================================================
+    // UTILITY FUNCTIONS
+    // =====================================================
+
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+        
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'N/A';
+            
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            
+            return `${day}-${getMonthName(date.getMonth())}-${year.toString().slice(-2)}`;
+        } catch (e) {
+            console.error('Date formatting error:', e);
+            return 'N/A';
+        }
+    }
+
+    function getMonthName(monthIndex) {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return months[monthIndex];
+    }
+
+    function showLoading() {
+        document.getElementById('loadingSpinner').classList.add('active');
+        document.getElementById('reportContainer').classList.remove('active');
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingSpinner').classList.remove('active');
+    }
+
+    function showReport() {
+        document.getElementById('reportContainer').classList.add('active');
+        document.getElementById('exportExcelBtn').style.display = 'inline-flex';
+        document.getElementById('clearReportBtn').style.display = 'inline-flex';
+    }
+
+    function hideReport() {
+        document.getElementById('reportContainer').classList.remove('active');
+        document.getElementById('exportExcelBtn').style.display = 'none';
+        document.getElementById('clearReportBtn').style.display = 'none';
+    }
+
+    // =====================================================
+    // DATA FETCHING FUNCTIONS
+    // =====================================================
+
+    async function fetchDispoNumbers() {
+        try {
+            const response = await fetch('/main/api/daily-log-report/dispo-numbers', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            const dispoNumbers = await response.json();
+            populateDispoDropdown(dispoNumbers);
+            
+        } catch (error) {
+            console.error('Error fetching dispo numbers:', error);
+            alert('Failed to load dispo numbers: ' + error.message);
+        }
+    }
+
+    function populateDispoDropdown(dispoNumbers) {
+        const select = document.getElementById('searchDispoNumber');
+        
+        if (!select) return;
+        
+        select.innerHTML = '<option value="">Select Dispo Number</option>';
+        
+        const validDispos = dispoNumbers.filter(dispo => 
+            dispo && dispo.dispo_number && dispo.dispo_number.trim() !== ''
+        );
+        
+        console.log(`Populating dropdown with ${validDispos.length} dispo numbers`);
+        
+        validDispos.forEach((dispo, index) => {
+            const option = document.createElement('option');
+            option.value = dispo.dispo_number;
+            
+            const buyer = dispo.buyer || 'N/A';
+            const poNo = dispo.po_number || 'N/A';
+            const construction = dispo.fabric_construction || 'N/A';
+            
+            option.textContent = `${dispo.dispo_number} - ${buyer} - ${poNo} - ${construction}`;
+            option.setAttribute('data-buyer', buyer);
+            option.setAttribute('data-po', poNo);
+            option.setAttribute('data-construction', construction);
+            select.appendChild(option);
+        });
+    }
+
+    async function fetchDailyLogReport(dispoNumber) {
+        try {
+            showLoading();
+
+            const encodedDispo = encodeURIComponent(dispoNumber);
+            const response = await fetch(`/main/api/daily-log-report/by-dispo/${encodedDispo}`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('No data found for this dispo number');
+                }
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Daily log report data:', data);
+
+            // Fetch additional dispo information from main dispo system
+            try {
+                const dispoResponse = await fetch(`/main/api/dispo/fetch/${encodedDispo}`, {
+                    credentials: 'include'
+                });
+
+                if (dispoResponse.ok) {
+                    const dispoData = await dispoResponse.json();
+
+                    // Merge additional dispo data into report data
+                    data.additional_dispo_info = {
+                        order_no: dispoData.order_no,
+                        account_holder: dispoData.account_holder,
+                        order_type: dispoData.order_type,
+                        fabric_type: dispoData.fabric_type,
+                        finish_type: dispoData.finish_type,
+                        po_quantity_yds: dispoData.po_quantity_yds,
+                        dispo_quantity_yds: dispoData.dispo_quantity_yds
+                    };
+
+                    console.log('Additional dispo information fetched');
+                }
+            } catch (dispoError) {
+                console.warn('Could not fetch additional dispo info:', dispoError);
+            }
+
+            currentReportData = data;
+            displayReport(data);
+
+        } catch (error) {
+            console.error('Error fetching daily log report:', error);
+            alert('Failed to generate report: ' + error.message);
+            hideLoading();
+        }
+    }
+
+    // =====================================================
+    // REPORT DISPLAY FUNCTIONS
+    // =====================================================
+
+    function displayReport(data) {
+        hideLoading();
+        showReport();
+        
+        // Set timestamp
+        const timestamp = new Date().toLocaleString();
+        document.getElementById('reportTimestamp').innerHTML = 
+            `<i class="fas fa-clock"></i> Generated: ${timestamp}`;
+        
+        // Display details
+        displayProductionDetails(data);
+        
+        // Display daily log entries
+        displayDailyLogEntries(data.log_entries || []);
+        
+        // Scroll to report
+        document.getElementById('reportContainer').scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+    }
+
+    function displayProductionDetails(data) {
+        const grid = document.getElementById('detailsGrid');
+
+        if (!grid) return;
+
+        const details = data.log_entries && data.log_entries.length > 0 ? data.log_entries[0] : {};
+        const additionalInfo = data.additional_dispo_info || {};
+
+        const items = [
+            { label: 'Dispo Number', value: details.dispo_no || 'N/A', icon: 'fa-file-alt' },
+            { label: 'PO Number', value: details.po_no || 'N/A', icon: 'fa-file-contract' },
+            { label: 'Order Number', value: additionalInfo.order_no || details.order_reference || 'N/A', icon: 'fa-receipt' },
+            { label: 'Buyer', value: details.buyer || 'N/A', icon: 'fa-user-tie' },
+            { label: 'Account Holder', value: additionalInfo.account_holder || 'N/A', icon: 'fa-user-circle' },
+            { label: 'Fabric Construction', value: details.fabric_construction || 'N/A', icon: 'fa-industry' },
+            { label: 'Fabric Composition', value: details.fabric_composition || 'N/A', icon: 'fa-layer-group' },
+            { label: 'Finish Width', value: details.finish_width || 'N/A', icon: 'fa-ruler-horizontal' },
+            { label: 'Weave Design', value: details.weave_design || 'N/A', icon: 'fa-project-diagram' },
+            { label: 'Total Ends', value: details.total_ends || 'N/A', icon: 'fa-stream' },
+            { label: 'Reed Count', value: details.reed_count || 'N/A', icon: 'fa-hashtag' },
+            { label: 'Order Type', value: additionalInfo.order_type || 'N/A', icon: 'fa-tag' },
+            { label: 'Fabric Type', value: additionalInfo.fabric_type || 'N/A', icon: 'fa-tshirt' },
+            { label: 'Finish Type', value: additionalInfo.finish_type || 'N/A', icon: 'fa-check-circle' },
+            { label: 'PO Quantity (Yds)', value: additionalInfo.po_quantity_yds ? formatNumber(additionalInfo.po_quantity_yds, 2) : 'N/A', icon: 'fa-ruler-combined' },
+            { label: 'Dispo Quantity (Yds)', value: additionalInfo.dispo_quantity_yds ? formatNumber(additionalInfo.dispo_quantity_yds, 2) : 'N/A', icon: 'fa-ruler-combined' },
+            { label: 'Total Log Entries', value: data.log_entries ? data.log_entries.length : 0, icon: 'fa-list-ol' },
+            { label: 'Grand Total Run', value: data.grand_total || 0, icon: 'fa-tachometer-alt' }
+        ];
+
+        grid.innerHTML = items.map(item => `
+            <div class="detail-item">
+                <div class="detail-label">
+                    <i class="fas ${item.icon}"></i> ${item.label}
+                </div>
+                <div class="detail-value">${item.value}</div>
+            </div>
+        `).join('');
+    }
+
+    function displayDailyLogEntries(entries) {
+        const tbody = document.getElementById('dailyLogBody');
+        const tfoot = document.getElementById('dailyLogFooter');
+        
+        if (!tbody) return;
+        
+        if (!entries || entries.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="14" class="no-data">
+                        <i class="fas fa-info-circle"></i> No daily log entries found
+                    </td>
+                </tr>
+            `;
+            tfoot.style.display = 'none';
+            return;
+        }
+        
+        let grandTotal = 0;
+        
+        tbody.innerHTML = entries.map(entry => {
+            const totalRun = parseInt(entry.total_run || 0);
+            grandTotal += totalRun;
+            
+            return `
+                <tr>
+                    <td>${entry.dispo_no || 'N/A'}</td>
+                    <td>${entry.po_no || 'N/A'}</td>
+                    <td>${entry.buyer || 'N/A'}</td>
+                    <td>${entry.fabric_construction || 'N/A'}</td>
+                    <td>${entry.finish_width || 'N/A'}</td>
+                    <td>${entry.fabric_composition || 'N/A'}</td>
+                    <td>${entry.weave_design || 'N/A'}</td>
+                    <td>${entry.total_ends || 'N/A'}</td>
+                    <td>${entry.reed_count || 'N/A'}</td>
+                    <td>${entry.order_reference || 'N/A'}</td>
+                    <td>${entry.beam_start_date || 'N/A'}</td>
+                    <td>${entry.beam_start_time || 'N/A'}</td>
+                    <td>${entry.loom_no || 'N/A'}</td>
+                    <td>${formatNumber(totalRun, 0)}</td>
+                </tr>
+            `;
+        }).join('');
+
+        // Update footer with grand total
+        tfoot.style.display = '';
+        const footerTotalCell = document.getElementById('grandTotalRun');
+        if (footerTotalCell) {
+            footerTotalCell.textContent = formatNumber(grandTotal, 0);
+        }
+    }
+
+    function formatNumber(num, decimals = 2) {
+        if (num === null || num === undefined || num === '' || isNaN(num)) {
+            return '0';
+        }
+        const number = parseFloat(num);
+        return number.toLocaleString('en-US', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        });
+    }
+
+    async function exportReport() {
+        if (!currentReportData || !currentReportData.dispo_number) {
+            alert('Please generate a report first before exporting');
+            return;
+        }
+
+        try {
+            showLoading();
+            const response = await fetch(`/main/api/daily-log-report/export/${encodeURIComponent(currentReportData.dispo_number)}`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to export report');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Daily_Log_Report_${currentReportData.dispo_number}_${new Date().toISOString().split('T')[0]}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error('Error exporting report:', error);
+            alert('Failed to export report: ' + error.message);
+        } finally {
+            hideLoading();
+        }
+    }
+
+    function printReport() {
+        window.print();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        fetchDispoNumbers();
+
+        document.getElementById('generateReportBtn').addEventListener('click', function () {
+            const dispoNumber = document.getElementById('searchDispoNumber').value.trim();
+            if (!dispoNumber) { alert('Please select a Dispo Number first.'); return; }
+            fetchDailyLogReport(dispoNumber);
+        });
+
+        document.getElementById('exportExcelBtn').addEventListener('click', exportReport);
+
+        document.getElementById('clearReportBtn').addEventListener('click', function () {
+            currentReportData = null;
+            hideReport();
+            document.getElementById('searchDispoNumber').value = '';
+            document.getElementById('dailyLogBody').innerHTML = `
+                <tr>
+                    <td colspan="14" class="no-data">
+                        <i class="fas fa-info-circle"></i> No daily log entries found
+                    </td>
+                </tr>`;
+            document.getElementById('dailyLogFooter').style.display = 'none';
+            document.getElementById('detailsGrid').innerHTML = '';
+        });
+    });
+    </script>
+</body>
+</html>

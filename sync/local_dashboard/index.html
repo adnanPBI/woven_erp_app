@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Weaving ERP Local Migration Console</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <div class="eyebrow">v3.2.3 LOCAL REHEARSAL</div>
+        <h1>Google Sheets → XAMPP MySQL Migration Console</h1>
+        <p>2024–2026 source window, nine mapped sources, row-level migration telemetry, and a hard local-database safety guard.</p>
+      </div>
+      <div class="status-pill" id="overallStatus">Idle</div>
+    </header>
+
+    <section class="warning">
+      <strong>Safety:</strong> this package is configured for <code>weavonpq_weaving_local</code>. Live actions are blocked unless the target DB name ends in <code>_local</code>.
+    </section>
+
+    <section class="grid metrics">
+      <article class="card"><span>Database</span><strong id="dbName">—</strong></article>
+      <article class="card"><span>Google sources configured</span><strong id="sheetCount">0 / 9</strong></article>
+      <article class="card"><span>Service account</span><strong id="saStatus">Missing</strong></article>
+      <article class="card"><span>Current action</span><strong id="currentAction">Idle</strong></article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div><h2>1. Google Sheet source configuration</h2><p>Paste the nine spreadsheet IDs. Tab names are prefilled and editable.</p></div><button class="secondary" id="saveSheets">Save sheet settings</button></div>
+      <div class="table-wrap"><table id="sheetTable"><thead><tr><th>Profile</th><th>Spreadsheet ID</th><th>Tab</th><th>Header row</th></tr></thead><tbody></tbody></table></div>
+      <p class="hint">Place the private service-account file at <code>local_secrets/google-service-account.json</code> and share every source spreadsheet with its <code>client_email</code> as Viewer.</p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div><h2>2. Rehearsal workflow</h2><p>Run in order. Dry run must pass before local live writes are enabled.</p></div></div>
+      <div class="actions">
+        <button data-action="import-db" class="action">Import phpMyAdmin SQL into local DB</button>
+        <button data-action="test-db" class="action">Test XAMPP database</button>
+        <button data-action="fetch" class="action">Fetch + filter Google 2024–2026</button>
+        <button data-action="prepare" class="action">Normalize + certify sources</button>
+        <button data-action="dry-run" class="action primary">Run full dry migration</button>
+        <button data-action="live" class="action danger">Run local LIVE migration</button>
+        <button data-action="verify" class="action">Verify 2023 preserved + 2024–2026 loaded</button>
+      </div>
+    </section>
+
+    <section class="panel progress-panel">
+      <div class="panel-head"><div><h2>Live row progress</h2><p>The runtime emits a progress event for every logical source row.</p></div><div class="run-id" id="runId">No run</div></div>
+      <div class="progress-grid">
+        <div class="progress-main">
+          <div class="big-number" id="rowCounter">0 / 0</div>
+          <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+          <div class="submetrics">
+            <div><span>Profile</span><strong id="profile">—</strong></div>
+            <div><span>Source row</span><strong id="sourceRow">—</strong></div>
+            <div><span>Inserted</span><strong id="inserted">0</strong></div>
+            <div><span>Updated</span><strong id="updated">0</strong></div>
+            <div><span>Rejected</span><strong id="rejected">0</strong></div>
+            <div><span>Rolled back</span><strong id="rolledBack">0</strong></div>
+          </div>
+        </div>
+        <div class="recent">
+          <h3>Recent row events</h3>
+          <div id="rowEvents" class="row-events"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><div><h2>Console output</h2><p>Fetcher, normalizer, dry-run, live-run, and verification messages.</p></div></div>
+      <pre id="consoleLog">Waiting for an action…</pre>
+    </section>
+  </main>
+  <dialog id="confirmDialog">
+    <form method="dialog">
+      <h3 id="dialogTitle">Confirm action</h3>
+      <p id="dialogText"></p>
+      <input id="confirmInput" autocomplete="off" />
+      <div class="dialog-actions"><button value="cancel" class="secondary">Cancel</button><button value="ok" class="danger">Confirm</button></div>
+    </form>
+  </dialog>
+  <script src="/app.js"></script>
+</body>
+</html>

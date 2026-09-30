@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warping Data Entry Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+            --container-bg: #252525;
+            --text-color: #e0e0e0;
+            --accent-color: #00c4ff;
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            --btn-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            --border-glow: rgba(0, 196, 255, 0.3);
+        }
+
+        body {
+            background: var(--primary-bg);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            height: 100vh;
+            overflow: auto;
+            background-attachment: fixed;
+        }
+
+        .main-container {
+            background: var(--container-bg);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border: 2px solid #3a3a3a;
+            height: auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 196, 255, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 196, 255, 0.03) 0%, transparent 20%);
+        }
+
+        .main-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.03) 50%, transparent 51%);
+            background-size: 10px 10px;
+            pointer-events: none;
+        }
+
+        .header-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 18px 15px;
+            border-radius: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 1050;
+            overflow: visible;
+        }
+
+        .header-title {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .header-controls::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 15%;
+            width: 70%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        }
+
+        .header-controls h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--text-color);
+            text-shadow: var(--text-shadow);
+            margin: 0;
+            background: linear-gradient(45deg, #FFA500, #FFD580);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .header-controls .btn, .header-controls .btn.dropdown-toggle {
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: none;
+            color: #fff;
+            box-shadow: var(--btn-shadow);
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            font-weight: 600;
+            white-space: nowrap;
+            min-width: 140px;
+            text-align: center;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #0d8991, #3bbcc4, #4fb4db) !important;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107, #fd7e14) !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0a3a57, #0c8731, #09ad92) !important;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #1e3954, #3b80db) !important;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #991509, #e83e8c) !important;
+        }
+
+        .btn-tertiary {
+            background: linear-gradient(125deg, #090669, #394f99) !important;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057) !important;
+        }
+
+        .header-controls .btn::before, .header-controls .btn.dropdown-toggle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.5s ease;
+            z-index: -1;
+        }
+
+        .header-controls .btn:hover, .header-controls .btn.dropdown-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.6);
+        }
+
+        .header-controls .btn:hover::before, .header-controls .btn.dropdown-toggle:hover::before {
+            left: 100%;
+        }
+
+        .header-controls .btn i {
+            margin-right: 6px;
+        }
+
+        .dropdown-menu {
+            background: #303030;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            z-index: 1051;
+        }
+
+        .dropdown-item {
+            color: var(--text-color);
+            font-size: 0.85rem;
+            padding: 8px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background: #404040;
+            color: #ffffff;
+        }
+
+        .form-container {
+            background: #252525;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .form-container:hover {
+            background: #2D2D2D;
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-glow);
+            border-color: rgba(0, 196, 255, 0.2);
+        }
+
+        .form-label {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 0;
+            font-size: 0.8rem;
+            width: 40%;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .form-control, .form-select {
+            background-color: #404040;
+            border: 1px solid #505050;
+            color: var(--text-color);
+            border-radius: 10px;
+            padding: 6px 10px;
+            height: 35px;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            width: 60%;
+        }
+
+        .form-group i.fa-calendar-alt,
+        .form-group i.fa-calendar-check {
+            color: var(--accent-color) !important;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #454545;
+            color: var(--text-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(0, 196, 255, 0.25);
+        }
+
+        .form-control:hover, .form-select:hover {
+            border-color: var(--accent-color);
+        }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 10px;
+            position: relative;
+        }
+
+        .form-group i {
+            position: absolute;
+            right: 10px;
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .form-group .form-control, .form-group .form-select {
+            padding-right: 30px;
+        }
+
+        .form-group .form-control:focus ~ i,
+        .form-group .form-select:focus ~ i {
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+        
+        html, body {
+            scroll-behavior: auto !important;
+            overflow-x: hidden;
+        }
+
+        html {
+            scroll-padding-top: 0;
+        }
+
+        body {
+            position: relative;
+        }
+
+        .result-field {
+            background-color: #d68733 !important;
+            border: none;
+            color: #000 !important;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+        }
+
+        .breakdown-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid #3a3a3a;
+            border-radius: 15px;
+            padding: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .collapsible-toggle {
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+            width: 100%;
+            padding: 14px 0;
+        }
+
+        .collapsible-toggle:hover {
+            background: rgba(0, 196, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .breakdown-title {
+            color: var(--accent-color);
+            font-size: 1.4rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 15px;
+            text-shadow: var(--text-shadow);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .breakdown-title i {
+            position: absolute;
+            right: 0;
+        }
+
+        .collapsible-section {
+            display: none;
+        }
+
+        /* THREE COLUMN LAYOUT */
+        .vertical-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .form-group textarea.form-control {
+            width: 80%;
+            height: auto;
+            min-height: 35px;
+            resize: vertical;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 15px;
+        }
+
+        .table-dark {
+            --bs-table-bg: #2D2D2D;
+            --bs-table-border-color: #505050;
+        }
+
+        .table th, .table td {
+            vertical-align: middle;
+            white-space: nowrap;
+            padding: 4px;
+            font-size: 0.85rem;
+        }
+
+        .table th {
+            background-color: #252525;
+            color: var(--accent-color);
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .table-input-sm .form-control {
+            padding: 0px 4px;
+            font-size: 0.9rem;
+            height: 30px;
+            text-align: center;
+            background-color: #404040;
+            border: 1px solid #505050;
+            color: var(--text-color);
+        }
+
+        .table-input-sm .result-field {
+            background-color: #d68733;
+            color: #000;
+            font-weight: 600;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 0.78rem;
+        }
+
+        @media (max-width: 1200px) {
+            .button-row {
+                justify-content: center;
+                gap: 6px;
+            }
+            
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+                min-width: 120px;
+            }
+
+            /* Keep three columns for medium screens */
+            .vertical-layout {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .button-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                width: 100%;
+                max-width: 200px;
+                margin: 0 auto;
+            }
+
+            /* Two columns for tablets */
+            .vertical-layout {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                font-size: 0.75rem;
+                padding: 6px 10px;
+                min-width: 100px;
+            }
+
+            .form-label {
+                font-size: 0.75rem;
+            }
+
+            .form-control, .form-select {
+                font-size: 0.8rem;
+                padding: 5px 8px;
+                height: 32px;
+            }
+
+            /* Single column for mobile */
+            .vertical-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 5px;
+            }
+
+            .form-label {
+                width: 100%;
+            }
+
+            .form-control, .form-select, .form-group textarea.form-control {
+                width: 100%;
+            }
+
+            .form-group i {
+                position: absolute;
+                right: 10px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header-controls">
+            <div class="header-title">
+                <h1>Warping Data Entry Form</h1>
+            </div>
+            <div class="header-buttons">
+                <div class="button-row">
+                    <div class="dropdown">
+                        <button class="btn btn-info dropdown-toggle" type="button" id="searchWarpingRecordDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-search"></i> Search Warping Record
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="searchWarpingRecordDropdown">
+                        </ul>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-info dropdown-toggle" type="button" id="searchDispoBreakdownDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-search"></i> Search Dispo Breakdown
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="searchDispoBreakdownDropdown">
+                        </ul>
+                    </div>
+                    <button class="btn btn-warning" id="clearFormBtn"><i class="fas fa-eraser"></i> Clear Form</button>
+                </div>
+                
+                <div class="button-row">
+                    <button class="btn btn-primary btn-submit" id="saveToMySQLBtn"><i class="fas fa-save"></i> Save to MySQL</button>
+                    <button class="btn btn-primary btn-submit" id="updateToMySQLBtn"><i class="fas fa-refresh"></i> Update MySQL Data</button>
+                    <button class="btn btn-success" id="saveToExcelBtn"><i class="fas fa-file-excel"></i> Export to Excel</button>
+                    <button class="btn btn-tertiary" id="savedWarpingBtn"><i class="fas fa-list"></i> Saved Warping Records</button>
+                    <button class="btn btn-danger" id="deleteWarpingBtn"><i class="fas fa-trash-alt"></i> Delete Record</button>
+                    <a href="#" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+                </div>
+            </div>
+        </div>
+
+        <form id="warpingForm">
+            <!-- Warping Data Breakdown - Collapsible Section 1 -->
+            <div class="breakdown-card">
+                <div class="collapsible-toggle" id="breakdownToggle">
+                    <div class="breakdown-title">
+                        Warping Data Breakdown
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+                <div class="collapsible-section" id="warpingBreakdownContent">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-bordered table-input-sm" id="warpingBreakdownTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 18%;">Warping Date</th>
+                                    <th style="width: 20%;">Warping Program No</th>
+                                    <th style="width: 15%;">Warping Set</th>
+                                    <th style="width: 18%;">Total Beam No</th>
+                                    <th style="width: 29%;">Warping Length (mtr)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="date" class="form-control" name="breakdown_warping_date[]" value=""></td>
+                                    <td><input type="text" class="form-control" name="breakdown_warping_program_no[]" value=""></td>
+                                    <td><input type="number" class="form-control" name="breakdown_warping_set[]" value=""></td>
+                                    <td><input type="number" class="form-control" name="breakdown_total_beam_no[]" value=""></td>
+                                    <td><input type="number" step="0.01" class="form-control" name="breakdown_warping_length_mtr[]" value=""></td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4"><strong>Total Rows</strong></td>
+                                    <td><span id="totalBreakdownRows" class="result-field">1</span></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-success btn-sm" id="addBreakdownRowBtn">
+                                <i class="fas fa-plus"></i> Add Row
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" id="deleteBreakdownRowBtn">
+                                <i class="fas fa-trash"></i> Delete Row
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collapsible Section 2 - Dispo Warp & Weft Yarn Details -->
+            <div class="breakdown-card">
+                <div class="collapsible-toggle" id="dispoDetailsToggle">
+                    <div class="breakdown-title">
+                        Dispo Warp & Weft Yarn Details
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+                <div class="collapsible-section" id="dispoDetailsContent">
+                    <!-- Warp Yarn Details Table -->
+                    <h6 class="text-info mb-2">Warp Yarn Details</h6>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-bordered table-input-sm" id="warpYarnDetailsTable">
+                            <thead>
+                                <tr>
+                                    <th style="min-width: 30px;">SL</th>
+                                    <th style="min-width: 50px;">Count</th>
+                                    <th style="min-width: 30px;">Ply</th>
+                                    <th style="min-width: 60px;">Cal. Count</th>
+                                    <th style="min-width: 100px;">Warp Color Name</th>
+                                    <th style="min-width: 50px;">LD Number</th>
+                                    <th style="min-width: 70px;">Yarn Type</th>
+                                    <th style="min-width: 50px;">Yarn/Repeat</th>
+                                    <th style="min-width: 60px;">Dyed Qty (KG)</th>
+                                    <th style="min-width: 60px;">Grey Qty (KG)</th>
+                                    <th style="min-width: 50px;">No of Cones</th>
+                                    <th style="min-width: 70px;">Cone Length</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td><input type="text" class="form-control" name="warp_count[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="warp_ply[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="warp_cal_count[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="warp_color_name[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="warp_ld_number[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="warp_yarn_type[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="warp_yarn_per_repeat[]" readonly></td>
+                                    <td><input type="text" class="form-control result-field" name="warp_dyed_qty[]" readonly></td>
+                                    <td><input type="text" class="form-control result-field" name="warp_grey_qty[]" readonly></td>
+                                    <td><input type="text" class="form-control result-field" name="warp_no_of_cones[]" readonly></td>
+                                    <td><input type="text" class="form-control result-field" name="warp_cone_length[]" readonly></td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="7"><strong>Total</strong></td>
+                                    <td><span id="totalWarpYarnRepeat" class="result-field">0</span></td>
+                                    <td><span id="totalWarpDyedQty" class="result-field">0.00</span></td>
+                                    <td><span id="totalWarpGreyQty" class="result-field">0.00</span></td>
+                                    <td><span id="totalWarpCones" class="result-field">0</span></td>
+                                    <td><span id="totalWarpConeLength" class="result-field">0</span></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <div class="d-flex gap-2 mb-3">
+                            <button type="button" class="btn btn-success btn-sm" id="addWarpRowBtn">
+                                <i class="fas fa-plus"></i> Add Row
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" id="deleteWarpRowBtn">
+                                <i class="fas fa-trash"></i> Delete Row
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Weft Yarn Details Table -->
+                    <h6 class="text-info mb-2">Weft Yarn Details</h6>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-bordered table-input-sm" id="weftYarnDetailsTable">
+                            <thead>
+                                <tr>
+                                    <th style="min-width: 30px;">SL</th>
+                                    <th style="min-width: 50px;">Count</th>
+                                    <th style="min-width: 30px;">Ply</th>
+                                    <th style="min-width: 60px;">Cal. Count</th>
+                                    <th style="min-width: 100px;">Weft Color Name</th>
+                                    <th style="min-width: 50px;">LD Number</th>
+                                    <th style="min-width: 70px;">Yarn Type</th>
+                                    <th style="min-width: 50px;">Yarn/Repeat</th>
+                                    <th style="min-width: 60px;">Dyed Qty (KG)</th>
+                                    <th style="min-width: 60px;">Grey Qty (KG)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td><input type="text" class="form-control" name="weft_count[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="weft_ply[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="weft_cal_count[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="weft_color_name[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="weft_ld_number[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="weft_yarn_type[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="weft_yarn_per_repeat[]" readonly></td>
+                                    <td><input type="text" class="form-control result-field" name="weft_dyed_qty[]" readonly></td>
+                                    <td><input type="text" class="form-control result-field" name="weft_grey_qty[]" readonly></td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="7"><strong>Total</strong></td>
+                                    <td><span id="totalWeftYarnRepeat" class="result-field">0</span></td>
+                                    <td><span id="totalWeftDyedQty" class="result-field">0.00</span></td>
+                                    <td><span id="totalWeftGreyQty" class="result-field">0.00</span></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-success btn-sm" id="addWeftRowBtn">
+                                <i class="fas fa-plus"></i> Add Row
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" id="deleteWeftRowBtn">
+                                <i class="fas fa-trash"></i> Delete Row
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Fields in THREE COLUMN Layout -->
+            <div class="form-container">
+                <div class="vertical-layout">
+                    <!-- First Column -->
+                    <div class="column">
+                        <div class="form-group">
+    <label for="machineType" class="form-label">Machine Type</label>
+    <select class="form-select" id="machineType" name="machine_type">
+        <option value="">Select Type</option>
+        <option value="Direct">Direct</option>
+        <option value="Sectional">Sectional</option>
+    </select>
+    <i class="fas fa-cogs"></i>
+</div>
+
+                        <div class="form-group">
+    <label for="warpingSet" class="form-label">Warping Set No</label>
+    <input type="number" class="form-control" id="warpingSet" name="warping_set" value="">
+    <i class="fas fa-cog"></i>
+</div>
+                    <div class="form-group">
+                        <label for="warpingDate" class="form-label">Warping Date</label>
+                        <input type="date" class="form-control" id="warpingDate" name="warping_date" value="">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="poNumber" class="form-label">PO Number</label>
+                        <select class="form-select result-field" id="poNumber" name="po_number">
+                            <option value="">Select PO</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dispoNumber" class="form-label">Dispo Number</label>
+                        <select class="form-select result-field" id="dispoNumber" name="dispo_number">
+                            <option value="">Select Dispo</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="buyer" class="form-label">Buyer</label>
+                        <input type="text" class="form-control" id="buyer" name="buyer" value="">
+                        <i class="fas fa-star"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productionConstruction" class="form-label">Production Construction</label>
+                        <input type="text" class="form-control" id="productionConstruction" name="production_construction" value="">
+                        <i class="fas fa-industry"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="beamTotalEnds" class="form-label">Beam Total Ends</label>
+                        <input type="number" class="form-control" id="beamTotalEnds" name="beam_total_ends" value="">
+                        <i class="fas fa-barcode"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="warpingProgramNo" class="form-label">Warping Program No</label>
+                        <input type="text" class="form-control" id="warpingProgramNo" name="warping_program_no" value="">
+                        <i class="fas fa-hashtag"></i>
+                    </div>
+                </div>
+
+                <!-- Second Column -->
+                <div class="column">
+                    <div class="form-group">
+                        <label for="numberOfSections" class="form-label">Number of Sections</label>
+                        <input type="number" class="form-control" id="numberOfSections" name="number_of_sections" value="">
+                        <i class="fas fa-sort-numeric-up"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fabricType" class="form-label">Fabric Type</label>
+                        <input type="text" class="form-control" id="fabricType" name="fabric_type" value="">
+                        <i class="fas fa-tshirt"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dispoQuantityYds" class="form-label">Dispo Quantity (Yds)</label>
+                        <input type="number" step="0.01" class="form-control" id="dispoQuantityYds" name="dispo_quantity_yds" value="">
+                        <i class="fas fa-ruler-combined"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="requiredWarpLengthMeter" class="form-label">Required Warp Length (Mtr)</label>
+                        <input type="number" step="0.01" class="form-control" id="requiredWarpLengthMeter" name="required_warp_length_meter" value="">
+                        <i class="fas fa-ruler-horizontal"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fabricComposition" class="form-label">Fabric Composition</label>
+                        <input type="text" step="0.01" class="form-control" id="fabricComposition" name="fabric_composition" value="">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="actualWarpLengthMtr" class="form-label">Actual Warp Length (Mtr)</label>
+                        <input type="number" step="0.01" class="form-control" id="actualWarpLengthMtr" name="actual_warp_length_mtr" value="">
+                        <i class="fas fa-tape"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="yarnWeight" class="form-label">Yarn Weight</label>
+                        <input type="number" step="0.01" class="form-control" id="yarnWeight" name="yarn_weight" value="">
+                        <i class="fas fa-weight"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="machineNo" class="form-label">Machine No</label>
+                        <input type="text" class="form-control" id="machineNo" name="machine_no" value="">
+                        <i class="fas fa-server"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="totalNoOfBeam" class="form-label">Total No of Beam</label>
+                        <input type="number" class="form-control" id="totalNoOfBeam" name="total_no_of_beam" value="">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                </div>
+
+                <!-- Third Column -->
+                <div class="column">
+                    <div class="form-group">
+                        <label for="breaksPerMillion" class="form-label">Breaks per Million</label>
+                        <input type="number" step="0.01" class="form-control" id="breaksPerMillion" name="breaks_per_million" value="">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="machineSpeedMeterMin" class="form-label">Machine Speed (Meter/Min)</label>
+                        <input type="number" step="0.01" class="form-control" id="machineSpeedMeterMin" name="machine_speed_meter_min" value="">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="leftoverYarnKgs" class="form-label">Leftover Yarn (kgs)</label>
+                        <input type="number" step="0.01" class="form-control" id="leftoverYarnKgs" name="leftover_yarn_kgs" value="">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="yarnType" class="form-label">Yarn Type</label>
+                        <input type="text" class="form-control" id="yarnType" name="yarn_type" value="">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="processType" class="form-label">Process Type</label>
+                        <input type="text" class="form-control" id="processType" name="process_type" value="">
+                        <i class="fas fa-sync"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reedWidthInch" class="form-label">Reed Width (Inch)</label>
+                        <input type="number" step="0.01" class="form-control" id="reedWidthInch" name="reed_width_inch" value="">
+                        <i class="fas fa-arrows-alt-h"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="flangeToFlange" class="form-label">Flange To Flange</label>
+                        <input type="number" step="0.01" class="form-control" id="flangeToFlange" name="flange_to_flange" value="">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reedCount" class="form-label">Reed Count</label>
+                        <input type="text" class="form-control" id="reedCount" name="reed_count" value="">
+                        <i class="fas fa-sort-numeric-up"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="remarks" class="form-label">Remarks</label>
+                        <textarea class="form-control" id="remarks" name="remarks" rows="1" placeholder="Enter remarks..."></textarea>
+                        <i class="fas fa-sticky-note"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/main/public/js/erp-smart-dropdown.js"></script>
+<script src="/main/public/js/erp-async-search-dropdown.js"></script>
+  
+    <script>
+let currentRecordId = null;
+
+// ========== CALCULATION FUNCTIONS ==========
+function calculateBreakdownTotals() {
+    const tbody = document.querySelector('#warpingBreakdownTable tbody');
+    if (!tbody) return;
+
+    const rowCount = tbody.querySelectorAll('tr').length;
+    const totalRowsEl = document.getElementById('totalBreakdownRows');
+    if (totalRowsEl) totalRowsEl.textContent = rowCount;
+
+    let totalBeams = 0;
+    document.querySelectorAll('input[name="breakdown_total_beam_no[]"]').forEach(input => {
+        const v = parseInt(input.value);
+        if (!isNaN(v) && v > 0) totalBeams += v;
+    });
+
+    let totalLength = 0;
+    document.querySelectorAll('input[name="breakdown_warping_length_mtr[]"]').forEach(input => {
+        const v = parseFloat(input.value);
+        if (!isNaN(v) && v > 0) totalLength += v;
+    });
+
+    const totalNoOfBeamEl = document.getElementById('totalNoOfBeam');
+    if (totalNoOfBeamEl) totalNoOfBeamEl.value = totalBeams > 0 ? totalBeams : '';
+
+    const totalLengthEl = document.getElementById('totalWarpingLength');
+    if (totalLengthEl) totalLengthEl.textContent = totalLength.toFixed(2);
+}
+
+function calculateYarnTotals() {
+    let totalWarpYarnRepeat = 0, totalWarpDyedQty = 0, totalWarpGreyQty = 0;
+    let totalWarpCones = 0, totalWarpConeLength = 0;
+
+    document.querySelectorAll('input[name="warp_yarn_per_repeat[]"]').forEach(i => { totalWarpYarnRepeat += parseFloat(i.value) || 0; });
+    document.querySelectorAll('input[name="warp_dyed_qty[]"]').forEach(i => { totalWarpDyedQty += parseFloat(i.value) || 0; });
+    document.querySelectorAll('input[name="warp_grey_qty[]"]').forEach(i => { totalWarpGreyQty += parseFloat(i.value) || 0; });
+    document.querySelectorAll('input[name="warp_no_of_cones[]"]').forEach(i => { totalWarpCones += parseFloat(i.value) || 0; });
+    document.querySelectorAll('input[name="warp_cone_length[]"]').forEach(i => { totalWarpConeLength += parseFloat(i.value) || 0; });
+
+    const el = id => document.getElementById(id);
+    if (el('totalWarpYarnRepeat'))  el('totalWarpYarnRepeat').textContent  = totalWarpYarnRepeat.toFixed(0);
+    if (el('totalWarpDyedQty'))     el('totalWarpDyedQty').textContent     = totalWarpDyedQty.toFixed(2);
+    if (el('totalWarpGreyQty'))     el('totalWarpGreyQty').textContent     = totalWarpGreyQty.toFixed(2);
+    if (el('totalWarpCones'))       el('totalWarpCones').textContent       = Math.round(totalWarpCones);
+    if (el('totalWarpConeLength'))  el('totalWarpConeLength').textContent  = Math.ceil(totalWarpConeLength);
+
+    let totalWeftYarnRepeat = 0, totalWeftDyedQty = 0, totalWeftGreyQty = 0;
+    document.querySelectorAll('input[name="weft_yarn_per_repeat[]"]').forEach(i => { totalWeftYarnRepeat += parseFloat(i.value) || 0; });
+    document.querySelectorAll('input[name="weft_dyed_qty[]"]').forEach(i => { totalWeftDyedQty += parseFloat(i.value) || 0; });
+    document.querySelectorAll('input[name="weft_grey_qty[]"]').forEach(i => { totalWeftGreyQty += parseFloat(i.value) || 0; });
+
+    if (el('totalWeftYarnRepeat'))  el('totalWeftYarnRepeat').textContent  = totalWeftYarnRepeat.toFixed(0);
+    if (el('totalWeftDyedQty'))     el('totalWeftDyedQty').textContent     = totalWeftDyedQty.toFixed(2);
+    if (el('totalWeftGreyQty'))     el('totalWeftGreyQty').textContent     = totalWeftGreyQty.toFixed(2);
+}
+
+// ========== COLLAPSIBLE TOGGLE ==========
+function toggleCollapsible(toggleId, contentId) {
+    const collapsibleSection = document.getElementById(contentId);
+    const chevronIcon = document.querySelector(`#${toggleId} .breakdown-title i`);
+    if (!collapsibleSection) return;
+    const isCurrentlyHidden = collapsibleSection.style.display === 'none' || collapsibleSection.style.display === '';
+    collapsibleSection.style.display = isCurrentlyHidden ? 'block' : 'none';
+    if (chevronIcon) {
+        chevronIcon.classList.toggle('fa-chevron-down', !isCurrentlyHidden);
+        chevronIcon.classList.toggle('fa-chevron-up', isCurrentlyHidden);
+    }
+}
+
+// ========== INITIALIZE TO TOP OF PAGE ==========
+function initializeFormFromTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    setTimeout(() => {
+        const firstField = document.getElementById('machineType');
+        if (firstField) firstField.focus();
+    }, 500);
+}
+
+// ========== KEYBOARD NAVIGATION ==========
+function setupKeyboardNavigation() {
+    const formFields = [
+        'machineType', 'warpingSet', 'warpingDate', 'poNumber', 'dispoNumber',
+        'buyer', 'productionConstruction', 'beamTotalEnds', 'warpingProgramNo', 'numberOfSections',
+        'fabricType', 'dispoQuantityYds', 'requiredWarpLengthMeter', 'fabricComposition',
+        'actualWarpLengthMtr', 'yarnWeight', 'machineNo', 'totalNoOfBeam', 'breaksPerMillion',
+        'machineSpeedMeterMin', 'leftoverYarnKgs', 'yarnType', 'processType', 'reedWidthInch',
+        'flangeToFlange', 'reedCount', 'remarks'
+    ];
+    formFields.forEach((fieldId, index) => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowDown' || (e.key === 'Tab' && !e.shiftKey)) {
+                    e.preventDefault();
+                    const nextIndex = (index + 1) % formFields.length;
+                    const nextField = document.getElementById(formFields[nextIndex]);
+                    if (nextField) { nextField.focus(); if (nextField.type === 'text' || nextField.type === 'number') nextField.select(); }
+                } else if (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) {
+                    e.preventDefault();
+                    const prevIndex = index === 0 ? formFields.length - 1 : index - 1;
+                    const prevField = document.getElementById(formFields[prevIndex]);
+                    if (prevField) { prevField.focus(); if (prevField.type === 'text' || prevField.type === 'number') prevField.select(); }
+                }
+            });
+        }
+    });
+}
+
+// ========== SYNC DISPO TO BREAKDOWN ROWS ==========
+// Pushes the current dispo value into every hidden dispo input inside breakdown rows
+function syncDispoToBreakdownRows(dispoNumber) {
+    document.querySelectorAll('input[name="breakdown_dispo_number[]"]').forEach(inp => {
+        inp.value = dispoNumber || '';
+    });
+}
+
+// ========== FETCH PO NUMBERS ==========
+async function fetchPONumbers() {
+    try {
+        const response = await fetch('/main/api/po/numbers', { method: 'GET', credentials: 'include' });
+        if (!response.ok) { console.warn(`PO fetch returned status ${response.status}`); return; }
+        populatePOField(await response.json());
+    } catch (error) { console.error('Failed to load PO numbers:', error); }
+}
+
+function populatePOField(poNumbers) {
+    const poField = document.getElementById('poNumber');
+    if (!poField) return;
+    const currentValue = poField.value;
+    poField.innerHTML = '<option value="">Select PO</option>';
+    poNumbers.forEach(poNo => {
+        const option = document.createElement('option');
+        option.value = poNo; option.textContent = poNo;
+        if (poNo === currentValue) option.selected = true;
+        poField.appendChild(option);
+    });
+    if (currentValue) poField.value = currentValue;
+}
+
+// ========== FETCH DISPO NUMBERS FOR MAIN FORM ==========
+async function fetchDispoNumbers() {
+    try {
+        const response = await fetch('/main/api/dyed-yarn/dispo-numbers', { method: 'GET', credentials: 'include' });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        const dispoNumbers = await response.json();
+        const dispoSelect = document.getElementById('dispoNumber');
+        if (!dispoSelect) return;
+        dispoSelect.innerHTML = '<option value="">Select Dispo</option>';
+        dispoNumbers.forEach(dispo => {
+            const option = document.createElement('option');
+            option.value = dispo; option.textContent = dispo;
+            dispoSelect.appendChild(option);
+        });
+    } catch (error) { console.error('Failed to load dispo numbers:', error); }
+}
+
+// ========== FETCH DISPO NUMBERS FOR BREAKDOWN SEARCH ==========
+async function fetchDispoNumbersForBreakdown() {
+    try {
+        const response = await fetch('/main/api/dyed-yarn/dispo-numbers', { method: 'GET', credentials: 'include' });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        const dispoNumbers = await response.json();
+        const dispoMenu = document.querySelector('ul[aria-labelledby="searchDispoBreakdownDropdown"]');
+        if (!dispoMenu) return;
+        dispoMenu.innerHTML = dispoNumbers.length === 0
+            ? '<li><a class="dropdown-item disabled" href="#">No dispo numbers available</a></li>'
+            : dispoNumbers.map(n => `<li><a class="dropdown-item" href="#" data-dispo-number="${n}">${n}</a></li>`).join('');
+        attachDispoBreakdownListeners();
+    } catch (error) { console.error('Failed to load dispo numbers for breakdown:', error); }
+}
+
+// ========== FETCH SAVED WARPING RECORDS FOR SEARCH ==========
+async function fetchWarpingRecords() {
+    try {
+        const response = await fetch('/main/api/warping/search-records', { method: 'GET', credentials: 'include' });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        const records = await response.json();
+        const recordMenu = document.querySelector('ul[aria-labelledby="searchWarpingRecordDropdown"]');
+        if (!recordMenu) return;
+        recordMenu.innerHTML = records.length === 0
+            ? '<li><a class="dropdown-item disabled" href="#">No records available</a></li>'
+            : records.map(record => {
+                let formattedDate = 'N/A';
+                if (record.warping_date) {
+                    try {
+                        const d = new Date(record.warping_date);
+                        formattedDate = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+                    } catch(e) {}
+                }
+                const setDisplay = record.warping_set || 1;
+                const displayText = `Buyer: ${record.buyer||'N/A'} | Dispo: ${record.dispo_number||'N/A'} | Program: ${record.warping_program_no||'N/A'} | Machine: ${record.machine_type||'Direct'} | Set: ${setDisplay} | Date: ${formattedDate}`;
+                return `<li><a class="dropdown-item" href="#" data-record-id="${record.id}" style="font-size:0.85rem;">${displayText}</a></li>`;
+              }).join('');
+        attachWarpingRecordListeners();
+    } catch (error) { console.error('Failed to load warping records:', error); }
+}
+
+// ========== ATTACH DROPDOWN LISTENERS ==========
+function attachDispoBreakdownListeners() {
+    document.querySelectorAll('ul[aria-labelledby="searchDispoBreakdownDropdown"] .dropdown-item').forEach(item => {
+        const newItem = item.cloneNode(true);
+        item.parentNode.replaceChild(newItem, item);
+        newItem.addEventListener('click', function(e) {
+            e.preventDefault(); e.stopPropagation();
+            const dispoNumber = this.getAttribute('data-dispo-number');
+            if (dispoNumber && !this.classList.contains('disabled')) {
+                const searchButton = document.getElementById('searchDispoBreakdownDropdown');
+                if (searchButton) {
+                    searchButton.innerHTML = `<i class="fas fa-search"></i> Dispo: ${dispoNumber}`;
+                    const dropdown = bootstrap.Dropdown.getInstance(searchButton);
+                    if (dropdown) dropdown.hide();
+                }
+                fetchYarnDetailsByDispo(dispoNumber);
+            }
+        });
+    });
+}
+
+function attachWarpingRecordListeners() {
+    document.querySelectorAll('ul[aria-labelledby="searchWarpingRecordDropdown"] .dropdown-item').forEach(item => {
+        const newItem = item.cloneNode(true);
+        item.parentNode.replaceChild(newItem, item);
+        newItem.addEventListener('click', async function(e) {
+            e.preventDefault(); e.stopPropagation();
+            const recordId = this.getAttribute('data-record-id');
+            if (recordId && !this.classList.contains('disabled')) {
+                const searchButton = document.getElementById('searchWarpingRecordDropdown');
+                if (searchButton) { const dd = bootstrap.Dropdown.getInstance(searchButton); if (dd) dd.hide(); }
+                await loadRecord(recordId);
+            }
+        });
+    });
+}
+
+// ========== FETCH YARN DETAILS BY DISPO ==========
+async function fetchYarnDetailsByDispo(dispoNumber) {
+    try {
+        const enc = encodeURIComponent(dispoNumber);
+        const [yarnResponse, dispoInfoResponse] = await Promise.all([
+            fetch(`/main/api/dyed-yarn/fetch-yarn-details/${enc}`, { method: 'GET', credentials: 'include' }),
+            fetch(`/main/api/warping/fetch-dispo-info/${enc}`,     { method: 'GET', credentials: 'include' })
+        ]);
+
+        if (!yarnResponse.ok) throw new Error(`Yarn fetch error! Status: ${yarnResponse.status}`);
+        const yarnData = await yarnResponse.json();
+        if (!yarnData.success) { alert('Failed to load yarn details: ' + yarnData.message); return; }
+
+        // Set dispo number in main select
+        const dispoSelect = document.getElementById('dispoNumber');
+        if (dispoSelect) dispoSelect.value = dispoNumber;
+
+        // FIX: sync dispo to all breakdown rows
+        syncDispoToBreakdownRows(dispoNumber);
+
+        populateWarpYarnTable(yarnData.warpDetails);
+        populateWeftYarnTable(yarnData.weftDetails);
+        calculateYarnTotals();
+
+        if (dispoInfoResponse.ok) {
+            const dispoInfoData = await dispoInfoResponse.json();
+            if (dispoInfoData.success) {
+                const d = dispoInfoData.dispoInfo;
+
+                const poSelect = document.getElementById('poNumber');
+                if (poSelect && d.po_no != null) {
+                    if (![...poSelect.options].some(o => o.value === String(d.po_no))) {
+                        const opt = document.createElement('option');
+                        opt.value = d.po_no; opt.textContent = d.po_no;
+                        poSelect.appendChild(opt);
+                    }
+                    poSelect.value = d.po_no;
+                }
+
+                const setIfVal = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
+                setIfVal('buyer',                  d.buyer_name);
+                setIfVal('productionConstruction', d.production_construction);
+                setIfVal('beamTotalEnds',          d.beam_total_ends);
+                setIfVal('numberOfSections',       d.actual_section);
+                setIfVal('fabricType',             d.fabric_type);
+                setIfVal('dispoQuantityYds',       d.po_qty_yds);
+                setIfVal('requiredWarpLengthMeter',d.warp_beam_length);
+                setIfVal('fabricComposition',      d.fabric_composition);
+                setIfVal('actualWarpLengthMtr',    d.loom_production_mtr);
+                setIfVal('yarnType',               d.yarn_type);
+                setIfVal('processType',            d.process_type);
+                setIfVal('reedWidthInch',          d.reed_space_inch);
+                setIfVal('reedCount',              d.reed_count);
+            }
+        } else {
+            console.warn('Could not load extra dispo info, status:', dispoInfoResponse.status);
+        }
+    } catch (error) {
+        console.error('Error fetching yarn details:', error);
+        alert('Failed to load yarn details: ' + error.message);
+    }
+}
+
+// ========== POPULATE WARP YARN TABLE ==========
+function populateWarpYarnTable(warpDetails) {
+    const tbody = document.querySelector('#warpYarnDetailsTable tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (warpDetails.length === 0) { addEmptyWarpRow(); return; }
+    warpDetails.forEach((detail, index) => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td><input type="text" class="form-control" name="warp_count[]"           value="${detail.count||''}"              readonly></td>
+            <td><input type="text" class="form-control" name="warp_ply[]"             value="${detail.warp_ply||''}"           readonly></td>
+            <td><input type="text" class="form-control" name="warp_cal_count[]"       value="${detail.cal_count||''}"          readonly></td>
+            <td><input type="text" class="form-control" name="warp_color_name[]"      value="${detail.warp_color_name||''}"    readonly></td>
+            <td><input type="text" class="form-control" name="warp_ld_number[]"       value="${detail.ld_number||''}"          readonly></td>
+            <td><input type="text" class="form-control" name="warp_yarn_type[]"       value="${detail.yarn_type||''}"          readonly></td>
+            <td><input type="text" class="form-control" name="warp_yarn_per_repeat[]" value="${detail.yarn_per_repeat||''}"    readonly></td>
+            <td><input type="text" class="form-control result-field" name="warp_dyed_qty[]"    value="${parseFloat(detail.dyed_qty_kg||0).toFixed(2)}"  readonly></td>
+            <td><input type="text" class="form-control result-field" name="warp_grey_qty[]"    value="${parseFloat(detail.grey_qty_kg||0).toFixed(2)}"  readonly></td>
+            <td><input type="text" class="form-control result-field" name="warp_no_of_cones[]" value="${detail.no_of_cones||''}"                        readonly></td>
+            <td><input type="text" class="form-control result-field" name="warp_cone_length[]" value="${detail.cone_length||''}"                        readonly></td>`;
+    });
+}
+
+// ========== POPULATE WEFT YARN TABLE ==========
+function populateWeftYarnTable(weftDetails) {
+    const tbody = document.querySelector('#weftYarnDetailsTable tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (weftDetails.length === 0) { addEmptyWeftRow(); return; }
+    weftDetails.forEach((detail, index) => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td><input type="text" class="form-control" name="weft_count[]"           value="${detail.count||''}"              readonly></td>
+            <td><input type="text" class="form-control" name="weft_ply[]"             value="${detail.weft_ply||''}"           readonly></td>
+            <td><input type="text" class="form-control" name="weft_cal_count[]"       value="${detail.cal_count||''}"          readonly></td>
+            <td><input type="text" class="form-control" name="weft_color_name[]"      value="${detail.weft_color_name||''}"    readonly></td>
+            <td><input type="text" class="form-control" name="weft_ld_number[]"       value="${detail.ld_number||''}"          readonly></td>
+            <td><input type="text" class="form-control" name="weft_yarn_type[]"       value="${detail.yarn_type||''}"          readonly></td>
+            <td><input type="text" class="form-control" name="weft_yarn_per_repeat[]" value="${detail.yarn_per_repeat||''}"    readonly></td>
+            <td><input type="text" class="form-control result-field" name="weft_dyed_qty[]"  value="${parseFloat(detail.dyed_qty_kg||0).toFixed(2)}"  readonly></td>
+            <td><input type="text" class="form-control result-field" name="weft_grey_qty[]"  value="${parseFloat(detail.grey_qty_kg||0).toFixed(2)}"  readonly></td>`;
+    });
+}
+
+// ========== ADD EMPTY ROWS ==========
+function addEmptyWarpRow() {
+    const tbody = document.querySelector('#warpYarnDetailsTable tbody');
+    if (!tbody) return;
+    const rowCount = tbody.querySelectorAll('tr').length;
+    const row = tbody.insertRow();
+    row.innerHTML = `
+        <td>${rowCount + 1}</td>
+        <td><input type="text" class="form-control" name="warp_count[]"           readonly></td>
+        <td><input type="text" class="form-control" name="warp_ply[]"             readonly></td>
+        <td><input type="text" class="form-control" name="warp_cal_count[]"       readonly></td>
+        <td><input type="text" class="form-control" name="warp_color_name[]"      readonly></td>
+        <td><input type="text" class="form-control" name="warp_ld_number[]"       readonly></td>
+        <td><input type="text" class="form-control" name="warp_yarn_type[]"       readonly></td>
+        <td><input type="text" class="form-control" name="warp_yarn_per_repeat[]" readonly></td>
+        <td><input type="text" class="form-control result-field" name="warp_dyed_qty[]"    readonly></td>
+        <td><input type="text" class="form-control result-field" name="warp_grey_qty[]"    readonly></td>
+        <td><input type="text" class="form-control result-field" name="warp_no_of_cones[]" readonly></td>
+        <td><input type="text" class="form-control result-field" name="warp_cone_length[]" readonly></td>`;
+}
+
+function addEmptyWeftRow() {
+    const tbody = document.querySelector('#weftYarnDetailsTable tbody');
+    if (!tbody) return;
+    const rowCount = tbody.querySelectorAll('tr').length;
+    const row = tbody.insertRow();
+    row.innerHTML = `
+        <td>${rowCount + 1}</td>
+        <td><input type="text" class="form-control" name="weft_count[]"           readonly></td>
+        <td><input type="text" class="form-control" name="weft_ply[]"             readonly></td>
+        <td><input type="text" class="form-control" name="weft_cal_count[]"       readonly></td>
+        <td><input type="text" class="form-control" name="weft_color_name[]"      readonly></td>
+        <td><input type="text" class="form-control" name="weft_ld_number[]"       readonly></td>
+        <td><input type="text" class="form-control" name="weft_yarn_type[]"       readonly></td>
+        <td><input type="text" class="form-control" name="weft_yarn_per_repeat[]" readonly></td>
+        <td><input type="text" class="form-control result-field" name="weft_dyed_qty[]"  readonly></td>
+        <td><input type="text" class="form-control result-field" name="weft_grey_qty[]"  readonly></td>`;
+}
+
+// ========== BUILD A BREAKDOWN ROW ==========
+// FIX: hidden dispo input lives INSIDE the first visible <td> — no extra column
+function buildBreakdownRow(dispoVal, dateVal, progVal, setVal, beamVal, lenVal) {
+    dispoVal = dispoVal || '';
+    dateVal  = dateVal  || '';
+    progVal  = progVal  || '';
+    setVal   = setVal   || '';
+    beamVal  = beamVal  || '';
+    lenVal   = lenVal   || '';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td>
+            <input type="hidden" name="breakdown_dispo_number[]" value="${dispoVal}">
+            <input type="date"   class="form-control" name="breakdown_warping_date[]" value="${dateVal}">
+        </td>
+        <td><input type="text"   class="form-control" name="breakdown_warping_program_no[]" value="${progVal}"></td>
+        <td><input type="number" class="form-control" name="breakdown_warping_set[]"        value="${setVal}"></td>
+        <td><input type="number" class="form-control" name="breakdown_total_beam_no[]"      value="${beamVal}"></td>
+        <td><input type="number" step="0.01" class="form-control" name="breakdown_warping_length_mtr[]" value="${lenVal}"></td>`;
+
+    tr.querySelector('input[name="breakdown_total_beam_no[]"]').addEventListener('input', calculateBreakdownTotals);
+    tr.querySelector('input[name="breakdown_warping_length_mtr[]"]').addEventListener('input', calculateBreakdownTotals);
+    return tr;
+}
+
+// ========== COLLECT BREAKDOWN DETAILS ==========
+function collectBreakdownDetails() {
+    const details = [];
+    const tbody = document.querySelector('#warpingBreakdownTable tbody');
+    if (!tbody) return details;
+
+    Array.from(tbody.rows).forEach(row => {
+        const dispoNumber   = row.querySelector('input[name="breakdown_dispo_number[]"]')?.value || '';
+        const warpingDate   = row.querySelector('input[name="breakdown_warping_date[]"]')?.value;
+        const warpingProgNo = row.querySelector('input[name="breakdown_warping_program_no[]"]')?.value;
+        const warpingSet    = parseInt(row.querySelector('input[name="breakdown_warping_set[]"]')?.value) || 0;
+        const totalBeamNo   = parseInt(row.querySelector('input[name="breakdown_total_beam_no[]"]')?.value) || 0;
+        const warpingLenMtr = parseFloat(row.querySelector('input[name="breakdown_warping_length_mtr[]"]')?.value) || 0;
+
+        if (warpingDate || warpingProgNo || warpingSet > 0 || totalBeamNo > 0 || warpingLenMtr > 0) {
+            details.push({
+                dispo_number:       dispoNumber,
+                warping_date:       warpingDate,
+                warping_program_no: warpingProgNo,
+                warping_set:        warpingSet,
+                total_beam_no:      totalBeamNo,
+                warping_length_mtr: warpingLenMtr
+            });
+        }
+    });
+    return details;
+}
+
+// ========== LOAD RECORD FROM DATABASE ==========
+async function loadRecord(recordId) {
+    try {
+        const response = await fetch(`/main/api/warping/fetch-by-id/${recordId}`, { method: 'GET', credentials: 'include' });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        const data = await response.json();
+
+        console.log('=== LOAD RECORD DEBUG ===');
+        console.log('total_no_of_beam from server:', data.total_no_of_beam);
+
+        currentRecordId = data.id;
+
+        const form = document.getElementById('warpingForm');
+        if (form) {
+            for (const [key, value] of Object.entries(data)) {
+                if (key === 'breakdown_details') continue;
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) {
+                    if (input.type === 'date' && value) {
+                        try { input.value = new Date(value).toISOString().split('T')[0]; } catch(e) { input.value = ''; }
+                    } else {
+                        input.value = value !== null && value !== undefined ? value : '';
+                    }
+                }
+            }
+        }
+
+        // FIX: handle total_no_of_beam regardless of readonly state
+        const totalBeamInput = document.getElementById('totalNoOfBeam');
+        if (totalBeamInput) {
+            const wasReadonly = totalBeamInput.hasAttribute('readonly');
+            if (wasReadonly) totalBeamInput.removeAttribute('readonly');
+            totalBeamInput.value = (data.total_no_of_beam !== null && data.total_no_of_beam !== undefined)
+                ? data.total_no_of_beam : '';
+            if (wasReadonly) totalBeamInput.setAttribute('readonly', 'readonly');
+        }
+
+        // Load breakdown rows
+        if (data.breakdown_details && data.breakdown_details.length > 0) {
+            const tbody = document.querySelector('#warpingBreakdownTable tbody');
+            if (tbody) {
+                tbody.innerHTML = '';
+                data.breakdown_details.forEach(detail => {
+                    let formattedDate = '';
+                    if (detail.warping_date) {
+                        try { formattedDate = new Date(detail.warping_date).toISOString().split('T')[0]; } catch(e) {}
+                    }
+                    // FIX: per-row dispo from DB, fall back to main form dispo
+                    const rowDispo = detail.dispo_number || data.dispo_number || '';
+                    tbody.appendChild(buildBreakdownRow(
+                        rowDispo,
+                        formattedDate,
+                        detail.warping_program_no || '',
+                        detail.warping_set        || '',
+                        detail.total_beam_no      || '',
+                        detail.warping_length_mtr || ''
+                    ));
+                });
+            }
+        }
+
+        // Do NOT recalculate totals — preserve the loaded beam value
+        calculateYarnTotals();
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('savedRecordsModal'));
+        if (modal) modal.hide();
+
+        initializeFormFromTop();
+        console.log('=== LOAD RECORD COMPLETE ===');
+    } catch (error) {
+        console.error('Error loading record:', error);
+        alert('Failed to load record: ' + error.message);
+    }
+}
+
+// ========== DOM CONTENT LOADED ==========
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFormFromTop();
+    setupKeyboardNavigation();
+
+    // Collapsible toggles
+    document.getElementById('breakdownToggle')?.addEventListener('click', function(e) {
+        if (!['INPUT','SELECT','BUTTON','TEXTAREA'].includes(e.target.tagName))
+            toggleCollapsible('breakdownToggle', 'warpingBreakdownContent');
+    });
+    document.getElementById('dispoDetailsToggle')?.addEventListener('click', function(e) {
+        if (!['INPUT','SELECT','BUTTON','TEXTAREA'].includes(e.target.tagName))
+            toggleCollapsible('dispoDetailsToggle', 'dispoDetailsContent');
+    });
+
+    // FIX: replace the static first tbody row with one built by buildBreakdownRow
+    // so it carries the hidden dispo input from the start
+    (function seedInitialBreakdownRow() {
+        const tbody = document.querySelector('#warpingBreakdownTable tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        tbody.appendChild(buildBreakdownRow());
+    })();
+
+    // FIX: when main dispo select changes, sync all breakdown rows
+    document.getElementById('dispoNumber')?.addEventListener('change', function() {
+        syncDispoToBreakdownRows(this.value);
+    });
+
+    // Add breakdown row — inherits current dispo
+    document.getElementById('addBreakdownRowBtn')?.addEventListener('click', function() {
+        const tbody = document.querySelector('#warpingBreakdownTable tbody');
+        if (!tbody) return;
+        if (tbody.querySelectorAll('tr').length >= 20) { alert('Maximum 20 rows allowed'); return; }
+        const curDispo = document.getElementById('dispoNumber')?.value || '';
+        tbody.appendChild(buildBreakdownRow(curDispo));
+        calculateBreakdownTotals();
+    });
+
+    document.getElementById('deleteBreakdownRowBtn')?.addEventListener('click', function() {
+        const tbody = document.querySelector('#warpingBreakdownTable tbody');
+        if (!tbody) return;
+        const rows = tbody.querySelectorAll('tr');
+        if (rows.length > 1) { tbody.removeChild(rows[rows.length - 1]); calculateBreakdownTotals(); }
+        else alert('At least one row is required');
+    });
+
+    // Warp row management
+    document.getElementById('addWarpRowBtn')?.addEventListener('click', function() {
+        const tbody = document.querySelector('#warpYarnDetailsTable tbody');
+        if (!tbody) return;
+        if (tbody.querySelectorAll('tr').length >= 30) { alert('Maximum 30 rows allowed'); return; }
+        addEmptyWarpRow();
+    });
+    document.getElementById('deleteWarpRowBtn')?.addEventListener('click', function() {
+        const tbody = document.querySelector('#warpYarnDetailsTable tbody');
+        if (!tbody) return;
+        const rows = tbody.querySelectorAll('tr');
+        if (rows.length > 1) { tbody.deleteRow(rows.length - 1); calculateYarnTotals(); }
+        else alert('At least one row is required');
+    });
+
+    // Weft row management
+    document.getElementById('addWeftRowBtn')?.addEventListener('click', function() {
+        const tbody = document.querySelector('#weftYarnDetailsTable tbody');
+        if (!tbody) return;
+        if (tbody.querySelectorAll('tr').length >= 30) { alert('Maximum 30 rows allowed'); return; }
+        addEmptyWeftRow();
+    });
+    document.getElementById('deleteWeftRowBtn')?.addEventListener('click', function() {
+        const tbody = document.querySelector('#weftYarnDetailsTable tbody');
+        if (!tbody) return;
+        const rows = tbody.querySelectorAll('tr');
+        if (rows.length > 1) { tbody.deleteRow(rows.length - 1); calculateYarnTotals(); }
+        else alert('At least one row is required');
+    });
+
+    // Clear form
+    document.getElementById('clearFormBtn')?.addEventListener('click', function() {
+        const form = document.getElementById('warpingForm');
+        if (form) form.reset();
+        currentRecordId = null;
+
+        document.getElementById('machineType').value   = '';
+        document.getElementById('warpingSet').value    = '';
+        document.getElementById('totalNoOfBeam').value = '';
+
+        // Reset breakdown table with fresh row
+        const breakdownTbody = document.querySelector('#warpingBreakdownTable tbody');
+        if (breakdownTbody) { breakdownTbody.innerHTML = ''; breakdownTbody.appendChild(buildBreakdownRow()); }
+
+        const warpTbody = document.querySelector('#warpYarnDetailsTable tbody');
+        if (warpTbody) { warpTbody.innerHTML = ''; addEmptyWarpRow(); }
+
+        const weftTbody = document.querySelector('#weftYarnDetailsTable tbody');
+        if (weftTbody) { weftTbody.innerHTML = ''; addEmptyWeftRow(); }
+
+        const btn1 = document.getElementById('searchWarpingRecordDropdown');
+        if (btn1) btn1.innerHTML = '<i class="fas fa-search"></i> Search Warping Record';
+        const btn2 = document.getElementById('searchDispoBreakdownDropdown');
+        if (btn2) btn2.innerHTML = '<i class="fas fa-search"></i> Search Dispo Breakdown';
+
+        calculateBreakdownTotals();
+        calculateYarnTotals();
+        initializeFormFromTop();
+    });
+
+    // Delegated input listener for breakdown totals
+    document.addEventListener('input', function(e) {
+        if (e.target.name === 'breakdown_total_beam_no[]' ||
+            e.target.name === 'breakdown_warping_length_mtr[]')
+            calculateBreakdownTotals();
+    });
+
+    // Save
+    document.getElementById('saveToMySQLBtn')?.addEventListener('click', async function() {
+        try {
+            const form = document.getElementById('warpingForm');
+            const formData = new FormData(form);
+            const data = {};
+            for (let [key, value] of formData.entries())
+                if (!key.includes('[]')) data[key] = value;
+
+            const breakdownDetails = collectBreakdownDetails();
+
+            if (breakdownDetails.length > 0 && !data.dispo_number) {
+                alert('Please select a Dispo Number before saving breakdown rows.');
+                return;
+            }
+
+            const response = await fetch('/main/api/warping/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ formData: data, breakdownDetails })
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || result.error || `HTTP error! Status: ${response.status}`);
+            currentRecordId = result.id;
+            alert('Data saved successfully!');
+            initializeFormFromTop();
+        } catch (error) { console.error(error); alert('Failed to save data: ' + error.message); }
+    });
+
+    // Update
+    document.getElementById('updateToMySQLBtn')?.addEventListener('click', async function() {
+        if (!currentRecordId) { alert('No record selected for update. Please search and load a record first.'); return; }
+        try {
+            const form = document.getElementById('warpingForm');
+            const formData = new FormData(form);
+            const data = {};
+            for (let [key, value] of formData.entries())
+                if (!key.includes('[]')) data[key] = value;
+
+            const breakdownDetails = collectBreakdownDetails();
+            const response = await fetch(`/main/api/warping/update/${currentRecordId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ formData: data, breakdownDetails })
+            });
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            alert('Data updated successfully!');
+            initializeFormFromTop();
+        } catch (error) { console.error(error); alert('Failed to update data: ' + error.message); }
+    });
+
+    // Export to Excel
+    document.getElementById('saveToExcelBtn')?.addEventListener('click', async function() {
+        try {
+            const response = await fetch('/main/api/warping/export-excel', { method: 'GET', credentials: 'include' });
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none'; a.href = url;
+            const cd = response.headers.get('content-disposition');
+            a.download = (cd?.match(/filename="(.+)"/) || [])[1] || 'warping_records.csv';
+            document.body.appendChild(a); a.click();
+            window.URL.revokeObjectURL(url); document.body.removeChild(a);
+        } catch (error) { alert('Failed to export data: ' + error.message); }
+    });
+
+    // Saved Records
+    document.getElementById('savedWarpingBtn')?.addEventListener('click', async function() {
+        try {
+            const response = await fetch('/main/api/warping/saved-records', { method: 'GET', credentials: 'include' });
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            displaySavedRecords(await response.json());
+        } catch (error) { alert('Failed to fetch saved records: ' + error.message); }
+    });
+
+    // Delete
+    document.getElementById('deleteWarpingBtn')?.addEventListener('click', async function() {
+        const recordId = prompt('Enter the ID of the record to delete:');
+        if (!recordId) return;
+        if (!confirm(`Are you sure you want to delete record ID: ${recordId}? This action cannot be undone.`)) return;
+        try {
+            const response = await fetch(`/main/api/warping/delete/${recordId}`, { method: 'DELETE', credentials: 'include' });
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            alert('Record deleted successfully!');
+        } catch (error) { alert('Failed to delete record: ' + error.message); }
+    });
+
+    calculateBreakdownTotals();
+    calculateYarnTotals();
+
+    setTimeout(() => {
+        fetchPONumbers();
+        fetchDispoNumbers();
+        fetchDispoNumbersForBreakdown();
+        fetchWarpingRecords();
+    }, 100);
+
+    console.log('Warping Data Entry Form initialized successfully');
+});
+
+// ========== DISPLAY SAVED RECORDS MODAL ==========
+function displaySavedRecords(records) {
+    document.getElementById('savedRecordsModal')?.remove();
+    document.body.insertAdjacentHTML('beforeend', `
+        <div class="modal fade" id="savedRecordsModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content" style="background-color:#252525;color:#e0e0e0;">
+                    <div class="modal-header" style="border-bottom:1px solid #3a3a3a;">
+                        <h5 class="modal-title">Saved Warping Records</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-striped">
+                                <thead><tr>
+                                    <th>ID</th><th>Date</th><th>PO No</th><th>Dispo No</th>
+                                    <th>Program No</th><th>Buyer</th><th>Machine Type</th>
+                                    <th>Total Beams</th><th>Beam Ends</th><th>Actual Length</th>
+                                    <th>Machine No</th><th>Created At</th><th>Actions</th>
+                                </tr></thead>
+                                <tbody>
+                                ${records.map(r => `<tr>
+                                    <td>${r.id}</td>
+                                    <td>${r.warping_date||'N/A'}</td>
+                                    <td>${r.po_number||'N/A'}</td>
+                                    <td>${r.dispo_number||'N/A'}</td>
+                                    <td>${r.warping_program_no||'N/A'}</td>
+                                    <td>${r.buyer||'N/A'}</td>
+                                    <td>${r.machine_type||'N/A'}</td>
+                                    <td>${r.total_no_of_beam||'N/A'}</td>
+                                    <td>${r.beam_total_ends||'N/A'}</td>
+                                    <td>${r.actual_warp_length_mtr||'N/A'}</td>
+                                    <td>${r.machine_no||'N/A'}</td>
+                                    <td>${new Date(r.created_at).toLocaleDateString()}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary" onclick="loadRecord(${r.id})">Load</button>
+                                        <button class="btn btn-sm btn-danger"  onclick="deleteRecordFromModal(${r.id})">Delete</button>
+                                    </td>
+                                </tr>`).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="border-top:1px solid #3a3a3a;">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button class="btn btn-success" onclick="exportRecordsFromModal()">Export All</button>
+                    </div>
+                </div>
+            </div>
+        </div>`);
+    new bootstrap.Modal(document.getElementById('savedRecordsModal')).show();
+}
+
+async function deleteRecordFromModal(recordId) {
+    if (!confirm(`Are you sure you want to delete record ID: ${recordId}? This action cannot be undone.`)) return;
+    try {
+        const response = await fetch(`/main/api/warping/delete/${recordId}`, { method: 'DELETE', credentials: 'include' });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        alert('Record deleted successfully!');
+        document.getElementById('savedWarpingBtn').click();
+    } catch (error) { alert('Failed to delete record: ' + error.message); }
+}
+
+function exportRecordsFromModal() {
+    document.getElementById('saveToExcelBtn').click();
+}
+</script>
+</body>
+</html>

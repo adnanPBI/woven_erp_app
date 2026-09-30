@@ -1,0 +1,13 @@
+{
+  "table": "warp_broken_pattern",
+  "description": "A broken-pattern row must represent positive yarn/section data rather than formula-only defaults.",
+  "anyOf": [
+    {
+      "name": "warp_broken_pattern.positive_pattern_data",
+      "contract": "positive",
+      "fields": ["round_section_yarn", "total_required_ends", "section_1", "section_2", "section_3", "section_4", "section_5", "section_6", "section_7", "section_8"],
+      "code": "MISSING_POSITIVE_PATTERN_DATA",
+      "reason": "At least one positive lower-beam pattern value is required"
+    }
+  ]
+}

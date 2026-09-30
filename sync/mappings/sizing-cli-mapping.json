@@ -1,0 +1,752 @@
+{
+  "profile": {
+    "id": "sizing",
+    "name": "Sizing Import",
+    "sourceFile": "sizing database.csv",
+    "googleSheetSource": null
+  },
+  "source": {
+    "filePath": "/home/weavonpq/import_mapper_cli/csv_files/sizing database.csv",
+    "configuredFilePath": "/home/weavonpq/import_mapper_cli/csv_files/sizing database.csv",
+    "usedLocalReference": false,
+    "headers": [
+      "Machine Type",
+      "Sizing Date",
+      "Dispo No",
+      "Buyer",
+      "Construction",
+      "Total Ends",
+      "Warping Program No",
+      "Warp Length(Mtr)",
+      "Sizing Set No",
+      "Sizing Length(Mtr)",
+      "Yarn Weight",
+      "Machine No",
+      "Total Beam",
+      "Machine Speed(M/Min)",
+      "Water",
+      "Final volum",
+      "Consumed volume",
+      "Total Used Chemical(kg)",
+      "Total Value of Used Chemical(TK)",
+      "Created By",
+      "Last Modified date",
+      "Search Column",
+      "Section"
+    ],
+    "rawHeaders": [
+      "Machine Type",
+      "Sizing Date",
+      "Dispo No",
+      "Buyer",
+      "Construction",
+      "Total Ends",
+      "Warping Program No",
+      "Warp Length(Mtr)",
+      "Sizing Set No",
+      "Sizing Length(Mtr)",
+      "Yarn Weight",
+      "Machine No",
+      "Total Beam",
+      "Machine Speed(M/Min)",
+      "Water",
+      "Final volum",
+      "Consumed volume",
+      "Total Used Chemical(kg)",
+      "Total Value of Used Chemical(TK)",
+      "Created By",
+      "Last Modified date",
+      "Search Column",
+      "Section"
+    ],
+    "duplicateHeaders": [],
+    "rowCount": 16960,
+    "sourceType": "csv",
+    "googleSheetSource": null,
+    "headerMode": "csv-file",
+    "headerCount": 23
+  },
+  "version": "3.2.0-consolidated",
+  "exportedAt": "2026-07-26T04:44:56.898467Z",
+  "mappings": [
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "dispo_number",
+      "source_column": "Dispo No",
+      "source_columns": [
+        "Dispo No"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "po_number",
+      "source_column": "",
+      "source_columns": [],
+      "mapping_type": "lookup",
+      "storage_mapping_type": "lookup",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "buyer",
+      "source_column": "Buyer",
+      "source_columns": [
+        "Buyer",
+        "Dispo No"
+      ],
+      "mapping_type": "lookup",
+      "storage_mapping_type": "lookup",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "",
+      "executable_fallbacks": [
+        {
+          "source": "Buyer"
+        },
+        {
+          "lookup": {
+            "table": "dispo_plan_form",
+            "key_field": "dispo_no",
+            "source_column": "Dispo No",
+            "result_field": "buyer"
+          }
+        },
+        {
+          "lookup": {
+            "table": "dispo_form_data",
+            "key_field": "dispo_number",
+            "source_column": "Dispo No",
+            "result_field": "buyer_name"
+          }
+        }
+      ],
+      "allow_null": false
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "production_construction",
+      "source_column": "Construction",
+      "source_columns": [
+        "Construction",
+        "Dispo No"
+      ],
+      "mapping_type": "lookup",
+      "storage_mapping_type": "lookup",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "",
+      "executable_fallbacks": [
+        {
+          "source": "Construction"
+        },
+        {
+          "lookup": {
+            "table": "dispo_plan_form",
+            "key_field": "dispo_no",
+            "source_column": "Dispo No",
+            "result_field": "production_construction"
+          }
+        },
+        {
+          "lookup": {
+            "table": "dispo_form_data",
+            "key_field": "dispo_number",
+            "source_column": "Dispo No",
+            "result_field": "production_construction"
+          }
+        }
+      ],
+      "allow_null": false
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "sizing_date",
+      "source_column": "Sizing Date",
+      "source_columns": [
+        "Sizing Date"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "sizing_set_no",
+      "source_column": "Sizing Set No",
+      "source_columns": [
+        "Sizing Set No"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "actual_sizing_length_mtr",
+      "source_column": "Sizing Length(Mtr)",
+      "source_columns": [
+        "Sizing Length(Mtr)"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "warping_machine_type",
+      "source_column": "Machine Type",
+      "source_columns": [
+        "Machine Type"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "sizing_machine_no",
+      "source_column": "Machine No",
+      "source_columns": [
+        "Machine No"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "sizing_machine_speed_m_min",
+      "source_column": "Machine Speed(M/Min)",
+      "source_columns": [
+        "Machine Speed(M/Min)"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "beam_total_ends",
+      "source_column": "Total Ends",
+      "source_columns": [
+        "Total Ends"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "warping_program_no",
+      "source_column": "Warping Program No",
+      "source_columns": [
+        "Warping Program No"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "required_warp_length_mtr",
+      "source_column": "Warp Length(Mtr)",
+      "source_columns": [
+        "Warp Length(Mtr)"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "size_yarn_weight",
+      "source_column": "Yarn Weight",
+      "source_columns": [
+        "Yarn Weight"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "water_volume",
+      "source_column": "Water",
+      "source_columns": [
+        "Water"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "final_volume",
+      "source_column": "Final volum",
+      "source_columns": [
+        "Final volum"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "consumed_volume",
+      "source_column": "Consumed volume",
+      "source_columns": [
+        "Consumed volume"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "total_used_chemicals_kgs",
+      "source_column": "Total Used Chemical(kg)",
+      "source_columns": [
+        "Total Used Chemical(kg)"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "total_value_of_used_chemicals_tk",
+      "source_column": "Total Value of Used Chemical(TK)",
+      "source_columns": [
+        "Total Value of Used Chemical(TK)"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "number_of_sections",
+      "source_column": "Section",
+      "source_columns": [
+        "Section"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "total_size_beam",
+      "source_column": "Total Beam",
+      "source_columns": [
+        "Total Beam"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "actual_warp_length_mtr",
+      "source_column": "",
+      "source_columns": [
+        "Warp Length(Mtr)",
+        "Dispo No",
+        "Warping Program No",
+        "Sizing Date"
+      ],
+      "mapping_type": "computed",
+      "storage_mapping_type": "computed",
+      "formula": "cleanText(source(\"Warp Length(Mtr)\")) !== null ? source(\"Warp Length(Mtr)\") : sourceWarpingValue(\"actual_warp_length_mtr\", source(\"Dispo No\"), source(\"Warping Program No\"), source(\"Sizing Date\"))",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "cleanText(source(\"Warp Length(Mtr)\")) !== null ? source(\"Warp Length(Mtr)\") : sourceWarpingValue(\"actual_warp_length_mtr\", source(\"Dispo No\"), source(\"Warping Program No\"), source(\"Sizing Date\"))",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "warping_date",
+      "source_column": "",
+      "source_columns": [
+        "Dispo No",
+        "Warping Program No",
+        "Sizing Date"
+      ],
+      "mapping_type": "computed",
+      "storage_mapping_type": "computed",
+      "formula": "sourceWarpingValue(\"warping_date\", source(\"Dispo No\"), source(\"Warping Program No\"), source(\"Sizing Date\"))",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "sourceWarpingValue(\"warping_date\", source(\"Dispo No\"), source(\"Warping Program No\"), source(\"Sizing Date\"))",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "warping_set_no",
+      "source_column": "",
+      "source_columns": [
+        "Sizing Set No",
+        "Dispo No",
+        "Warping Program No",
+        "Sizing Date"
+      ],
+      "mapping_type": "computed",
+      "storage_mapping_type": "computed",
+      "formula": "cleanText(source(\"Sizing Set No\")) !== null ? source(\"Sizing Set No\") : sourceWarpingValue(\"warping_set\", source(\"Dispo No\"), source(\"Warping Program No\"), source(\"Sizing Date\"))",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "cleanText(source(\"Sizing Set No\")) !== null ? source(\"Sizing Set No\") : sourceWarpingValue(\"warping_set\", source(\"Dispo No\"), source(\"Warping Program No\"), source(\"Sizing Date\"))",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_form_step",
+      "target_table": "sizing_form",
+      "target_field": "total_warp_beam",
+      "source_column": "",
+      "source_columns": [
+        "Total Beam",
+        "Dispo No",
+        "Warping Program No",
+        "Sizing Date"
+      ],
+      "mapping_type": "computed",
+      "storage_mapping_type": "computed",
+      "formula": "cleanText(source(\"Total Beam\")) !== null ? source(\"Total Beam\") : sourceWarpingValue(\"total_no_of_beam\", source(\"Dispo No\"), source(\"Warping Program No\"), source(\"Sizing Date\"))",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "cleanText(source(\"Total Beam\")) !== null ? source(\"Total Beam\") : sourceWarpingValue(\"total_no_of_beam\", source(\"Dispo No\"), source(\"Warping Program No\"), source(\"Sizing Date\"))",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_breakdown_step",
+      "target_table": "sizing_breakdown",
+      "target_field": "dispo_number",
+      "source_column": "Dispo No",
+      "source_columns": [
+        "Dispo No"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_breakdown_step",
+      "target_table": "sizing_breakdown",
+      "target_field": "sizing_date",
+      "source_column": "Sizing Date",
+      "source_columns": [
+        "Sizing Date"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_breakdown_step",
+      "target_table": "sizing_breakdown",
+      "target_field": "sizing_form_id",
+      "source_column": "",
+      "source_columns": [],
+      "mapping_type": "computed",
+      "storage_mapping_type": "computed",
+      "formula": "Parent sizing_form.id after parent upsert",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_breakdown_step",
+      "target_table": "sizing_breakdown",
+      "target_field": "sizing_qty_mtr",
+      "source_column": "Sizing Length(Mtr)",
+      "source_columns": [
+        "Sizing Length(Mtr)"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "sizing",
+      "source_file": "sizing database.csv",
+      "step_id": "sizing_breakdown_step",
+      "target_table": "sizing_breakdown",
+      "target_field": "total_weavers_beam",
+      "source_column": "Total Beam",
+      "source_columns": [
+        "Total Beam"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    }
+  ]
+}

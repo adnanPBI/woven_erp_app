@@ -1,0 +1,408 @@
+{
+  "profile": {
+    "id": "loom",
+    "name": "Loom Production Import",
+    "sourceFile": "Loom production database.csv",
+    "googleSheetSource": null
+  },
+  "source": {
+    "filePath": "/home/weavonpq/import_mapper_cli/csv_files/Loom production database.csv",
+    "configuredFilePath": "/home/weavonpq/import_mapper_cli/csv_files/Loom production database.csv",
+    "usedLocalReference": false,
+    "headers": [
+      "Weaving Dates",
+      "Total Run Loom",
+      "Avg RPM",
+      "Dispo No",
+      "Buyer",
+      "Construction",
+      "Yarn Type",
+      "Total No of beam",
+      "In house Production/Day",
+      "Out Side Production/Day",
+      "Created By",
+      "Last Modified date",
+      "Search Column"
+    ],
+    "rawHeaders": [
+      "Weaving Dates",
+      "Total Run Loom",
+      "Avg RPM",
+      "Dispo No",
+      "Buyer",
+      "Construction",
+      "Yarn Type",
+      "Total No of beam",
+      "In house Production/Day",
+      "Out Side Production/Day",
+      "Created By",
+      "Last Modified date",
+      "Search Column"
+    ],
+    "duplicateHeaders": [],
+    "rowCount": 101177,
+    "sourceType": "csv",
+    "googleSheetSource": null,
+    "headerMode": "csv-file",
+    "headerCount": 13
+  },
+  "version": "3.2.0-consolidated",
+  "exportedAt": "2026-07-26T04:44:56.898854Z",
+  "mappings": [
+    {
+      "profile_id": "loom",
+      "source_file": "Loom production database.csv",
+      "step_id": "loom_form_step",
+      "target_table": "loom_production_form",
+      "target_field": "dispo_number",
+      "source_column": "Dispo No",
+      "source_columns": [
+        "Dispo No"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "loom",
+      "source_file": "Loom production database.csv",
+      "step_id": "loom_form_step",
+      "target_table": "loom_production_form",
+      "target_field": "weaving_date",
+      "source_column": "Weaving Dates",
+      "source_columns": [
+        "Weaving Dates"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "loom",
+      "source_file": "Loom production database.csv",
+      "step_id": "loom_form_step",
+      "target_table": "loom_production_form",
+      "target_field": "po_number",
+      "source_column": "",
+      "source_columns": [],
+      "mapping_type": "lookup",
+      "storage_mapping_type": "lookup",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "loom",
+      "source_file": "Loom production database.csv",
+      "step_id": "loom_form_step",
+      "target_table": "loom_production_form",
+      "target_field": "buyer",
+      "source_column": "Buyer",
+      "source_columns": [
+        "Buyer",
+        "Dispo No"
+      ],
+      "mapping_type": "lookup",
+      "storage_mapping_type": "lookup",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "",
+      "executable_fallbacks": [
+        {
+          "source": "Buyer"
+        },
+        {
+          "lookup": {
+            "table": "dispo_plan_form",
+            "key_field": "dispo_no",
+            "source_column": "Dispo No",
+            "result_field": "buyer"
+          }
+        },
+        {
+          "lookup": {
+            "table": "dispo_form_data",
+            "key_field": "dispo_number",
+            "source_column": "Dispo No",
+            "result_field": "buyer_name"
+          }
+        }
+      ],
+      "allow_null": false
+    },
+    {
+      "profile_id": "loom",
+      "source_file": "Loom production database.csv",
+      "step_id": "loom_form_step",
+      "target_table": "loom_production_form",
+      "target_field": "production_construction",
+      "source_column": "Construction",
+      "source_columns": [
+        "Construction",
+        "Dispo No"
+      ],
+      "mapping_type": "lookup",
+      "storage_mapping_type": "lookup",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "",
+      "executable_fallbacks": [
+        {
+          "source": "Construction"
+        },
+        {
+          "lookup": {
+            "table": "dispo_plan_form",
+            "key_field": "dispo_no",
+            "source_column": "Dispo No",
+            "result_field": "production_construction"
+          }
+        },
+        {
+          "lookup": {
+            "table": "dispo_form_data",
+            "key_field": "dispo_number",
+            "source_column": "Dispo No",
+            "result_field": "production_construction"
+          }
+        }
+      ],
+      "allow_null": false
+    },
+    {
+      "profile_id": "loom",
+      "source_file": "Loom production database.csv",
+      "step_id": "loom_form_step",
+      "target_table": "loom_production_form",
+      "target_field": "loom_no",
+      "source_column": "Total Run Loom",
+      "source_columns": [
+        "Total Run Loom"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "loom",
+      "source_file": "Loom production database.csv",
+      "step_id": "loom_form_step",
+      "target_table": "loom_production_form",
+      "target_field": "loom_rpm",
+      "source_column": "Avg RPM",
+      "source_columns": [
+        "Avg RPM"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "loom",
+      "source_file": "Loom production database.csv",
+      "step_id": "loom_form_step",
+      "target_table": "loom_production_form",
+      "target_field": "yarn_type",
+      "source_column": "Yarn Type",
+      "source_columns": [
+        "Yarn Type"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "loom",
+      "source_file": "Loom production database.csv",
+      "step_id": "loom_form_step",
+      "target_table": "loom_production_form",
+      "target_field": "total_beam",
+      "source_column": "Total No of beam",
+      "source_columns": [
+        "Total No of beam"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "loom",
+      "source_file": "Loom production database.csv",
+      "step_id": "loom_form_step",
+      "target_table": "loom_production_form",
+      "target_field": "in_house_production_day",
+      "source_column": "In house Production/Day",
+      "source_columns": [
+        "In house Production/Day"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "loom",
+      "source_file": "Loom production database.csv",
+      "step_id": "loom_form_step",
+      "target_table": "loom_production_form",
+      "target_field": "outside_production_day",
+      "source_column": "Out Side Production/Day",
+      "source_columns": [
+        "Out Side Production/Day"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "loom",
+      "source_file": "Loom production database.csv",
+      "step_id": "loom_breakdown_step",
+      "target_table": "loom_production_breakdown",
+      "target_field": "dispo_number",
+      "source_column": "Dispo No",
+      "source_columns": [
+        "Dispo No"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "loom",
+      "source_file": "Loom production database.csv",
+      "step_id": "loom_breakdown_step",
+      "target_table": "loom_production_breakdown",
+      "target_field": "loom_production_date",
+      "source_column": "Weaving Dates",
+      "source_columns": [
+        "Weaving Dates"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "loom",
+      "source_file": "Loom production database.csv",
+      "step_id": "loom_breakdown_step",
+      "target_table": "loom_production_breakdown",
+      "target_field": "run_loom",
+      "source_column": "Total Run Loom",
+      "source_columns": [
+        "Total Run Loom"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "loom",
+      "source_file": "Loom production database.csv",
+      "step_id": "loom_breakdown_step",
+      "target_table": "loom_production_breakdown",
+      "target_field": "loom_production_quantity_yds",
+      "source_column": "In house Production/Day",
+      "source_columns": [
+        "In house Production/Day"
+      ],
+      "mapping_type": "computed",
+      "storage_mapping_type": "computed",
+      "formula": "in_house_production_day+outside_production_day",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    }
+  ]
+}

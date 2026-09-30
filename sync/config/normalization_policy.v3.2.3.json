@@ -1,0 +1,83 @@
+{
+  "policy_version": "3.2.3-hybrid-1",
+  "date_policy": {
+    "raw_order": "dmy",
+    "certified_output": "iso-yyyy-mm-dd"
+  },
+  "pre_costing": {
+    "missing_pre_costing": "deterministic_placeholder_per_po",
+    "placeholder_prefix": "MIGPC-",
+    "placeholder_hash_chars": 32,
+    "repeated_master_resolution": "field_consensus_then_latest_rank",
+    "po_specific_master_fields": {
+      "order_quantity": "common_value_else_null",
+      "pre_costing_date": "common_value_else_null"
+    }
+  },
+  "po": {
+    "duplicate_policy": "canonical_latest_revision_with_full_lineage",
+    "ranking": ["po_revised_no", "po_revise_date", "last_modified_date", "po_approval_date", "source_row"]
+  },
+  "dispo": {
+    "duplicate_policy": "canonical_latest_revision_with_full_lineage",
+    "bridge_missing_real_po": true,
+    "historical_dispo_plan_bridge": true,
+    "never_generate_po_number": true,
+    "non_operational_when_po_blank_or_invalid": true
+  },
+  "yarn_receive": {
+    "preserve_each_source_event": true,
+    "missing_dispo": "nullable_unlinked",
+    "missing_challan": "nullable",
+    "missing_brand": "nullable",
+    "idempotency": "source_uid_provenance"
+  },
+  "yarn_issue": {
+    "preserve_each_source_event": true,
+    "missing_dispo": "nullable_unlinked",
+    "missing_challan": "nullable",
+    "idempotency": "source_uid_provenance"
+  },
+  "warping": {
+    "preserve_each_source_event": true,
+    "lookup_hierarchy": ["dispo+program+date", "dispo+program", "dispo_when_program_blank"],
+    "dispo_is_business_anchor": true,
+    "idempotency": "source_uid_provenance"
+  },
+  "sizing": {
+    "preserve_each_source_event": true,
+    "identity_preference": ["dispo+sizing_set+date", "dispo+date+source_uid"],
+    "warping_set": "matched_warping_set_when_available",
+    "idempotency": "source_uid_provenance"
+  },
+  "loom": {
+    "group_key": ["dispo", "weaving_date"],
+    "reducers": {
+      "In house Production/Day": "sum",
+      "Out Side Production/Day": "sum",
+      "Avg RPM": "production_weighted_average",
+      "Total Run Loom": "max",
+      "Total No of beam": "max"
+    }
+  },
+  "folding": {
+    "group_key": ["dispo", "folding_production_date"],
+    "reducers": {
+      "A-Grade": "sum",
+      "B-Grade": "sum",
+      "C-Grade": "sum",
+      "Reject/C grade": "sum"
+    },
+    "preserve_negative_transfers": true
+  },
+  "greige_delivery": {
+    "preserve_each_source_event": true,
+    "missing_challan": "nullable",
+    "duplicate_business_key": "preserve_as_distinct_source_events",
+    "idempotency": "source_uid_provenance"
+  },
+  "synthetic_identifier_policy": {
+    "allowed": ["MIGPC-* only when present in bound placeholder audit"],
+    "forbidden": ["AUTO-*", "NO-DISPO-*", "NO-CHALLAN-*", "generated PO", "generated Dispo"]
+  }
+}

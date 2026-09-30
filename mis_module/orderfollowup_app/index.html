@@ -1,0 +1,2273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Closing Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+            --container-bg: #252525;
+            --text-color: #e0e0e0;
+            --accent-color: #00c4ff;
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            --btn-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            --border-glow: rgba(0, 196, 255, 0.3);
+        }
+
+        body {
+            background: var(--primary-bg);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            height: 100vh;
+            overflow: auto;
+            background-attachment: fixed;
+        }
+
+        .main-container {
+            background: var(--container-bg);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border: 2px solid #3a3a3a;
+            height: auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 196, 255, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 196, 255, 0.03) 0%, transparent 20%);
+        }
+
+        .main-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.03) 50%, transparent 51%);
+            background-size: 10px 10px;
+            pointer-events: none;
+        }
+
+        .header-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 18px 15px;
+            border-radius: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: center;
+            z-index: 1050;
+            overflow: visible;
+        }
+
+        .header-title {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .header-controls::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0%;
+            width: 70%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        }
+
+        .header-controls h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--text-color);
+            text-shadow: var(--text-shadow);
+            margin: 6;
+            background: linear-gradient(45deg, #FFA500, #FFD580);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .header-controls h1::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 18%;
+            transform: translateX(-50%);
+            width: 450px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-color), transparent);
+            border-radius: 3px;
+        }
+
+        /* Gradient button styles */
+        .header-controls .btn, .header-controls .btn.dropdown-toggle {
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: none;
+            color: #fff;
+            box-shadow: var(--btn-shadow);
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            font-weight: 600;
+            white-space: nowrap;
+            min-width: 140px;
+            text-align: center;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8, #20c997) !important;
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107, #fd7e14) !important;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #6f42c1) !important;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997) !important;
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #e83e8c) !important;
+        }
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057) !important;
+        }
+
+        .header-controls .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .header-controls .dropdown-toggle {
+            min-width: 150px;
+            text-align: left;
+        }
+
+        .header-controls .btn::before, .header-controls .btn.dropdown-toggle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: all 0.5s ease;
+            z-index: -1;
+        }
+
+        .header-controls .btn:hover, .header-controls .btn.dropdown-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        .header-controls .btn:hover::before, .header-controls .btn.dropdown-toggle:hover::before {
+            left: 100%;
+        }
+
+        .header-controls .btn i {
+            margin-right: 6px;
+        }
+
+        .dropdown-menu {
+            background: #303030;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            z-index: 1051;
+        }
+
+        .dropdown-item {
+            color: var(--text-color);
+            font-size: 0.85rem;
+            padding: 8px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background: #404040;
+            color: #ffffff;
+        }
+
+        .form-section {
+            background: #252525;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .form-section:hover {
+            background: #2D2D2D;
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-glow);
+            border-color: rgba(0, 196, 255, 0.2);
+        }
+
+        .form-section h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            text-shadow: var(--text-shadow);
+            margin-bottom: 15px;
+            position: relative;
+            padding-bottom: 8px;
+        }
+
+        .form-section h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 70%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-color), transparent);
+            border-radius: 3px;
+        }
+
+        /* Horizontal layout for form groups */
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 10px;
+            position: relative;
+        }
+
+        .form-label {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 0;
+            font-size: 0.8rem;
+            width: 40%;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .form-control, .form-select {
+            background-color: #404040;
+            border: 1px solid #505050;
+            color: var(--text-color);
+            border-radius: 10px;
+            padding: 6px 10px;
+            height: 35px;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            width: 60%;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #454545;
+            color: var(--text-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(0, 196, 255, 0.25);
+        }
+
+        .form-control:hover, .form-select:hover {
+            border-color: var(--accent-color);
+        }
+
+        .form-group i {
+            position: absolute;
+            right: 10px;
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .form-group .form-control, .form-group .form-select {
+            padding-right: 30px;
+        }
+
+        .form-group .form-control:focus ~ i,
+        .form-group .form-select:focus ~ i {
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+
+        .result-field {
+            background-color: #d68733 !important;
+            border: none;
+            color: #000 !important;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+        }
+        
+        html, body {
+            scroll-behavior: auto !important;
+            overflow-x: hidden;
+        }
+
+        html {
+            scroll-padding-top: 0;
+        }
+
+        body {
+            position: relative;
+        }
+
+        /* Vertical Layout - THREE columns */
+        .vertical-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .table-dark {
+            --bs-table-bg: #2D2D2D;
+            --bs-table-border-color: #505050;
+        }
+
+        .table th, .table td {
+            vertical-align: middle;
+            white-space: nowrap;
+            padding: 4px;
+        }
+
+        .table th {
+            white-space: normal;
+            word-wrap: break-word;
+            max-width: 120px;
+            line-height: 1.2;
+            padding: 8px 4px;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        .table td {
+            padding: 2px 4px;
+        }
+
+        .table-input-sm .form-control {
+            padding: 4px 8px;
+            font-size: 0.95rem;
+            height: 30px;
+            text-align: left;
+        }
+
+        .table-input-sm .form-control.result-field {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 15px;
+            border: 2px solid #000;
+        }
+
+        /* ===== PRODUCTION SUMMARY SECTION IMPROVEMENTS ===== */
+        .summary-section {
+            background: #252525;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .summary-section:hover {
+            border-color: rgba(0, 196, 255, 0.2);
+            box-shadow: 0 0 15px var(--border-glow);
+        }
+
+        .summary-section h5 {
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+        .summary-item {
+            background: #2D2D2D;
+            padding: 12px 10px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .summary-item:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px rgba(0, 196, 255, 0.25);
+            transform: translateY(-2px);
+            background: #333;
+        }
+
+        .summary-label {
+            color: var(--text-color);
+            font-size: 0.82rem;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .summary-value {
+            color: var(--accent-color);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        /* ===== PRODUCTION METRICS TABLE ===== */
+        .production-table {
+            font-size: 0.82rem;
+            border-collapse: collapse;
+            width: 100%;
+            background: #2D2D2D;
+            color: var(--text-color);
+            table-layout: auto;
+        }
+
+        .production-table th,
+        .production-table td {
+            border: 1px solid #505050;
+            padding: 5px 6px;
+            vertical-align: middle;
+        }
+
+        /* Reduced row-header width */
+        .production-table .row-header {
+            background-color: #3a3a3a;
+            font-weight: 600;
+            text-align: left;
+            white-space: normal !important;
+            word-wrap: break-word;
+            min-width: 120px;
+            max-width: 140px;
+            width: 130px;
+            color: var(--accent-color);
+            line-height: 1.3;
+            font-size: 0.78rem;
+        }
+
+        .production-table .column-header {
+            background-color: #3a4a5a;
+            font-weight: 600;
+            text-align: center;
+            white-space: normal !important;
+            word-wrap: break-word;
+            padding: 8px 6px;
+            color: #ffffff;
+            line-height: 1.3;
+            font-size: 0.78rem;
+        }
+
+        .production-table .numeric-cell {
+            text-align: center;
+        }
+
+        .production-table .text-cell {
+            text-align: left;
+            white-space: normal !important;
+            word-wrap: break-word;
+            font-size: 0.78rem;
+            min-width: 100px;
+            max-width: 130px;
+        }
+
+        .production-table .empty-cell {
+            background-color: #1f1f1f;
+        }
+
+        .production-table .percentage-cell {
+            text-align: center;
+        }
+
+        /* Hover & focus effect on production metrics inputs — matching Order Details */
+        .production-table input.form-control,
+        .production-table select.form-select {
+            background-color: #404040;
+            border: 1px solid #505050;
+            color: var(--text-color);
+            border-radius: 6px;
+            padding: 4px 8px;
+            height: 28px;
+            font-size: 0.8rem;
+            width: 100%;
+            min-width: 70px;
+            transition: all 0.3s ease;
+        }
+
+        .production-table input.form-control:hover,
+        .production-table select.form-select:hover {
+            border-color: var(--accent-color);
+        }
+
+        .production-table input.form-control:focus,
+        .production-table select.form-select:focus {
+            background-color: #454545;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 196, 255, 0.25);
+            color: var(--text-color);
+            outline: none;
+        }
+
+        .production-table input.result-field {
+            background-color: #28a745 !important;
+            color: #ffffff !important;
+            font-weight: 600;
+        }
+
+        .production-table tbody tr:hover td {
+            background-color: #333333;
+        }
+
+        /* Document status as full-width input */
+        #documentStatus {
+            background-color: #404040;
+            border: 1px solid #505050;
+            color: var(--text-color);
+            border-radius: 6px;
+            padding: 4px 8px;
+            height: 28px;
+            font-size: 0.8rem;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        #documentStatus:hover {
+            border-color: var(--accent-color);
+        }
+
+        #documentStatus:focus {
+            background-color: #454545;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 196, 255, 0.25);
+            outline: none;
+        }
+
+        /* ===== PRODUCTION TIMELINE TABLE ===== */
+        #productionTable {
+            font-size: 11px;
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0;
+        }
+
+        #productionTable th,
+        #productionTable td {
+            border: 1px solid #505050;
+            padding: 6px 8px;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        /* Fix eerie look — proper dark background on all cells by default */
+        #productionTable tbody td {
+            background-color: #2D2D2D;
+        }
+
+        /* Group Headers - First Row */
+        .group-header {
+            font-weight: bold;
+            font-size: 13px;
+            padding: 10px;
+            color: #000;
+        }
+
+        .yarn-received-header { background-color: #92D050 !important; }
+        .yarn-issue-header    { background-color: #FFC7CE !important; }
+        .warping-header       { background-color: #F4B084 !important; }
+        .sizing-header        { background-color: #FFFF99 !important; }
+        .loom-header          { background-color: #D9B3FF !important; }
+        .folding-header       { background-color: #C6E0B4 !important; }
+        .delivery-header      { background-color: #FFC7CE !important; }
+
+        /* Total Row */
+        .total-row {
+            background-color: #28a745 !important;
+            font-weight: bold;
+        }
+        .total-row td {
+            color: #ffffff !important;
+            background-color: #28a745 !important;
+        }
+        .total-row span {
+            color: #ffffff !important;
+            font-weight: bold;
+        }
+
+        /* Column Headers Row */
+        .column-header-row th {
+            font-weight: bold;
+            font-size: 10px;
+            padding: 8px 4px;
+            white-space: normal !important;
+            word-wrap: break-word;
+            line-height: 1.2;
+            max-width: 100px;
+        }
+
+        .yarn-received-col { background-color: #92D050 !important; color: #000; }
+        .yarn-issue-col    { background-color: #FFC7CE !important; color: #000; }
+        .warping-col       { background-color: #F4B084 !important; color: #000; }
+        .sizing-col        { background-color: #FFFF99 !important; color: #000; }
+        .loom-col          { background-color: #D9B3FF !important; color: #000; }
+        .folding-col       { background-color: #C6E0B4 !important; color: #000; }
+        .delivery-col      { background-color: #FFC7CE !important; color: #000; }
+
+        /* Timeline inputs — hover & focus effects like Order Details */
+        #productionTable .form-control {
+            font-size: 11px;
+            padding: 4px 6px;
+            height: auto;
+            background-color: #404040;
+            border: 1px solid #505050;
+            color: var(--text-color);
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        #productionTable .form-control:hover {
+            border-color: var(--accent-color);
+        }
+
+        #productionTable .form-control:focus {
+            background-color: #454545;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 196, 255, 0.25);
+            color: var(--text-color);
+            outline: none;
+        }
+
+        /* Remove spin buttons from number inputs in production timeline */
+        #productionTable input[type="number"]::-webkit-outer-spin-button,
+        #productionTable input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        #productionTable input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        /* Date Input Fields */
+        #productionTable input[type="date"].form-control {
+            min-width: 100px;
+            max-width: 120px;
+        }
+
+        /* Number Input Fields */
+        #productionTable input[type="number"].form-control {
+            min-width: 80px;
+        }
+
+        /* Text Input Fields */
+        #productionTable input[type="text"].form-control {
+            min-width: 80px;
+        }
+
+        #productionTable input[name="special_note"].form-control {
+            min-width: 120px;
+        }
+
+        #productionTable input[name="challan_no"].form-control {
+            min-width: 100px;
+        }
+
+        #productionTable .result-field {
+            background-color: #28a745 !important;
+            font-weight: bold;
+            color: #ffffff !important;
+        }
+
+        /* Row hover for timeline */
+        #productionTable tbody tr:hover td {
+            background-color: #333333;
+        }
+
+        .btn-sm {
+            font-size: 12px;
+            padding: 6px 12px;
+        }
+
+        @media (max-width: 1200px) {
+            .header-controls h1 { font-size: 1.3rem; }
+            .button-row { justify-content: center; gap: 6px; }
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                font-size: 0.8rem; padding: 6px 12px; min-width: 120px;
+            }
+            .vertical-layout { grid-template-columns: 1fr 1fr 1fr; }
+        }
+
+        @media (max-width: 992px) {
+            .header-controls { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .button-row { flex-direction: column; align-items: stretch; gap: 8px; }
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                width: 100%; max-width: 200px; margin: 0 auto;
+            }
+            .form-section { padding: 15px; }
+            .vertical-layout { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 8px; }
+            .main-container { padding: 10px; }
+            .header-controls h1 { font-size: 1.2rem; }
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                font-size: 0.75rem; padding: 6px 10px; min-width: 100px;
+            }
+            .form-section h2 { font-size: 1.1rem; }
+            .form-label { font-size: 0.75rem; }
+            .form-control, .form-select { font-size: 0.8rem; padding: 5px 8px; height: 32px; }
+            .vertical-layout { grid-template-columns: 1fr; }
+            .form-group { flex-direction: column; align-items: stretch; gap: 5px; }
+            .form-label { width: 100%; }
+            .form-control, .form-select { width: 100%; }
+            .form-group i { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header-controls">
+            <div class="header-title">
+                <h1>Order Closing Report</h1>
+            </div>
+            <div class="header-buttons">
+                <div class="button-row">
+                    <div class="dropdown">
+                        <button class="btn btn-info dropdown-toggle" type="button" id="searchDispoDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-search"></i> Search Dispo Number
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="searchDispoDropdown">
+                            <!-- Dropdown items -->
+                        </ul>
+                    </div>
+                    <button class="btn btn-warning" id="clearFormBtn"><i class="fas fa-eraser"></i> Clear Form</button>
+                    <button class="btn btn-primary btn-submit" id="saveToMySQLBtn"><i class="fas fa-save"></i> Save to MySQL</button>
+                    <button class="btn btn-primary" id="updateMySQL"><i class="fas fa-refresh"></i> Update MySQL Data</button>
+                    <button class="btn btn-success" id="saveToExcelBtn"><i class="fas fa-file-excel"></i> Export to Excel</button>
+                    <button class="btn btn-primary" id="savedDispoBtn"><i class="fas fa-list"></i> Saved Records</button>
+                    <button class="btn btn-danger" id="deleteDispoBtn"><i class="fas fa-trash-alt"></i> Delete Record</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Production Summary Section -->
+        <div class="summary-section">
+            <h5>Production Summary</h5>
+            <div class="summary-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                <div class="summary-item">
+                    <div class="summary-label">Total Yarn Issue</div>
+                    <div class="summary-value" id="totalYarnIssue">—</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Balance</div>
+                    <div class="summary-value" id="yarnBalance">—</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Required</div>
+                    <div class="summary-value" id="requiredTotal">—</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Production</div>
+                    <div class="summary-value" id="productionTotal">—</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Balance</div>
+                    <div class="summary-value" id="productionBalance">—</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Completion</div>
+                    <div class="summary-value" id="completionPercent">—</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Details Section -->
+        <div class="form-section">
+            <h2>Order Details</h2>
+            <div class="vertical-layout">
+                <!-- First Column -->
+                <div class="column">
+                    <div class="form-group">
+                        <label for="poNo" class="form-label">PO No.</label>
+                        <input type="text" class="form-control" id="poNo" name="po_no">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="buyer" class="form-label">Buyer</label>
+                        <input type="text" class="form-control" id="buyer" name="buyer">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerRef" class="form-label">Customer Ref/Stl</label>
+                        <input type="text" class="form-control" id="customerRef" name="customer_ref">
+                        <i class="fas fa-hashtag"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="weave" class="form-label">Weave</label>
+                        <input type="text" class="form-control" id="weave" name="weave">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="orderType" class="form-label">Order Type</label>
+                        <input type="text" class="form-control" id="orderType" name="order_type">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="beneficiaryFactory" class="form-label">Beneficiary Factory</label>
+                        <input type="text" class="form-control" id="beneficiaryFactory" name="beneficiary_factory">
+                        <i class="fas fa-industry"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="fabricType" class="form-label">Fabric Type</label>
+                        <input type="text" class="form-control" id="fabricType" name="fabric_type">
+                        <i class="fas fa-tshirt"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="poIssueDate" class="form-label">PO Issue Date</label>
+                        <input type="date" class="form-control" id="poIssueDate" name="po_issue_date">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="warpConsumption" class="form-label">Warp Consumption</label>
+                        <input type="text" class="form-control" id="warpConsumption" name="warp_consumption">
+                        <i class="fas fa-weight"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="fabricPricePerYd" class="form-label">Fabric Price/Yd (USD)</label>
+                        <input type="text" class="form-control" id="fabricPricePerYd" name="fabric_price_per_yd">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                </div>
+
+                <!-- Second Column -->
+                <div class="column">
+                    <div class="form-group">
+                        <label for="bulkDeliveryDate" class="form-label">Bulk Fabric Delivery Date</label>
+                        <input type="date" class="form-control" id="bulkDeliveryDate" name="bulk_delivery_date">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="productionConstruction" class="form-label">Production Construction</label>
+                        <input type="text" class="form-control" id="productionConstruction" name="production_construction">
+                        <i class="fas fa-industry"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="fabricComposition" class="form-label">Fabric Composition</label>
+                        <input type="text" class="form-control" id="fabricComposition" name="fabric_composition">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="poQuantity" class="form-label">PO Quantity (Yds)</label>
+                        <input type="number" class="form-control" id="poQuantity" name="po_quantity">
+                        <i class="fas fa-ruler"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="dispoQuantity" class="form-label">Dispo Quantity (Yds)</label>
+                        <input type="number" class="form-control" id="dispoQuantity" name="dispo_quantity">
+                        <i class="fas fa-ruler-combined"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="adjustQuantity" class="form-label">Adjust Quantity (Yds)</label>
+                        <input type="number" class="form-control" id="adjustQuantity" name="adjust_quantity">
+                        <i class="fas fa-ruler"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="finishingLoss" class="form-label">Finishing Process Loss</label>
+                        <input type="text" class="form-control" id="finishingLoss" name="finishing_loss">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="printingAllowance" class="form-label">Printing Allowance</label>
+                        <input type="text" class="form-control" id="printingAllowance" name="printing_allowance">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="weftConsumption" class="form-label">Weft Consumption</label>
+                        <input type="text" class="form-control" id="weftConsumption" name="weft_consumption">
+                        <i class="fas fa-weight"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="yarnCostPerYd" class="form-label">Yarn Cost/Yd (USD)</label>
+                        <input type="text" class="form-control" id="yarnCostPerYd" name="yarn_cost_per_yd">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                </div>
+
+                <!-- Third Column -->
+                <div class="column">
+                    <div class="form-group">
+                        <label for="orderNo" class="form-label">Order No</label>
+                        <input type="text" class="form-control" id="orderNo" name="order_no">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="accountHolder" class="form-label">Account Holder</label>
+                        <input type="text" class="form-control" id="accountHolder" name="account_holder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="loomContraction" class="form-label">Loom Contraction</label>
+                        <input type="text" class="form-control" id="loomContraction" name="loom_contraction">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="beamCrimp" class="form-label">Beam Crimp</label>
+                        <input type="text" class="form-control" id="beamCrimp" name="beam_crimp">
+                        <i class="fas fa-compress"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="finishWidth" class="form-label">Finish Width (Inch)</label>
+                        <input type="text" class="form-control" id="finishWidth" name="finish_width">
+                        <i class="fas fa-arrows-alt-h"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="greyWidth" class="form-label">Grey Width (Inch)</label>
+                        <input type="text" class="form-control" id="greyWidth" name="grey_width">
+                        <i class="fas fa-arrows-alt-h"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="totalEnds" class="form-label">Total Ends</label>
+                        <input type="text" class="form-control" id="totalEnds" name="total_ends">
+                        <i class="fas fa-sort-numeric-up"></i>
+                    </div>
+                    <div class="form-group" style="flex-direction: row; align-items: center; margin-bottom: 12px;">
+                        <label class="form-label" style="width: 40%; margin-bottom: 0;">Original Document Scan Copy</label>
+                        <div style="display: flex; gap: 10px; align-items: center; width: 60%;">
+                            <label for="documentUpload" class="btn btn-primary" style="margin: 0; cursor: pointer; font-size: 0.75rem; padding: 4px 12px; white-space: nowrap;">
+                                <i class="fas fa-cloud-upload-alt"></i> Browse
+                            </label>
+                            <input type="file" id="documentUpload" name="document_upload" style="display: none;" accept="image/*,.pdf" onchange="handleFileUpload(event)">
+                            <span id="fileName" style="color: var(--text-color); font-size: 0.75rem; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">No file selected</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="totalConsumption" class="form-label">Total Consumption</label>
+                        <input type="text" class="form-control result-field" id="totalConsumption" name="total_consumption" readonly>
+                        <i class="fas fa-weight"></i>
+                    </div>
+                    <div class="form-group">
+                        <label for="materialCost" class="form-label">Material Cost%</label>
+                        <input type="text" class="form-control result-field" id="materialCost" name="material_cost" readonly>
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Production Metrics & Status Table -->
+        <div class="form-section">
+            <h2>Production Metrics &amp; Status</h2>
+            <div class="table-responsive">
+                <table class="production-table">
+                    <thead>
+                        <tr>
+                            <th class="column-header" style="min-width: 130px; max-width: 140px;"></th>
+                            <th class="column-header">Required</th>
+                            <th class="column-header">Total Yarn Issue</th>
+                            <th class="column-header">Balance</th>
+                            <th class="column-header" style="min-width: 120px; max-width: 140px;">Particules</th>
+                            <th class="column-header">Required</th>
+                            <th class="column-header">Production</th>
+                            <th class="column-header">Balance</th>
+                            <th class="column-header">Completion</th>
+                            <th class="column-header" style="min-width: 130px;">Dispo Position</th>
+                            <th class="column-header">Production (Yds)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="row-header">Required Yarn In Warp (Kg)</td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="requiredWarpYarn" name="required_warp_yarn"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="totalYarnIssueWarp"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="balanceWarp"></td>
+                            <td class="text-cell">Required Warp Length (Meter)</td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="requiredWarpLength" name="required_warp_length"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="prodWarpLength"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="balanceWarpLength"></td>
+                            <td class="percentage-cell"><input type="text" class="form-control" id="completionWarp"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="dispoWarp"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="prodYds1"></td>
+                        </tr>
+                        <tr>
+                            <td class="row-header">Required Yarn In Weft (Kg)</td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="requiredWeftYarn" name="required_weft_yarn"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="totalYarnIssueWeft"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="balanceWeft"></td>
+                            <td class="text-cell">Required Sizing Length (Meter)</td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="requiredSizingLength"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="prodSizingLength"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="balanceSizingLength"></td>
+                            <td class="percentage-cell"><input type="text" class="form-control" id="completionSizing"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="dispoSizing"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="prodYds2"></td>
+                        </tr>
+                        <tr>
+                            <td class="row-header">Actual Crimp%</td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="actualCrimp" name="actual_crimp"></td>
+                            <td class="text-cell">Production Floor Return (Kg)</td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="prodFloorReturn"></td>
+                            <td class="text-cell">Required Loom Production (Meter)</td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="requiredLoomProduction" name="required_loom_production"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="prodLoomProduction"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="balanceLoomProduction"></td>
+                            <td class="percentage-cell"><input type="text" class="form-control" id="completionLoom"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="dispoLoom"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="prodYds3"></td>
+                        </tr>
+                        <tr>
+                            <td class="row-header">Yarn Wastage / Gara Yarn</td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="yarnWastage" name="yarn_wastage"></td>
+                            <td class="text-cell">Stock greige fresh (Yds)</td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="stockGreigeFresh"></td>
+                            <td class="text-cell">Required Greige Production (Meter)</td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="requiredGreigeProduction" name="required_greige_production"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="prodGreigeProduction"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="balanceGreigeProduction"></td>
+                            <td class="percentage-cell"><input type="text" class="form-control" id="completionGreige"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="dispoGreige"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="prodYds4"></td>
+                        </tr>
+                        <tr>
+                            <td class="row-header">Fabric Rejection%</td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="fabricRejection" name="fabric_rejection"></td>
+                            <td class="text-cell">Stock greige reject (Yds)</td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="stockGreigeReject"></td>
+                            <td class="text-cell">Delivery (Yds)</td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="deliveryYds" name="delivery_yds"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="prodDelivery"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="balanceDelivery"></td>
+                            <td class="percentage-cell"><input type="text" class="form-control" id="completionDelivery"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="dispoDelivery"></td>
+                            <td class="numeric-cell"><input type="text" class="form-control" id="prodYds5"></td>
+                        </tr>
+                        <tr>
+                            <td class="row-header">Buyer Colorway</td>
+                            <td class="text-cell"><input type="text" class="form-control" id="buyerColorway" name="buyer_colorway"></td>
+                            <td class="text-cell">Stock greige balance (Yds)</td>
+                            <td class="numeric-cell"><input type="text" class="form-control result-field" id="stockGreigeBalance" readonly></td>
+                            <td class="text-cell">Document Status</td>
+                            <td class="text-cell" colspan="6">
+                                <input type="text" class="form-control" id="documentStatus" name="document_status" placeholder="e.g. Pending / Scanned / Completed" style="width:100%;">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Production Timeline Section -->
+        <div class="form-section">
+            <h2>Production Timeline</h2>
+            <div class="table-responsive">
+                <table class="table table-bordered" id="productionTable">
+                    <thead>
+                        <!-- Group Headers Row -->
+                        <tr>
+                            <th colspan="4" class="group-header yarn-received-header">Yarn Received</th>
+                            <th colspan="4" class="group-header yarn-issue-header">Yarn Issue</th>
+                            <th colspan="2" class="group-header warping-header">Warping</th>
+                            <th colspan="2" class="group-header sizing-header">Sizing</th>
+                            <th colspan="3" class="group-header loom-header">Loom Production</th>
+                            <th colspan="7" class="group-header folding-header">Folding Production</th>
+                            <th colspan="6" class="group-header delivery-header">Delivery Quantity Yds</th>
+                        </tr>
+
+                        <!-- Total Row -->
+                        <tr class="total-row">
+                            <td>Total=</td>
+                            <td><span id="yarnCount"></span></td>
+                            <td><span id="yarnPlyReceive"></span></td>
+                            <td><span id="totalYarnReceiveQty">—</span></td>
+                            <td><span id="yarnIssueDate"></span></td>
+                            <td><span id="issueYarnCount"></span></td>
+                            <td><span id="yarnPlyIssue"></span></td>
+                            <td><span id="totalYarnIssueQty">—</span></td>
+                            <td><span id="warpingDate"></span></td>
+                            <td><span id="totalWarpingQty">—</span></td>
+                            <td><span id="sizingDate"></span></td>
+                            <td><span id="totalSizingQty">—</span></td>
+                            <td><span id="loomProdDate"></span></td>
+                            <td><span id="loomRun">—</span></td>
+                            <td><span id="totalLoomProdQty">—</span></td>
+                            <td><span id="foldingProdDate"></span></td>
+                            <td><span id="foldingAGradeQty">—</span></td>
+                            <td><span id="foldingBGradeQty">—</span></td>
+                            <td><span id="foldingCGradeQty">—</span></td>
+                            <td><span id="foldingRejectQty">—</span></td>
+                            <td><span id="totalFoldingQty">—</span></td>
+                            <td><span id="foldingSpecialNote"></span></td>
+                            <td><span id="deliveryDate"></span></td>
+                            <td><span id="deliveryChallanNo"></span></td>
+                            <td><span id="totalDeliveryRollQty">—</span></td>
+                            <td><span id="deliveryAGradeQty">—</span></td>
+                            <td><span id="deliveryBGradeQty">—</span></td>
+                            <td><span id="totalDeliveryQty">—</span></td>
+                        </tr>
+
+                        <!-- Column Headers Row -->
+                        <tr class="column-header-row">
+                            <th class="yarn-received-col">Yarn Received Date</th>
+                            <th class="yarn-received-col">Yarn Count</th>
+                            <th class="yarn-received-col">Ply</th>
+                            <th class="yarn-received-col">Yarn Received Qty in kg</th>
+                            <th class="yarn-issue-col">Yarn Issue Date</th>
+                            <th class="yarn-issue-col">Yarn Count</th>
+                            <th class="yarn-issue-col">Ply</th>
+                            <th class="yarn-issue-col">Yarn Issue Quantity</th>
+                            <th class="warping-col">Warping Date</th>
+                            <th class="warping-col">Warping Quantity Mtr</th>
+                            <th class="sizing-col">Sizing Date</th>
+                            <th class="sizing-col">Sizing Quantity Mtr</th>
+                            <th class="loom-col">Loom Production Date</th>
+                            <th class="loom-col">Run Loom</th>
+                            <th class="loom-col">Loom Production Quantity Yds</th>
+                            <th class="folding-col">Folding Production Date</th>
+                            <th class="folding-col">A-Grade</th>
+                            <th class="folding-col">B-Grade</th>
+                            <th class="folding-col">C-Grade</th>
+                            <th class="folding-col">Cut Pcs-Grade/Reject</th>
+                            <th class="folding-col">Total Folding</th>
+                            <th class="folding-col">Special Note</th>
+                            <th class="delivery-col">Delivery Date</th>
+                            <th class="delivery-col">Challan No</th>
+                            <th class="delivery-col">Total No of Than/Roll</th>
+                            <th class="delivery-col">A-Grade</th>
+                            <th class="delivery-col">B-Grade</th>
+                            <th class="delivery-col">Total Delivered Quantity Yds</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td><input type="date" class="form-control" name="yarn_received_date"></td>
+                            <td><input type="text" class="form-control" name="yarn_count_received" placeholder=""></td>
+                            <td><input type="text" class="form-control" name="yarn_ply_received" placeholder=""></td>
+                            <td><input type="number" class="form-control" name="yarn_received_qty" step="0.01"></td>
+                            <td><input type="date" class="form-control" name="yarn_issue_date"></td>
+                            <td><input type="text" class="form-control" name="yarn_count_issue" placeholder=""></td>
+                            <td><input type="text" class="form-control" name="yarn_ply_issue" placeholder=""></td>
+                            <td><input type="number" class="form-control" name="yarn_issue_qty" step="0.01"></td>
+                            <td><input type="date" class="form-control" name="warping_date"></td>
+                            <td><input type="number" class="form-control" name="warping_qty_mtr" step="0.01"></td>
+                            <td><input type="date" class="form-control" name="sizing_date"></td>
+                            <td><input type="number" class="form-control" name="sizing_qty_mtr" step="0.01"></td>
+                            <td><input type="date" class="form-control" name="loom_production_date"></td>
+                            <td><input type="number" class="form-control" name="run_loom"></td>
+                            <td><input type="number" class="form-control" name="loom_production_qty_yds" step="0.01"></td>
+                            <td><input type="date" class="form-control" name="folding_production_date"></td>
+                            <td><input type="number" class="form-control" name="folding_a_grade" step="0.01"></td>
+                            <td><input type="number" class="form-control" name="folding_b_grade" step="0.01"></td>
+                            <td><input type="number" class="form-control" name="folding_c_grade" step="0.01"></td>
+                            <td><input type="number" class="form-control" name="folding_cut_pcs" step="0.01"></td>
+                            <td><input type="number" class="form-control result-field" name="total_folding" step="0.01" readonly></td>
+                            <td><input type="text" class="form-control" name="special_note" placeholder=""></td>
+                            <td><input type="date" class="form-control" name="delivery_date"></td>
+                            <td><input type="text" class="form-control" name="challan_no" placeholder=""></td>
+                            <td><input type="number" class="form-control" name="total_than_roll"></td>
+                            <td><input type="number" class="form-control" name="delivery_a_grade" step="0.01"></td>
+                            <td><input type="number" class="form-control" name="delivery_b_grade" step="0.01"></td>
+                            <td><input type="number" class="form-control result-field" name="total_delivered_qty" step="0.01" readonly></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-success btn-sm mt-2" id="addRowBtn">
+                    <i class="fas fa-plus"></i> Add Row
+                </button>
+                <button type="button" class="btn btn-danger btn-sm mt-2" id="deleteRowBtn">
+                    <i class="fas fa-trash"></i> Delete Row
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/main/public/js/erp-smart-dropdown.js"></script>
+<script src="/main/public/js/erp-async-search-dropdown.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script>
+let currentRecordId = null;
+
+const YD_TO_M = 0.9144;
+const M_TO_YD = 1.093613;
+
+// ========== INITIALIZATION ==========
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFormFromTop();
+    setupKeyboardNavigation();
+    setupEventListeners();
+    calculateProductionTotals();
+    fetchSavedRecords();
+    fetchDispoNumbers();
+});
+
+// ========== AUTO SCROLL TO TOP ==========
+function initializeFormFromTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    setTimeout(() => {
+        const firstField = document.getElementById('poNo');
+        if (firstField) firstField.focus();
+    }, 500);
+}
+
+// ========== KEYBOARD NAVIGATION ==========
+function setupKeyboardNavigation() {
+    const formFields = [
+        'poNo', 'buyer', 'customerRef', 'weave', 'orderType',
+        'beneficiaryFactory', 'fabricType', 'poIssueDate', 'warpConsumption', 'fabricPricePerYd',
+        'bulkDeliveryDate', 'productionConstruction', 'fabricComposition', 'poQuantity',
+        'dispoQuantity', 'adjustQuantity', 'finishingLoss', 'printingAllowance',
+        'weftConsumption', 'yarnCostPerYd',
+        'orderNo', 'accountHolder', 'loomContraction', 'beamCrimp',
+        'finishWidth', 'greyWidth', 'totalEnds', 'totalConsumption', 'materialCost'
+    ];
+
+    formFields.forEach((fieldId, index) => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowDown' || (e.key === 'Tab' && !e.shiftKey)) {
+                    e.preventDefault();
+                    const nextIndex = (index + 1) % formFields.length;
+                    const nextField = document.getElementById(formFields[nextIndex]);
+                    if (nextField) {
+                        nextField.focus();
+                        if (nextField.type === 'text' || nextField.type === 'number') nextField.select();
+                    }
+                } else if (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) {
+                    e.preventDefault();
+                    const prevIndex = index === 0 ? formFields.length - 1 : index - 1;
+                    const prevField = document.getElementById(formFields[prevIndex]);
+                    if (prevField) {
+                        prevField.focus();
+                        if (prevField.type === 'text' || prevField.type === 'number') prevField.select();
+                    }
+                }
+            });
+        }
+    });
+
+    const productionMetricsFields = [
+        'requiredWarpYarn', 'totalYarnIssueWarp', 'balanceWarp', 'requiredWarpLength',
+        'prodWarpLength', 'balanceWarpLength', 'completionWarp', 'dispoWarp', 'prodYds1',
+        'requiredWeftYarn', 'totalYarnIssueWeft', 'balanceWeft', 'requiredSizingLength',
+        'prodSizingLength', 'balanceSizingLength', 'completionSizing', 'dispoSizing', 'prodYds2',
+        'actualCrimp', 'prodFloorReturn', 'requiredLoomProduction', 'prodLoomProduction',
+        'balanceLoomProduction', 'completionLoom', 'dispoLoom', 'prodYds3',
+        'yarnWastage', 'stockGreigeFresh', 'requiredGreigeProduction', 'prodGreigeProduction',
+        'balanceGreigeProduction', 'completionGreige', 'dispoGreige', 'prodYds4',
+        'fabricRejection', 'stockGreigeReject', 'deliveryYds', 'prodDelivery',
+        'balanceDelivery', 'completionDelivery', 'dispoDelivery', 'prodYds5',
+        'buyerColorway', 'stockGreigeBalance', 'documentStatus'
+    ];
+
+    productionMetricsFields.forEach((fieldId, index) => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowRight' || (e.key === 'Tab' && !e.shiftKey)) {
+                    e.preventDefault();
+                    const nextIndex = (index + 1) % productionMetricsFields.length;
+                    const nextField = document.getElementById(productionMetricsFields[nextIndex]);
+                    if (nextField) {
+                        nextField.focus();
+                        if (nextField.type === 'text' || nextField.type === 'number') nextField.select();
+                    }
+                } else if (e.key === 'ArrowLeft' || (e.key === 'Tab' && e.shiftKey)) {
+                    e.preventDefault();
+                    const prevIndex = index === 0 ? productionMetricsFields.length - 1 : index - 1;
+                    const prevField = document.getElementById(productionMetricsFields[prevIndex]);
+                    if (prevField) {
+                        prevField.focus();
+                        if (prevField.type === 'text' || prevField.type === 'number') prevField.select();
+                    }
+                }
+            });
+        }
+    });
+}
+
+// ========== EVENT LISTENERS ==========
+function setupEventListeners() {
+    document.getElementById('documentUpload').addEventListener('change', handleFileUpload);
+
+    document.getElementById('addRowBtn').addEventListener('click', addProductionRow);
+    document.getElementById('deleteRowBtn').addEventListener('click', deleteProductionRow);
+    document.getElementById('tableBody').addEventListener('input', handleTimelineInput);
+
+    document.getElementById('warpConsumption').addEventListener('input', calculateConsumption);
+    document.getElementById('weftConsumption').addEventListener('input', calculateConsumption);
+    document.getElementById('fabricPricePerYd').addEventListener('input', calculateMaterialCost);
+    document.getElementById('yarnCostPerYd').addEventListener('input', calculateMaterialCost);
+
+    document.getElementById('requiredWarpYarn').addEventListener('input', updateBalancesAndCompletion);
+    document.getElementById('requiredWeftYarn').addEventListener('input', updateBalancesAndCompletion);
+    document.getElementById('totalYarnIssueWarp').addEventListener('input', updateBalancesAndCompletion);
+    document.getElementById('totalYarnIssueWeft').addEventListener('input', updateBalancesAndCompletion);
+    document.getElementById('requiredWarpLength').addEventListener('input', updateBalancesAndCompletion);
+    document.getElementById('requiredSizingLength').addEventListener('input', updateBalancesAndCompletion);
+    document.getElementById('requiredLoomProduction').addEventListener('input', updateBalancesAndCompletion);
+    document.getElementById('requiredGreigeProduction').addEventListener('input', updateBalancesAndCompletion);
+    document.getElementById('deliveryYds').addEventListener('input', updateBalancesAndCompletion);
+
+    document.getElementById('dispoQuantity').addEventListener('input', updateSummary);
+    document.getElementById('stockGreigeFresh').addEventListener('input', updateSummary);
+    document.getElementById('stockGreigeReject').addEventListener('input', updateSummary);
+    document.getElementById('prodFloorReturn').addEventListener('input', function() {
+        updateSummary();
+        updateBalancesAndCompletion();
+    });
+
+    document.getElementById('saveToMySQLBtn').addEventListener('click', saveToMySQL);
+    document.getElementById('updateMySQL').addEventListener('click', updateToMySQL);
+    document.getElementById('saveToExcelBtn').addEventListener('click', exportToExcel);
+    document.getElementById('savedDispoBtn').addEventListener('click', showSavedRecords);
+    document.getElementById('deleteDispoBtn').addEventListener('click', deleteRecord);
+    document.getElementById('clearFormBtn').addEventListener('click', clearForm);
+}
+
+// ========== FILE UPLOAD ==========
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    const fileName = document.getElementById('fileName');
+    if (file) {
+        fileName.textContent = file.name;
+        document.getElementById('documentStatus').value = 'scanned';
+    } else {
+        fileName.textContent = 'No file selected';
+        document.getElementById('documentStatus').value = 'pending';
+    }
+}
+
+// ========== PRODUCTION TIMELINE MANAGEMENT ==========
+function addProductionRow() {
+    const tableBody = document.getElementById('tableBody');
+    const newRow = tableBody.rows[0].cloneNode(true);
+    const inputs = newRow.querySelectorAll('input');
+    inputs.forEach(input => {
+        if (input.type === 'date') {
+            input.value = '';
+        } else if (input.type === 'number') {
+            input.value = '0';
+        } else {
+            input.value = '';
+        }
+    });
+    tableBody.appendChild(newRow);
+    calculateProductionTotals();
+}
+
+function deleteProductionRow() {
+    const tableBody = document.getElementById('tableBody');
+    if (tableBody.rows.length > 1) {
+        tableBody.deleteRow(tableBody.rows.length - 1);
+        calculateProductionTotals();
+    } else {
+        alert('Cannot delete the last row!');
+    }
+}
+
+function handleTimelineInput(e) {
+    const row = e.target.closest('tr');
+    if (!row) return;
+
+    // Recalculate Total Folding for this row
+    const aGrade  = parseFloat(row.querySelector('[name="folding_a_grade"]').value)  || 0;
+    const bGrade  = parseFloat(row.querySelector('[name="folding_b_grade"]').value)  || 0;
+    const cGrade  = parseFloat(row.querySelector('[name="folding_c_grade"]').value)  || 0;
+    const cutPcs  = parseFloat(row.querySelector('[name="folding_cut_pcs"]').value)  || 0;
+    row.querySelector('[name="total_folding"]').value = (aGrade + bGrade + cGrade + cutPcs).toFixed(2);
+
+    // Recalculate Total Delivered Quantity for this row
+    const delA = parseFloat(row.querySelector('[name="delivery_a_grade"]').value) || 0;
+    const delB = parseFloat(row.querySelector('[name="delivery_b_grade"]').value) || 0;
+    row.querySelector('[name="total_delivered_qty"]').value = (delA + delB).toFixed(2);
+
+    calculateProductionTotals();
+}
+
+// ========== PRODUCTION TOTALS — MASTER FUNCTION ==========
+function calculateProductionTotals() {
+    const rows = document.getElementById('tableBody').rows;
+    let totals = {
+        yarnReceived:  0,
+        yarnIssue:     0,
+        warping:       0,
+        sizing:        0,
+        loomRun:       0,
+        loomProd:      0,
+        foldingA:      0,
+        foldingB:      0,
+        foldingC:      0,
+        foldingReject: 0,  // folding_cut_pcs  — numerator for Fabric Rejection%
+        folding:       0,  // total_folding     — denominator for Fabric Rejection%
+        deliveryRoll:  0,
+        deliveryA:     0,
+        deliveryB:     0,
+        delivery:      0
+    };
+
+    for (let row of rows) {
+        totals.yarnReceived  += parseFloat(row.querySelector('[name="yarn_received_qty"]').value)       || 0;
+        totals.yarnIssue     += parseFloat(row.querySelector('[name="yarn_issue_qty"]').value)          || 0;
+        totals.warping       += parseFloat(row.querySelector('[name="warping_qty_mtr"]').value)         || 0;
+        totals.sizing        += parseFloat(row.querySelector('[name="sizing_qty_mtr"]').value)          || 0;
+        totals.loomRun       += parseFloat(row.querySelector('[name="run_loom"]').value)                || 0;
+        totals.loomProd      += parseFloat(row.querySelector('[name="loom_production_qty_yds"]').value) || 0;
+        totals.foldingA      += parseFloat(row.querySelector('[name="folding_a_grade"]').value)         || 0;
+        totals.foldingB      += parseFloat(row.querySelector('[name="folding_b_grade"]').value)         || 0;
+        totals.foldingC      += parseFloat(row.querySelector('[name="folding_c_grade"]').value)         || 0;
+        totals.foldingReject += parseFloat(row.querySelector('[name="folding_cut_pcs"]').value)         || 0;
+        totals.folding       += parseFloat(row.querySelector('[name="total_folding"]').value)           || 0;
+        totals.deliveryRoll  += parseFloat(row.querySelector('[name="total_than_roll"]').value)         || 0;
+        totals.deliveryA     += parseFloat(row.querySelector('[name="delivery_a_grade"]').value)        || 0;
+        totals.deliveryB     += parseFloat(row.querySelector('[name="delivery_b_grade"]').value)        || 0;
+        totals.delivery      += parseFloat(row.querySelector('[name="total_delivered_qty"]').value)     || 0;
+    }
+
+    // — Update Production Timeline total-row spans —
+    document.getElementById('totalYarnReceiveQty').textContent  = totals.yarnReceived.toFixed(2);
+    document.getElementById('totalYarnIssueQty').textContent    = totals.yarnIssue.toFixed(2);
+    document.getElementById('totalWarpingQty').textContent      = totals.warping.toFixed(2);
+    document.getElementById('totalSizingQty').textContent       = totals.sizing.toFixed(2);
+    document.getElementById('loomRun').textContent              = totals.loomRun;
+    document.getElementById('totalLoomProdQty').textContent     = totals.loomProd.toFixed(2);
+    document.getElementById('foldingAGradeQty').textContent     = totals.foldingA.toFixed(2);
+    document.getElementById('foldingBGradeQty').textContent     = totals.foldingB.toFixed(2);
+    document.getElementById('foldingCGradeQty').textContent     = totals.foldingC.toFixed(2);
+    document.getElementById('foldingRejectQty').textContent     = totals.foldingReject.toFixed(2);
+    document.getElementById('totalFoldingQty').textContent      = totals.folding.toFixed(2);
+    document.getElementById('totalDeliveryRollQty').textContent = totals.deliveryRoll;
+    document.getElementById('deliveryAGradeQty').textContent    = totals.deliveryA.toFixed(2);
+    document.getElementById('deliveryBGradeQty').textContent    = totals.deliveryB.toFixed(2);
+    document.getElementById('totalDeliveryQty').textContent     = totals.delivery.toFixed(2);
+
+    // ── FIX 2: Fabric Rejection% from timeline ──────────────────────────
+    // Formula: (Σ folding_cut_pcs × 100) / Σ total_folding
+    const fabricRejPct = totals.folding > 0
+        ? ((totals.foldingReject / totals.folding) * 100).toFixed(2) + '%'
+        : '0.00%';
+    const fabricRejEl = document.getElementById('fabricRejection');
+    if (fabricRejEl) fabricRejEl.value = fabricRejPct;
+
+    // ── FIX 3: Production column auto-populate from timeline totals ──────
+    //
+    // | Field                 | Source col (timeline)        | Unit stored |
+    // |-----------------------|------------------------------|-------------|
+    // | prodWarpLength        | Σ warping_qty_mtr            | meters      |
+    // | prodSizingLength      | Σ sizing_qty_mtr             | meters      |
+    // | prodLoomProduction    | Σ loom_production_qty_yds    | meters*     |
+    // | prodGreigeProduction  | Σ total_folding              | meters*     |
+    // | prodDelivery          | Σ total_delivered_qty        | yards       |
+    //  * converted yds → m for the "Production (m)" column
+
+    const prodWarpM    = totals.warping;
+    const prodSizingM  = totals.sizing;
+    const prodLoomM    = totals.loomProd * YD_TO_M;
+    const prodGreigeM  = totals.folding  * YD_TO_M;
+    const prodDelYds   = totals.delivery;
+
+    const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val.toFixed(2);
+    };
+
+    setVal('prodWarpLength',       prodWarpM);
+    setVal('prodSizingLength',     prodSizingM);
+    setVal('prodLoomProduction',   prodLoomM);
+    setVal('prodGreigeProduction', prodGreigeM);
+    setVal('prodDelivery',         prodDelYds);
+
+    // Prod Yds columns
+    setVal('prodYds1', prodWarpM   * M_TO_YD);   // Warping   m → yd
+    setVal('prodYds2', prodSizingM * M_TO_YD);   // Sizing    m → yd
+    setVal('prodYds3', totals.loomProd);          // Loom already in yds
+    setVal('prodYds4', totals.folding);           // Folding already in yds
+    setVal('prodYds5', prodDelYds);               // Delivery in yds
+
+    // Chain downstream calculations
+    updateBalancesAndCompletion();
+    updateSummary();
+}
+
+// ========== BALANCES, COMPLETION%, DISPO POSITIONS ==========
+function updateBalancesAndCompletion() {
+    const toNum = id => parseFloat(document.getElementById(id)?.value) || 0;
+
+    const reqWarpYarn = toNum('requiredWarpYarn');
+    const reqWeftYarn = toNum('requiredWeftYarn');
+    const issuedWarp  = toNum('totalYarnIssueWarp');
+    const issuedWeft  = toNum('totalYarnIssueWeft');
+
+    const reqWarpM    = toNum('requiredWarpLength');
+    const reqSizingM  = toNum('requiredSizingLength');
+    const reqLoomM    = toNum('requiredLoomProduction');
+    const reqGreigeM  = toNum('requiredGreigeProduction');
+    const reqDelYds   = toNum('deliveryYds');
+
+    const prodWarpM   = toNum('prodWarpLength');
+    const prodSizingM = toNum('prodSizingLength');
+    const prodLoomM   = toNum('prodLoomProduction');
+    const prodGreigeM = toNum('prodGreigeProduction');
+    const prodDelYds  = toNum('prodDelivery');
+
+    // — Balances —
+    const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val.toFixed(2);
+    };
+
+    setVal('balanceWarp',             reqWarpYarn - issuedWarp);
+    setVal('balanceWeft',             reqWeftYarn - issuedWeft);
+    setVal('balanceWarpLength',       reqWarpM    - prodWarpM);
+    setVal('balanceSizingLength',     reqSizingM  - prodSizingM);
+    setVal('balanceLoomProduction',   reqLoomM    - prodLoomM);
+    setVal('balanceGreigeProduction', reqGreigeM  - prodGreigeM);
+    setVal('balanceDelivery',         reqDelYds   - prodDelYds);
+
+    // — Completion % (capped at 100 for warp/sizing) —
+    const pct = (prod, req, cap) => {
+        if (req <= 0) return '0';
+        const v = (prod / req) * 100;
+        return (cap ? Math.min(v, 100) : v).toFixed(0);
+    };
+    const setText = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+    };
+
+    setText('completionWarp',     pct(prodWarpM,   reqWarpM,   true));
+    setText('completionSizing',   pct(prodSizingM, reqSizingM, true));
+    setText('completionLoom',     pct(prodLoomM,   reqLoomM,   false));
+    setText('completionGreige',   pct(prodGreigeM, reqGreigeM, false));
+    setText('completionDelivery', pct(prodDelYds,  reqDelYds,  false));
+
+    // — Dispo Positions —
+    const balWarpLen = reqWarpM   - prodWarpM;
+    const balSizing  = reqSizingM - prodSizingM;
+    const balLoom    = reqLoomM   - prodLoomM;
+    const balGreige  = reqGreigeM - prodGreigeM;
+    const balDel     = reqDelYds  - prodDelYds;
+
+    setText('dispoWarp',
+        balWarpLen > 0 ? 'Warping Running' : 'Warping Complete');
+    setText('dispoSizing',
+        reqSizingM === 0 ? 'No Need to Sizing'
+        : balSizing > 0  ? 'Sizing Running' : 'Sizing Complete');
+    setText('dispoLoom',
+        prodLoomM === 0  ? 'Wait for Weaving'
+        : balLoom > 0    ? 'Weaving Running' : 'Weaving Complete');
+    setText('dispoGreige',
+        balGreige > 0    ? 'Folding Production Running' : 'Grey Complete');
+    setText('dispoDelivery',
+        balDel > 0       ? 'Delivery Running' : 'Delivery Complete');
+}
+
+// ========== CALCULATIONS ==========
+function calculateConsumption() {
+    const warp = parseFloat(document.getElementById('warpConsumption').value) || 0;
+    const weft = parseFloat(document.getElementById('weftConsumption').value) || 0;
+    document.getElementById('totalConsumption').value = (warp + weft).toFixed(2);
+}
+
+function calculateMaterialCost() {
+    const yarnCost   = parseFloat(document.getElementById('yarnCostPerYd').value)    || 0;
+    const fabricPrice= parseFloat(document.getElementById('fabricPricePerYd').value) || 0;
+    document.getElementById('materialCost').value = fabricPrice > 0
+        ? ((yarnCost / fabricPrice) * 100).toFixed(2) + '%'
+        : '0.00%';
+}
+
+function updateSummary() {
+    const totalYarnIssued = parseFloat(document.getElementById('totalYarnIssueQty').textContent) || 0;
+    const reqWarpYarn     = parseFloat(document.getElementById('requiredWarpYarn').value)        || 0;
+    const reqWeftYarn     = parseFloat(document.getElementById('requiredWeftYarn').value)        || 0;
+    const requiredTotal   = reqWarpYarn + reqWeftYarn;
+    const yarnBalance     = requiredTotal - totalYarnIssued;
+
+    const totalLoomProd   = parseFloat(document.getElementById('totalLoomProdQty').textContent) || 0;
+    const dispoQuantity   = parseFloat(document.getElementById('dispoQuantity').value)          || 0;
+    const productionBalance    = dispoQuantity - totalLoomProd;
+    const completionPercent    = dispoQuantity > 0
+        ? ((totalLoomProd / dispoQuantity) * 100).toFixed(2)
+        : 0;
+
+    document.getElementById('totalYarnIssue').textContent    = totalYarnIssued.toFixed(2);
+    document.getElementById('yarnBalance').textContent        = yarnBalance.toFixed(2);
+    document.getElementById('requiredTotal').textContent      = requiredTotal.toFixed(2);
+    document.getElementById('productionTotal').textContent    = totalLoomProd.toFixed(2);
+    document.getElementById('productionBalance').textContent  = productionBalance.toFixed(2);
+    document.getElementById('completionPercent').textContent  = completionPercent + '%';
+
+    // Stock greige balance
+    const fresh  = parseFloat(document.getElementById('stockGreigeFresh').value)  || 0;
+    const reject = parseFloat(document.getElementById('stockGreigeReject').value) || 0;
+    const floor  = parseFloat(document.getElementById('prodFloorReturn').value)   || 0;
+    document.getElementById('stockGreigeBalance').value = (fresh + reject - floor).toFixed(2);
+}
+
+// ========== FETCH DISPO NUMBERS DROPDOWN ==========
+async function fetchDispoNumbers() {
+    try {
+        const response = await fetch('/main/api/order-closing-report/dispo-numbers', {
+            method: 'GET', credentials: 'include'
+        });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        populateDispoDropdown(await response.json());
+    } catch (error) {
+        console.error('Failed to load dispo numbers:', error);
+    }
+}
+
+function populateDispoDropdown(records) {
+    const dropdown = document.querySelector('ul[aria-labelledby="searchDispoDropdown"]');
+    if (!dropdown) return;
+    dropdown.innerHTML = records.length === 0
+        ? '<li><a class="dropdown-item disabled" href="#">No dispo records available</a></li>'
+        : records.map(r => {
+            const txt = `Dispo: ${r.dispo_number||'N/A'} | PO: ${r.po_no||'N/A'} | Buyer: ${r.buyer_name||'N/A'} | Qty: ${r.dispo_quantity||'N/A'}`;
+            return `<li><a class="dropdown-item" href="#" data-dispo-number="${r.dispo_number}" style="font-size:0.85rem;">${txt}</a></li>`;
+          }).join('');
+    attachDispoDropdownListeners();
+}
+
+function attachDispoDropdownListeners() {
+    document.querySelectorAll('ul[aria-labelledby="searchDispoDropdown"] .dropdown-item').forEach(item => {
+        const newItem = item.cloneNode(true);
+        item.parentNode.replaceChild(newItem, item);
+        newItem.addEventListener('click', async function(e) {
+            e.preventDefault(); e.stopPropagation();
+            const dispoNumber = this.getAttribute('data-dispo-number');
+            if (dispoNumber && !this.classList.contains('disabled')) {
+                const btn = document.getElementById('searchDispoDropdown');
+                if (btn) { const dd = bootstrap.Dropdown.getInstance(btn); if (dd) dd.hide(); }
+                await loadDispoData(dispoNumber);
+            }
+        });
+    });
+}
+
+// ========== RENDER TIMELINE ROWS ==========
+function renderTimelineRowsFromModules(timelineRows) {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    if (!timelineRows || timelineRows.length === 0) { addProductionRow(); return; }
+    for (const t of timelineRows) {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td><input type="date"   class="form-control" name="yarn_received_date"      value="${t.yarn_received_date||''}"></td>
+            <td><input type="text"   class="form-control" name="yarn_count_received"     value="${t.yarn_count_received||''}"></td>
+            <td><input type="text"   class="form-control" name="yarn_ply_received"       value="${t.yarn_ply_received||''}"></td>
+            <td><input type="number" class="form-control" name="yarn_received_qty"       value="${t.yarn_received_qty||0}" step="0.01"></td>
+            <td><input type="date"   class="form-control" name="yarn_issue_date"         value="${t.yarn_issue_date||''}"></td>
+            <td><input type="text"   class="form-control" name="yarn_count_issue"        value="${t.yarn_count_issue||''}"></td>
+            <td><input type="text"   class="form-control" name="yarn_ply_issue"          value="${t.yarn_ply_issue||''}"></td>
+            <td><input type="number" class="form-control" name="yarn_issue_qty"          value="${t.yarn_issue_qty||0}" step="0.01"></td>
+            <td><input type="date"   class="form-control" name="warping_date"            value="${t.warping_date||''}"></td>
+            <td><input type="number" class="form-control" name="warping_qty_mtr"         value="${t.warping_qty_mtr||0}" step="0.01"></td>
+            <td><input type="date"   class="form-control" name="sizing_date"             value="${t.sizing_date||''}"></td>
+            <td><input type="number" class="form-control" name="sizing_qty_mtr"          value="${t.sizing_qty_mtr||0}" step="0.01"></td>
+            <td><input type="date"   class="form-control" name="loom_production_date"    value="${t.loom_production_date||''}"></td>
+            <td><input type="number" class="form-control" name="run_loom"                value="${t.run_loom||0}"></td>
+            <td><input type="number" class="form-control" name="loom_production_qty_yds" value="${t.loom_production_qty_yds||0}" step="0.01"></td>
+            <td><input type="date"   class="form-control" name="folding_production_date" value="${t.folding_production_date||''}"></td>
+            <td><input type="number" class="form-control" name="folding_a_grade"         value="${t.folding_a_grade||0}" step="0.01"></td>
+            <td><input type="number" class="form-control" name="folding_b_grade"         value="${t.folding_b_grade||0}" step="0.01"></td>
+            <td><input type="number" class="form-control" name="folding_c_grade"         value="${t.folding_c_grade||0}" step="0.01"></td>
+            <td><input type="number" class="form-control" name="folding_cut_pcs"         value="${t.folding_cut_pcs||0}" step="0.01"></td>
+            <td><input type="number" class="form-control result-field" name="total_folding" value="${t.total_folding||0}" step="0.01" readonly></td>
+            <td><input type="text"   class="form-control" name="special_note"            value="${t.special_note||''}"></td>
+            <td><input type="date"   class="form-control" name="delivery_date"           value="${t.delivery_date||''}"></td>
+            <td><input type="text"   class="form-control" name="challan_no"              value="${t.challan_no||''}"></td>
+            <td><input type="number" class="form-control" name="total_than_roll"         value="${t.total_than_roll||0}"></td>
+            <td><input type="number" class="form-control" name="delivery_a_grade"        value="${t.delivery_a_grade||0}" step="0.01"></td>
+            <td><input type="number" class="form-control" name="delivery_b_grade"        value="${t.delivery_b_grade||0}" step="0.01"></td>
+            <td><input type="number" class="form-control result-field" name="total_delivered_qty" value="${t.total_delivered_qty||0}" step="0.01" readonly></td>`;
+    }
+}
+
+async function loadProductionTimelineFromModules(dispoNumber) {
+    try {
+        const response = await fetch(`/main/api/order-closing-report/production-timeline/${encodeURIComponent(dispoNumber)}`, {
+            method: 'GET', credentials: 'include'
+        });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        const result = await response.json();
+        if (!result.success) { console.warn('Timeline load failed:', result.message); return; }
+        renderTimelineRowsFromModules(result.timeline || []);
+        calculateProductionTotals();
+    } catch (error) {
+        console.error('Failed to load production timeline from modules:', error);
+    }
+}
+
+// ========== LOAD DISPO DATA ==========
+async function loadDispoData(dispoNumber) {
+    try {
+        const response = await fetch(`/main/api/order-closing-report/fetch-from-dispo/${dispoNumber}`, {
+            method: 'GET', credentials: 'include'
+        });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        const result = await response.json();
+        if (!result.success) { alert('Failed to load dispo data: ' + (result.message || 'Unknown error')); return; }
+
+        const data = result.data;
+
+        // — Order Details —
+        document.getElementById('poNo').value                   = data.po_no                   || '';
+        document.getElementById('buyer').value                  = data.buyer                   || '';
+        document.getElementById('customerRef').value            = data.customer_ref             || '';
+        document.getElementById('weave').value                  = data.weave                   || '';
+        document.getElementById('orderType').value              = data.order_type              || 'bulk';
+        document.getElementById('beneficiaryFactory').value     = data.beneficiary_factory     || '';
+        document.getElementById('fabricType').value             = data.fabric_type             || '';
+        document.getElementById('poIssueDate').value            = data.po_issue_date           || '';
+        document.getElementById('warpConsumption').value        = data.warp_consumption        || '0';
+        document.getElementById('fabricPricePerYd').value       = data.fabric_price_per_yd     || '0';
+        document.getElementById('bulkDeliveryDate').value       = data.bulk_delivery_date      || '';
+        document.getElementById('productionConstruction').value = data.production_construction || '';
+        document.getElementById('fabricComposition').value      = data.fabric_composition      || '';
+        document.getElementById('poQuantity').value             = data.po_quantity             || '0';
+        document.getElementById('dispoQuantity').value          = data.dispo_quantity          || '0';
+        document.getElementById('adjustQuantity').value         = data.adjust_quantity         || '0';
+        document.getElementById('finishingLoss').value          = data.finishing_loss          || '0';
+        document.getElementById('printingAllowance').value      = data.printing_allowance      || '0';
+        document.getElementById('weftConsumption').value        = data.weft_consumption        || '0';
+        document.getElementById('yarnCostPerYd').value          = data.yarn_cost_per_yd        || '0';
+        document.getElementById('orderNo').value                = data.order_no                || '';
+        document.getElementById('accountHolder').value          = data.account_holder          || '';
+        document.getElementById('loomContraction').value        = data.loom_contraction        || '0.00%';
+        document.getElementById('beamCrimp').value              = data.beam_crimp              || '0';
+        document.getElementById('finishWidth').value            = data.finish_width            || '0';
+        document.getElementById('greyWidth').value              = data.grey_width              || '0';
+        document.getElementById('totalEnds').value              = data.total_ends              || '0';
+        document.getElementById('totalConsumption').value       = data.total_consumption       || '0';
+        document.getElementById('materialCost').value           = data.material_cost           || '0.00%';
+
+        // — Production Metrics: required / manual input fields —
+        document.getElementById('requiredWarpYarn').value          = data.required_warp_yarn       || '0';
+        document.getElementById('totalYarnIssueWarp').value        = data.total_yarn_issue_warp    || '0';
+        document.getElementById('requiredWarpLength').value        = data.required_warp_length     || '0';
+        document.getElementById('requiredSizingLength').value      = data.required_sizing_length   || '0';
+        document.getElementById('requiredLoomProduction').value    = data.required_loom_production || '0';
+        document.getElementById('requiredGreigeProduction').value  = data.required_greige_production|| '0';
+        document.getElementById('deliveryYds').value               = data.delivery_yds            || '0';
+
+        document.getElementById('requiredWeftYarn').value          = data.required_weft_yarn      || '0';
+        document.getElementById('totalYarnIssueWeft').value        = data.total_yarn_issue_weft   || '0';
+
+        document.getElementById('actualCrimp').value               = data.actual_crimp            || '0.00%';
+        document.getElementById('prodFloorReturn').value           = data.prod_floor_return       || '0';
+
+        // FIX 1: yarn_wastage is now a raw KG value from warping_form.leftover_yarn_kgs
+        document.getElementById('yarnWastage').value               = data.yarn_wastage            || '0';
+
+        document.getElementById('stockGreigeFresh').value          = data.stock_greige_fresh      || '0';
+        document.getElementById('stockGreigeReject').value         = data.stock_greige_reject     || '0';
+
+        // NOTE: fabric_rejection, all prod* fields, all balance* fields, all completion* fields,
+        // and all dispo* position fields are intentionally NOT set here — they are derived
+        // automatically by calculateProductionTotals() → updateBalancesAndCompletion() once
+        // the production timeline is loaded below.
+
+        document.getElementById('buyerColorway').value             = data.buyerColorway
+            ?? data.buyer_colorway ?? data.color ?? '';
+        document.getElementById('documentStatus').value            = data.document_status         || 'pending';
+
+        // Trigger non-timeline calculations
+        calculateConsumption();
+        calculateMaterialCost();
+
+        // Load timeline, which chains calculateProductionTotals → updateBalancesAndCompletion → updateSummary
+        await loadProductionTimelineFromModules(dispoNumber);
+
+        initializeFormFromTop();
+
+    } catch (error) {
+        console.error('Error loading dispo data:', error);
+        alert('Failed to load dispo data: ' + error.message);
+    }
+}
+
+// ========== DATA COLLECTION ==========
+function collectFormData() {
+    return {
+        po_no:                   document.getElementById('poNo').value,
+        buyer:                   document.getElementById('buyer').value,
+        customer_ref:            document.getElementById('customerRef').value,
+        weave:                   document.getElementById('weave').value,
+        order_type:              document.getElementById('orderType').value,
+        beneficiary_factory:     document.getElementById('beneficiaryFactory').value,
+        fabric_type:             document.getElementById('fabricType').value,
+        po_issue_date:           document.getElementById('poIssueDate').value,
+        warp_consumption:        document.getElementById('warpConsumption').value,
+        fabric_price_per_yd:     document.getElementById('fabricPricePerYd').value,
+        bulk_delivery_date:      document.getElementById('bulkDeliveryDate').value,
+        production_construction: document.getElementById('productionConstruction').value,
+        fabric_composition:      document.getElementById('fabricComposition').value,
+        po_quantity:             document.getElementById('poQuantity').value,
+        dispo_quantity:          document.getElementById('dispoQuantity').value,
+        adjust_quantity:         document.getElementById('adjustQuantity').value,
+        finishing_loss:          document.getElementById('finishingLoss').value,
+        printing_allowance:      document.getElementById('printingAllowance').value,
+        weft_consumption:        document.getElementById('weftConsumption').value,
+        yarn_cost_per_yd:        document.getElementById('yarnCostPerYd').value,
+        order_no:                document.getElementById('orderNo').value,
+        account_holder:          document.getElementById('accountHolder').value,
+        loom_contraction:        document.getElementById('loomContraction').value,
+        beam_crimp:              document.getElementById('beamCrimp').value,
+        finish_width:            document.getElementById('finishWidth').value,
+        grey_width:              document.getElementById('greyWidth').value,
+        total_ends:              document.getElementById('totalEnds').value,
+        document_upload:         document.getElementById('fileName').textContent !== 'No file selected'
+                                     ? document.getElementById('fileName').textContent : '',
+        total_consumption:       document.getElementById('totalConsumption').value,
+        material_cost:           document.getElementById('materialCost').value,
+
+        required_warp_yarn:         document.getElementById('requiredWarpYarn').value,
+        total_yarn_issue_warp:      document.getElementById('totalYarnIssueWarp').value,
+        balance_warp:               document.getElementById('balanceWarp').value,
+        required_warp_length:       document.getElementById('requiredWarpLength').value,
+        prod_warp_length:           document.getElementById('prodWarpLength').value,
+        balance_warp_length:        document.getElementById('balanceWarpLength').value,
+        completion_warp:            document.getElementById('completionWarp').value,
+        dispo_warp:                 document.getElementById('dispoWarp').value,
+        prod_yds_1:                 document.getElementById('prodYds1').value,
+
+        required_weft_yarn:         document.getElementById('requiredWeftYarn').value,
+        total_yarn_issue_weft:      document.getElementById('totalYarnIssueWeft').value,
+        balance_weft:               document.getElementById('balanceWeft').value,
+        required_sizing_length:     document.getElementById('requiredSizingLength').value,
+        prod_sizing_length:         document.getElementById('prodSizingLength').value,
+        balance_sizing_length:      document.getElementById('balanceSizingLength').value,
+        completion_sizing:          document.getElementById('completionSizing').value,
+        dispo_sizing:               document.getElementById('dispoSizing').value,
+        prod_yds_2:                 document.getElementById('prodYds2').value,
+
+        actual_crimp:               document.getElementById('actualCrimp').value,
+        prod_floor_return:          document.getElementById('prodFloorReturn').value,
+        required_loom_production:   document.getElementById('requiredLoomProduction').value,
+        prod_loom_production:       document.getElementById('prodLoomProduction').value,
+        balance_loom_production:    document.getElementById('balanceLoomProduction').value,
+        completion_loom:            document.getElementById('completionLoom').value,
+        dispo_loom:                 document.getElementById('dispoLoom').value,
+        prod_yds_3:                 document.getElementById('prodYds3').value,
+
+        yarn_wastage:               document.getElementById('yarnWastage').value,
+        stock_greige_fresh:         document.getElementById('stockGreigeFresh').value,
+        required_greige_production: document.getElementById('requiredGreigeProduction').value,
+        prod_greige_production:     document.getElementById('prodGreigeProduction').value,
+        balance_greige_production:  document.getElementById('balanceGreigeProduction').value,
+        completion_greige:          document.getElementById('completionGreige').value,
+        dispo_greige:               document.getElementById('dispoGreige').value,
+        prod_yds_4:                 document.getElementById('prodYds4').value,
+
+        fabric_rejection:           document.getElementById('fabricRejection').value,
+        stock_greige_reject:        document.getElementById('stockGreigeReject').value,
+        delivery_yds:               document.getElementById('deliveryYds').value,
+        prod_delivery:              document.getElementById('prodDelivery').value,
+        balance_delivery:           document.getElementById('balanceDelivery').value,
+        completion_delivery:        document.getElementById('completionDelivery').value,
+        dispo_delivery:             document.getElementById('dispoDelivery').value,
+        prod_yds_5:                 document.getElementById('prodYds5').value,
+
+        buyer_colorway:             document.getElementById('buyerColorway').value,
+        stock_greige_balance:       document.getElementById('stockGreigeBalance').value,
+        document_status:            document.getElementById('documentStatus').value
+    };
+}
+
+function collectTimelineData() {
+    const timelineData = [];
+    for (let row of document.getElementById('tableBody').rows) {
+        timelineData.push({
+            yarn_received_date:      row.querySelector('[name="yarn_received_date"]').value,
+            yarn_count_received:     row.querySelector('[name="yarn_count_received"]').value,
+            yarn_ply_received:       row.querySelector('[name="yarn_ply_received"]').value,
+            yarn_received_qty:       row.querySelector('[name="yarn_received_qty"]').value,
+            yarn_issue_date:         row.querySelector('[name="yarn_issue_date"]').value,
+            yarn_count_issue:        row.querySelector('[name="yarn_count_issue"]').value,
+            yarn_ply_issue:          row.querySelector('[name="yarn_ply_issue"]').value,
+            yarn_issue_qty:          row.querySelector('[name="yarn_issue_qty"]').value,
+            warping_date:            row.querySelector('[name="warping_date"]').value,
+            warping_qty_mtr:         row.querySelector('[name="warping_qty_mtr"]').value,
+            sizing_date:             row.querySelector('[name="sizing_date"]').value,
+            sizing_qty_mtr:          row.querySelector('[name="sizing_qty_mtr"]').value,
+            loom_production_date:    row.querySelector('[name="loom_production_date"]').value,
+            run_loom:                row.querySelector('[name="run_loom"]').value,
+            loom_production_qty_yds: row.querySelector('[name="loom_production_qty_yds"]').value,
+            folding_production_date: row.querySelector('[name="folding_production_date"]').value,
+            folding_a_grade:         row.querySelector('[name="folding_a_grade"]').value,
+            folding_b_grade:         row.querySelector('[name="folding_b_grade"]').value,
+            folding_c_grade:         row.querySelector('[name="folding_c_grade"]').value,
+            folding_cut_pcs:         row.querySelector('[name="folding_cut_pcs"]').value,
+            total_folding:           row.querySelector('[name="total_folding"]').value,
+            special_note:            row.querySelector('[name="special_note"]').value,
+            delivery_date:           row.querySelector('[name="delivery_date"]').value,
+            challan_no:              row.querySelector('[name="challan_no"]').value,
+            total_than_roll:         row.querySelector('[name="total_than_roll"]').value,
+            delivery_a_grade:        row.querySelector('[name="delivery_a_grade"]').value,
+            delivery_b_grade:        row.querySelector('[name="delivery_b_grade"]').value,
+            total_delivered_qty:     row.querySelector('[name="total_delivered_qty"]').value
+        });
+    }
+    return timelineData;
+}
+
+// ========== API FUNCTIONS ==========
+async function saveToMySQL() {
+    try {
+        const payload = { formData: collectFormData(), timelineData: collectTimelineData() };
+        const response = await fetch('/main/api/order-closing-report/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || result.error || `HTTP error! Status: ${response.status}`);
+        currentRecordId = result.id;
+        alert('Data saved successfully!');
+        fetchSavedRecords();
+        initializeFormFromTop();
+    } catch (error) {
+        console.error('Error saving data:', error);
+        alert('Failed to save data: ' + error.message);
+    }
+}
+
+async function updateToMySQL() {
+    if (!currentRecordId) {
+        alert('No record selected for update. Please search and load a record first.');
+        return;
+    }
+    try {
+        const payload = { formData: collectFormData(), timelineData: collectTimelineData() };
+        const response = await fetch(`/main/api/order-closing-report/update/${currentRecordId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        alert('Data updated successfully!');
+        fetchSavedRecords();
+        initializeFormFromTop();
+    } catch (error) {
+        console.error('Error updating data:', error);
+        alert('Failed to update data: ' + error.message);
+    }
+}
+
+async function fetchSavedRecords() {
+    try {
+        const response = await fetch('/main/api/order-closing-report/search-records', {
+            method: 'GET', credentials: 'include'
+        });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        populateSearchDropdown(await response.json());
+    } catch (error) {
+        console.error('Failed to load saved records:', error);
+    }
+}
+
+function populateSearchDropdown(records) {
+    const dropdown = document.querySelector('ul[aria-labelledby="searchDispoDropdown"]');
+    if (!dropdown) return;
+    dropdown.innerHTML = records.length === 0
+        ? '<li><a class="dropdown-item disabled" href="#">No records available</a></li>'
+        : records.map(r => {
+            const txt = `PO: ${r.po_no||'N/A'} | Buyer: ${r.buyer||'N/A'} | Order: ${r.order_no||'N/A'} | Dispo Qty: ${r.dispo_quantity||'N/A'} | Status: ${r.document_status||'N/A'}`;
+            return `<li><a class="dropdown-item" href="#" data-record-id="${r.id}" style="font-size:0.85rem;">${txt}</a></li>`;
+          }).join('');
+    attachDropdownListeners();
+}
+
+function attachDropdownListeners() {
+    document.querySelectorAll('ul[aria-labelledby="searchDispoDropdown"] .dropdown-item').forEach(item => {
+        const newItem = item.cloneNode(true);
+        item.parentNode.replaceChild(newItem, item);
+        newItem.addEventListener('click', async function(e) {
+            e.preventDefault(); e.stopPropagation();
+            const recordId = this.getAttribute('data-record-id');
+            if (recordId && !this.classList.contains('disabled')) {
+                const btn = document.getElementById('searchDispoDropdown');
+                if (btn) { const dd = bootstrap.Dropdown.getInstance(btn); if (dd) dd.hide(); }
+                await loadRecord(recordId);
+            }
+        });
+    });
+}
+
+async function loadRecord(recordId) {
+    try {
+        const response = await fetch(`/main/api/order-closing-report/fetch-by-id/${recordId}`, {
+            method: 'GET', credentials: 'include'
+        });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        const data = await response.json();
+
+        currentRecordId = data.id;
+
+        // Populate all non-timeline fields
+        Object.keys(data).forEach(key => {
+            if (key === 'timeline') return;
+            const input = document.querySelector(`[name="${key}"]`) || document.getElementById(key);
+            if (input && key !== 'id' && key !== 'created_at' && key !== 'updated_at') {
+                input.value = data[key] !== null && data[key] !== undefined ? data[key] : '';
+            }
+        });
+
+        // Load timeline rows
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+        if (data.timeline && data.timeline.length > 0) {
+            data.timeline.forEach(t => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td><input type="date"   class="form-control" name="yarn_received_date"      value="${t.yarn_received_date||''}"></td>
+                    <td><input type="text"   class="form-control" name="yarn_count_received"     value="${t.yarn_count_received||''}"></td>
+                    <td><input type="text"   class="form-control" name="yarn_ply_received"       value="${t.yarn_ply_received||''}"></td>
+                    <td><input type="number" class="form-control" name="yarn_received_qty"       value="${t.yarn_received_qty||0}" step="0.01"></td>
+                    <td><input type="date"   class="form-control" name="yarn_issue_date"         value="${t.yarn_issue_date||''}"></td>
+                    <td><input type="text"   class="form-control" name="yarn_count_issue"        value="${t.yarn_count_issue||''}"></td>
+                    <td><input type="text"   class="form-control" name="yarn_ply_issue"          value="${t.yarn_ply_issue||''}"></td>
+                    <td><input type="number" class="form-control" name="yarn_issue_qty"          value="${t.yarn_issue_qty||0}" step="0.01"></td>
+                    <td><input type="date"   class="form-control" name="warping_date"            value="${t.warping_date||''}"></td>
+                    <td><input type="number" class="form-control" name="warping_qty_mtr"         value="${t.warping_qty_mtr||0}" step="0.01"></td>
+                    <td><input type="date"   class="form-control" name="sizing_date"             value="${t.sizing_date||''}"></td>
+                    <td><input type="number" class="form-control" name="sizing_qty_mtr"          value="${t.sizing_qty_mtr||0}" step="0.01"></td>
+                    <td><input type="date"   class="form-control" name="loom_production_date"    value="${t.loom_production_date||''}"></td>
+                    <td><input type="number" class="form-control" name="run_loom"                value="${t.run_loom||0}"></td>
+                    <td><input type="number" class="form-control" name="loom_production_qty_yds" value="${t.loom_production_qty_yds||0}" step="0.01"></td>
+                    <td><input type="date"   class="form-control" name="folding_production_date" value="${t.folding_production_date||''}"></td>
+                    <td><input type="number" class="form-control" name="folding_a_grade"         value="${t.folding_a_grade||0}" step="0.01"></td>
+                    <td><input type="number" class="form-control" name="folding_b_grade"         value="${t.folding_b_grade||0}" step="0.01"></td>
+                    <td><input type="number" class="form-control" name="folding_c_grade"         value="${t.folding_c_grade||0}" step="0.01"></td>
+                    <td><input type="number" class="form-control" name="folding_cut_pcs"         value="${t.folding_cut_pcs||0}" step="0.01"></td>
+                    <td><input type="number" class="form-control result-field" name="total_folding" value="${t.total_folding||0}" step="0.01" readonly></td>
+                    <td><input type="text"   class="form-control" name="special_note"            value="${t.special_note||''}"></td>
+                    <td><input type="date"   class="form-control" name="delivery_date"           value="${t.delivery_date||''}"></td>
+                    <td><input type="text"   class="form-control" name="challan_no"              value="${t.challan_no||''}"></td>
+                    <td><input type="number" class="form-control" name="total_than_roll"         value="${t.total_than_roll||0}"></td>
+                    <td><input type="number" class="form-control" name="delivery_a_grade"        value="${t.delivery_a_grade||0}" step="0.01"></td>
+                    <td><input type="number" class="form-control" name="delivery_b_grade"        value="${t.delivery_b_grade||0}" step="0.01"></td>
+                    <td><input type="number" class="form-control result-field" name="total_delivered_qty" value="${t.total_delivered_qty||0}" step="0.01" readonly></td>`;
+            });
+        } else {
+            addProductionRow();
+        }
+
+        calculateProductionTotals();
+        initializeFormFromTop();
+
+    } catch (error) {
+        console.error('Error loading record:', error);
+        alert('Failed to load record: ' + error.message);
+    }
+}
+
+async function deleteRecord() {
+    const recordId = prompt('Enter the ID of the record to delete:');
+    if (!recordId) return;
+    if (!confirm(`Are you sure you want to delete record ID: ${recordId}? This action cannot be undone.`)) return;
+    try {
+        const response = await fetch(`/main/api/order-closing-report/delete/${recordId}`, {
+            method: 'DELETE', credentials: 'include'
+        });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        alert('Record deleted successfully!');
+        fetchSavedRecords();
+        if (currentRecordId == recordId) clearForm();
+    } catch (error) {
+        console.error('Error deleting record:', error);
+        alert('Failed to delete record: ' + error.message);
+    }
+}
+
+async function exportToExcel() {
+    try {
+        const response = await fetch('/main/api/order-closing-report/export-excel', {
+            method: 'GET', credentials: 'include'
+        });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        const blob = await response.blob();
+        const url  = window.URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        const cd = response.headers.get('content-disposition');
+        a.download = (cd?.match(/filename="(.+)"/) || [])[1] || 'order_closing_reports.csv';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    } catch (error) {
+        console.error('Error exporting data:', error);
+        alert('Failed to export data: ' + error.message);
+    }
+}
+
+async function showSavedRecords() {
+    try {
+        const response = await fetch('/main/api/order-closing-report/search-records', {
+            method: 'GET', credentials: 'include'
+        });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        displaySavedRecordsModal(await response.json());
+    } catch (error) {
+        console.error('Error fetching saved records:', error);
+        alert('Failed to fetch saved records: ' + error.message);
+    }
+}
+
+function displaySavedRecordsModal(records) {
+    const existing = document.getElementById('savedRecordsModal');
+    if (existing) existing.remove();
+
+    document.body.insertAdjacentHTML('beforeend', `
+        <div class="modal fade" id="savedRecordsModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content" style="background-color:#252525;color:#e0e0e0;">
+                    <div class="modal-header" style="border-bottom:1px solid #3a3a3a;">
+                        <h5 class="modal-title">Saved Order Closing Reports</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th><th>PO No</th><th>Order No</th><th>Buyer</th>
+                                        <th>Dispo Qty</th><th>PO Issue Date</th><th>Delivery Date</th>
+                                        <th>Status</th><th>Created At</th><th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${records.map(r => `
+                                        <tr>
+                                            <td>${r.id}</td>
+                                            <td>${r.po_no||'N/A'}</td>
+                                            <td>${r.order_no||'N/A'}</td>
+                                            <td>${r.buyer||'N/A'}</td>
+                                            <td>${r.dispo_quantity||'N/A'}</td>
+                                            <td>${r.po_issue_date||'N/A'}</td>
+                                            <td>${r.bulk_delivery_date||'N/A'}</td>
+                                            <td>${r.document_status||'N/A'}</td>
+                                            <td>${new Date(r.created_at).toLocaleDateString()}</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-primary"  onclick="loadRecordFromModal(${r.id})">Load</button>
+                                                <button class="btn btn-sm btn-danger"   onclick="deleteRecordFromModal(${r.id})">Delete</button>
+                                            </td>
+                                        </tr>`).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="border-top:1px solid #3a3a3a;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>`);
+
+    new bootstrap.Modal(document.getElementById('savedRecordsModal')).show();
+}
+
+async function loadRecordFromModal(recordId) {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('savedRecordsModal'));
+    if (modal) modal.hide();
+    await loadRecord(recordId);
+}
+
+async function deleteRecordFromModal(recordId) {
+    if (!confirm(`Are you sure you want to delete record ID: ${recordId}? This action cannot be undone.`)) return;
+    try {
+        const response = await fetch(`/main/api/order-closing-report/delete/${recordId}`, {
+            method: 'DELETE', credentials: 'include'
+        });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        alert('Record deleted successfully!');
+        document.getElementById('savedDispoBtn').click();
+    } catch (error) {
+        console.error('Error deleting record:', error);
+        alert('Failed to delete record: ' + error.message);
+    }
+}
+
+function clearForm() {
+    if (!confirm('Are you sure you want to clear all form data?')) return;
+
+    document.querySelectorAll('input[type="text"], input[type="number"]').forEach(input => {
+        if (input.classList.contains('result-field')) {
+            input.value = '0';
+        } else if (input.value && input.value.includes('%')) {
+            input.value = '0.00%';
+        } else {
+            input.value = '0';
+        }
+    });
+
+    document.querySelectorAll('input[type="date"]').forEach(input => { input.value = ''; });
+    document.querySelectorAll('select').forEach(select => { select.selectedIndex = 0; });
+
+    document.getElementById('fileName').textContent    = 'No file selected';
+    document.getElementById('buyerColorway').value     = '';
+
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    addProductionRow();
+
+    calculateProductionTotals();
+    currentRecordId = null;
+    initializeFormFromTop();
+}
+</script>
+</body>
+</html>

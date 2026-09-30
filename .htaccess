@@ -1,11 +1,10 @@
-# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
-PassengerAppRoot "/home/ppjbyqnv/public_html/main"
-PassengerBaseURI "/main"
-PassengerNodejs "/home/ppjbyqnv/nodevenv/public_html/main/19/bin/node"
-PassengerAppType node
-PassengerStartupFile server.js
-# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
-# DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION BEGIN
-<IfModule Litespeed>
+# Configure Passenger paths/runtime/environment through cPanel.
+# Never commit hosting-generated credentials or account-specific paths.
+Options -Indexes
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(?:sync|deploy|tests|lib|docs|node_modules|\.git)(?:/|$) - [F,L,NC]
 </IfModule>
-# DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION END
+<FilesMatch "^(?:\.env.*|\.git.*|package(?:-lock)?\.json|app\.js|server\.js|.*\.(?:log|sql|gz|zip))$">
+    Require all denied
+</FilesMatch>

@@ -1134,7 +1134,17 @@
 </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+<script src="/main/public/js/erp-smart-dropdown.js"></script>
+<script src="/main/public/js/erp-async-search-dropdown.js"></script>
+   <script>
+    // ========== AUTO SCROLL TO TOP FUNCTION ==========
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+
     // Enhanced logging function
     function debugLog(stage, message, data = null) {
         const timestamp = new Date().toISOString();
@@ -1241,6 +1251,7 @@
             if (response.ok) {
                 debugLog('PRECOSTING_DETAILS', 'Successfully fetched pre-costing details', result);
                 populateForm(result.preCostingData, 'preCosting');
+                scrollToTop(); // Scroll to top after loading data
             } else {
                 debugLog('PRECOSTING_DETAILS_ERROR', 'No data found for pre-costing number', result);
                 alert('No data found for this Pre-Costing No.');
@@ -1264,6 +1275,7 @@
             if (response.ok) {
                 debugLog('PO_DETAILS', 'Successfully fetched PO details', result);
                 populateForm(result, 'po');
+                scrollToTop(); // Scroll to top after loading data
             } else {
                 debugLog('PO_DETAILS_ERROR', 'No PO data found', result);
                 alert('No PO data found for this PO No.');
@@ -1403,6 +1415,7 @@
         document.querySelectorAll('.form-control, .form-select').forEach(input => {
             input.style.backgroundColor = '#404040';
         });
+        scrollToTop(); // Scroll to top after clearing
     }
 
     // Enhanced data collection function
@@ -1443,7 +1456,7 @@
         return { valid: true, data: jsonData, error: null };
     }
 
-    // UNIFIED Save to MySQL function (replaces both previous save functions)
+    // UNIFIED Save to MySQL function
     async function saveToMySQL() {
         debugLog('SAVE_START', 'Starting PO data save process');
         
@@ -1503,6 +1516,7 @@
             if (response.ok) {
                 debugLog('SAVE_SUCCESS', 'PO data saved successfully', result);
                 alert('PO data saved successfully!');
+                scrollToTop(); // Scroll to top after successful save
             } else {
                 debugLog('SAVE_ERROR_RESPONSE', 'Server returned error', {
                     status: response.status,
@@ -1539,7 +1553,7 @@
     // Clear form event listener
     document.getElementById('clearFormBtn').addEventListener('click', clearForm);
 
-    // SINGLE Save button event listener (removes the duplicate)
+    // Save button event listener
     document.getElementById('saveToMySQLBtn').addEventListener('click', saveToMySQL);
 
     // Delete PO
@@ -1574,11 +1588,86 @@
         }
     });
 
+    // ========== KEYBOARD NAVIGATION SETUP ==========
+    function setupKeyboardNavigation() {
+        // Get all navigable inputs (exclude readonly, disabled, hidden)
+        function getNavigableInputs() {
+            return Array.from(document.querySelectorAll(
+                'input:not([readonly]):not([disabled]):not([type="hidden"]):not([type="button"]):not([type="submit"]), ' +
+                'select:not([readonly]):not([disabled]), ' +
+                'textarea:not([readonly]):not([disabled])'
+            )).filter(input => {
+                // Only include visible inputs
+                return input.offsetParent !== null;
+            });
+        }
+
+        let inputs = getNavigableInputs();
+        
+        // Track current focused input
+        document.addEventListener('focusin', function(e) {
+            if (e.target.matches('input, select, textarea')) {
+                inputs = getNavigableInputs(); // Refresh list
+            }
+        });
+
+        // Handle keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            const activeElement = document.activeElement;
+            
+            // Check if we're in an input field
+            if (!activeElement || !activeElement.matches('input, select, textarea')) {
+                return;
+            }
+
+            // Don't interfere with dropdown navigation
+            if (activeElement.tagName === 'SELECT' && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+                return;
+            }
+
+            let currentIndex = inputs.indexOf(activeElement);
+            if (currentIndex === -1) {
+                inputs = getNavigableInputs();
+                currentIndex = inputs.indexOf(activeElement);
+            }
+
+            let nextIndex = -1;
+
+            // Navigate based on key pressed
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                nextIndex = currentIndex + 1;
+                if (nextIndex >= inputs.length) nextIndex = 0; // Wrap to first
+            } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                nextIndex = currentIndex - 1;
+                if (nextIndex < 0) nextIndex = inputs.length - 1; // Wrap to last
+            } else if (e.key === 'Enter' && activeElement.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                nextIndex = currentIndex + 1;
+                if (nextIndex >= inputs.length) nextIndex = 0;
+            }
+
+            // Move focus to next input
+            if (nextIndex !== -1 && inputs[nextIndex]) {
+                inputs[nextIndex].focus();
+                
+                // Auto-select text in text/number inputs
+                if (inputs[nextIndex].type === 'text' || inputs[nextIndex].type === 'number') {
+                    setTimeout(() => inputs[nextIndex].select(), 0);
+                }
+            }
+        });
+
+        console.log('Keyboard navigation initialized with', inputs.length, 'navigable fields');
+    }
+
     // DOMContentLoaded event
     document.addEventListener('DOMContentLoaded', async () => {
         debugLog('DOM_LOADED', 'Page loaded, initializing components');
         
-        const preCostingDropdown = document.getElementById('pre_costing_no_dropdown');
+        // Scroll to top on page load
+        scrollToTop();
 
         async function checkLoginAndFetchPreCostingNumbers() {
             try {
@@ -1593,49 +1682,22 @@
                     return;
                 }
 
-                debugLog('INIT_PRECOSTING_FETCH', 'Fetching pre-costing numbers for dropdown');
-                const preCostingResponse = await fetch('/main/api/precosting/pre-costing-numbers', {
-                    method: 'GET',
-                    credentials: 'include'
-                });
-                if (!preCostingResponse.ok) {
-                    throw new Error('Failed to fetch pre-costing numbers: ' + preCostingResponse.status);
-                }
-                const preCostingNumbers = await preCostingResponse.json();
+                debugLog('INIT_LOGIN_SUCCESS', 'User logged in successfully');
                 
-                preCostingDropdown.innerHTML = '<option value="">Select Pre Costing No</option>';
-                if (preCostingNumbers.length > 0) {
-                    debugLog('INIT_DROPDOWN_POPULATE', `Populating dropdown with ${preCostingNumbers.length} items`);
-                    preCostingNumbers.forEach(item => {
-                        const option = document.createElement('option');
-                        option.value = item.pre_costing_no;
-                        option.textContent = item.pre_costing_no;
-                        preCostingDropdown.appendChild(option);
-                    });
-                } else {
-                    debugLog('INIT_DROPDOWN_EMPTY', 'No pre-costing numbers available');
-                    preCostingDropdown.innerHTML = '<option value="">No pre-costing numbers available</option>';
-                }
             } catch (error) {
                 debugLog('INIT_ERROR', 'Error during initialization', error);
-                preCostingDropdown.innerHTML = '<option value="">Error loading pre-costing numbers</option>';
             }
         }
 
         await checkLoginAndFetchPreCostingNumbers();
         
-        // Remove the duplicate save button handler and saveToMySQL function
-        // The save functionality is now handled by the unified saveToMySQL function above
+        // Initialize keyboard navigation
+        setupKeyboardNavigation();
         
         debugLog('INIT_COMPLETE', 'Page initialization completed');
     });
 
-    // Close form
-    document.getElementById('closeBtn').addEventListener('click', () => {
-        window.location.href = '/main';
-    });
-
-    // Keep the existing loadSavedPONumbers and other functions as they are...
+    // Load saved PO numbers
     async function loadSavedPONumbers(startDate = '', endDate = '') {
         try {
             debugLog('LOAD_SAVED_PO', 'Loading saved PO numbers', { startDate, endDate });
@@ -1739,7 +1801,7 @@
         }
     }
 
-    // Modal and other event listeners (keep existing functionality)
+    // Modal and other event listeners
     document.getElementById('savedPONoBtn').addEventListener('click', async () => {
         try {
             const modal = new bootstrap.Modal(document.getElementById('savedPONoModal'));
@@ -1786,33 +1848,6 @@
         } catch (error) {
             debugLog('CSV_EXPORT_ERROR', 'Error exporting CSV', error);
             alert('Error exporting CSV: ' + error.message);
-        }
-    });
-
-    // Keyboard navigation (keep existing)
-    const inputs = document.querySelectorAll('input, select, textarea');
-    let currentIndex = 0;
-
-    function focusInput(index) {
-        if (index >= 0 && index < inputs.length) {
-            inputs[index].focus();
-            currentIndex = index;
-        }
-    }
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            focusInput(currentIndex + 1);
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            focusInput(currentIndex - 1);
-        } else if (e.key === 'ArrowRight') {
-            e.preventDefault();
-            focusInput(currentIndex + 1);
-        } else if (e.key === 'ArrowLeft') {
-            e.preventDefault();
-            focusInput(currentIndex - 1);
         }
     });
 </script>

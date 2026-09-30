@@ -1,0 +1,470 @@
+{
+  "profile": {
+    "id": "folding",
+    "name": "Folding Production Import",
+    "sourceFile": "Folding production database.csv",
+    "googleSheetSource": null
+  },
+  "source": {
+    "filePath": "/home/weavonpq/import_mapper_cli/csv_files/Folding production database.csv",
+    "configuredFilePath": "/home/weavonpq/import_mapper_cli/csv_files/Folding production database.csv",
+    "usedLocalReference": false,
+    "headers": [
+      "Folding Production Date",
+      "Dispo No",
+      "Buyer",
+      "Construction",
+      "Fabric Composition",
+      "A-Grade",
+      "B-Grade",
+      "C-Grade",
+      "Reject/C grade",
+      "Special Note",
+      "Created By",
+      "Last Modified date",
+      "Search Column"
+    ],
+    "rawHeaders": [
+      "Folding Production Date",
+      "Dispo No",
+      "Buyer",
+      "Construction",
+      "Fabric Composition",
+      "A-Grade",
+      "B-Grade",
+      "C-Grade",
+      "Reject/C grade",
+      "Special Note",
+      "Created By",
+      "Last Modified date",
+      "Search Column"
+    ],
+    "duplicateHeaders": [],
+    "rowCount": 58063,
+    "sourceType": "csv",
+    "googleSheetSource": null,
+    "headerMode": "csv-file",
+    "headerCount": 13
+  },
+  "version": "3.2.0-consolidated",
+  "exportedAt": "2026-07-26T04:44:56.899422Z",
+  "mappings": [
+    {
+      "profile_id": "folding",
+      "source_file": "Folding production database.csv",
+      "step_id": "folding_form_step",
+      "target_table": "folding_production_form",
+      "target_field": "dispo_number",
+      "source_column": "Dispo No",
+      "source_columns": [
+        "Dispo No"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "folding",
+      "source_file": "Folding production database.csv",
+      "step_id": "folding_form_step",
+      "target_table": "folding_production_form",
+      "target_field": "folding_production_date",
+      "source_column": "Folding Production Date",
+      "source_columns": [
+        "Folding Production Date"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "folding",
+      "source_file": "Folding production database.csv",
+      "step_id": "folding_form_step",
+      "target_table": "folding_production_form",
+      "target_field": "po_number",
+      "source_column": "",
+      "source_columns": [],
+      "mapping_type": "lookup",
+      "storage_mapping_type": "lookup",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "folding",
+      "source_file": "Folding production database.csv",
+      "step_id": "folding_form_step",
+      "target_table": "folding_production_form",
+      "target_field": "buyer",
+      "source_column": "Buyer",
+      "source_columns": [
+        "Buyer",
+        "Dispo No"
+      ],
+      "mapping_type": "lookup",
+      "storage_mapping_type": "lookup",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "",
+      "executable_fallbacks": [
+        {
+          "source": "Buyer"
+        },
+        {
+          "lookup": {
+            "table": "dispo_plan_form",
+            "key_field": "dispo_no",
+            "source_column": "Dispo No",
+            "result_field": "buyer"
+          }
+        },
+        {
+          "lookup": {
+            "table": "dispo_form_data",
+            "key_field": "dispo_number",
+            "source_column": "Dispo No",
+            "result_field": "buyer_name"
+          }
+        }
+      ],
+      "allow_null": false
+    },
+    {
+      "profile_id": "folding",
+      "source_file": "Folding production database.csv",
+      "step_id": "folding_form_step",
+      "target_table": "folding_production_form",
+      "target_field": "production_construction",
+      "source_column": "Construction",
+      "source_columns": [
+        "Construction",
+        "Dispo No"
+      ],
+      "mapping_type": "lookup",
+      "storage_mapping_type": "lookup",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "",
+      "executable_fallbacks": [
+        {
+          "source": "Construction"
+        },
+        {
+          "lookup": {
+            "table": "dispo_plan_form",
+            "key_field": "dispo_no",
+            "source_column": "Dispo No",
+            "result_field": "production_construction"
+          }
+        },
+        {
+          "lookup": {
+            "table": "dispo_form_data",
+            "key_field": "dispo_number",
+            "source_column": "Dispo No",
+            "result_field": "production_construction"
+          }
+        }
+      ],
+      "allow_null": false
+    },
+    {
+      "profile_id": "folding",
+      "source_file": "Folding production database.csv",
+      "step_id": "folding_form_step",
+      "target_table": "folding_production_form",
+      "target_field": "fabric_composition",
+      "source_column": "Fabric Composition",
+      "source_columns": [
+        "Fabric Composition",
+        "Dispo No"
+      ],
+      "mapping_type": "lookup",
+      "storage_mapping_type": "lookup",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "",
+      "executable_fallbacks": [
+        {
+          "source": "Fabric Composition"
+        },
+        {
+          "lookup": {
+            "table": "dispo_plan_form",
+            "key_field": "dispo_no",
+            "source_column": "Dispo No",
+            "result_field": "fabric_composition"
+          }
+        },
+        {
+          "lookup": {
+            "table": "dispo_form_data",
+            "key_field": "dispo_number",
+            "source_column": "Dispo No",
+            "result_field": "fabric_composition"
+          }
+        }
+      ],
+      "allow_null": false
+    },
+    {
+      "profile_id": "folding",
+      "source_file": "Folding production database.csv",
+      "step_id": "folding_form_step",
+      "target_table": "folding_production_form",
+      "target_field": "a_grade_mtr",
+      "source_column": "A-Grade",
+      "source_columns": [
+        "A-Grade"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "folding",
+      "source_file": "Folding production database.csv",
+      "step_id": "folding_form_step",
+      "target_table": "folding_production_form",
+      "target_field": "b_grade_mtr",
+      "source_column": "B-Grade",
+      "source_columns": [
+        "B-Grade"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "folding",
+      "source_file": "Folding production database.csv",
+      "step_id": "folding_form_step",
+      "target_table": "folding_production_form",
+      "target_field": "c_grade_mtr",
+      "source_column": "C-Grade",
+      "source_columns": [
+        "C-Grade"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "folding",
+      "source_file": "Folding production database.csv",
+      "step_id": "folding_form_step",
+      "target_table": "folding_production_form",
+      "target_field": "reject_c_grade_mtr",
+      "source_column": "Reject/C grade",
+      "source_columns": [
+        "Reject/C grade"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "folding",
+      "source_file": "Folding production database.csv",
+      "step_id": "folding_breakdown_step",
+      "target_table": "folding_production_breakdown",
+      "target_field": "dispo_number",
+      "source_column": "Dispo No",
+      "source_columns": [
+        "Dispo No"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "folding",
+      "source_file": "Folding production database.csv",
+      "step_id": "folding_breakdown_step",
+      "target_table": "folding_production_breakdown",
+      "target_field": "folding_production_date",
+      "source_column": "Folding Production Date",
+      "source_columns": [
+        "Folding Production Date"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "folding",
+      "source_file": "Folding production database.csv",
+      "step_id": "folding_breakdown_step",
+      "target_table": "folding_production_breakdown",
+      "target_field": "folding_production_qty_yds",
+      "source_column": "",
+      "source_columns": [
+        "Dispo No",
+        "Folding Production Date"
+      ],
+      "mapping_type": "computed",
+      "storage_mapping_type": "computed",
+      "formula": "sourceCumulative(\"folding\", source(\"Dispo No\"), source(\"Folding Production Date\"))",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "sourceCumulative(\"folding\", source(\"Dispo No\"), source(\"Folding Production Date\"))",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "folding",
+      "source_file": "Folding production database.csv",
+      "step_id": "folding_breakdown_step",
+      "target_table": "folding_production_breakdown",
+      "target_field": "loom_production_qty_yds",
+      "source_column": "",
+      "source_columns": [
+        "Dispo No",
+        "Folding Production Date"
+      ],
+      "mapping_type": "computed",
+      "storage_mapping_type": "computed",
+      "formula": "sourceCumulative(\"loom\", source(\"Dispo No\"), source(\"Folding Production Date\"))",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "sourceCumulative(\"loom\", source(\"Dispo No\"), source(\"Folding Production Date\"))",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "folding",
+      "source_file": "Folding production database.csv",
+      "step_id": "folding_breakdown_step",
+      "target_table": "folding_production_breakdown",
+      "target_field": "folding_balance",
+      "source_column": "",
+      "source_columns": [],
+      "mapping_type": "computed",
+      "storage_mapping_type": "computed",
+      "formula": "loom_production_qty_yds - folding_production_qty_yds",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "folding",
+      "source_file": "Folding production database.csv",
+      "step_id": "folding_breakdown_step",
+      "target_table": "folding_production_breakdown",
+      "target_field": "folding_production_id",
+      "source_column": "",
+      "source_columns": [],
+      "mapping_type": "computed",
+      "storage_mapping_type": "computed",
+      "formula": "Parent folding_production_form.id after parent upsert",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "folding",
+      "source_file": "Folding production database.csv",
+      "step_id": "folding_breakdown_step",
+      "target_table": "folding_production_breakdown",
+      "target_field": "loom_production_date",
+      "source_column": "",
+      "source_columns": [
+        "Dispo No",
+        "Folding Production Date"
+      ],
+      "mapping_type": "computed",
+      "storage_mapping_type": "computed",
+      "formula": "sourceLatestDate(\"loom\", source(\"Dispo No\"), source(\"Folding Production Date\"))",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "sourceLatestDate(\"loom\", source(\"Dispo No\"), source(\"Folding Production Date\"))",
+      "executable_fallbacks": [],
+      "allow_null": false
+    }
+  ]
+}

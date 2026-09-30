@@ -1,0 +1,16 @@
+{
+  "policy_version": "3.2.3-hybrid-compat",
+  "source_units": { "folding": "yards", "greige-delivery": "yards" },
+  "profiles": {
+    "pre-costing-bootstrap": { "tables": { "pre_costing_data": { "preserve_latest": true } } },
+    "po": { "tables": {} },
+    "dispo": { "tables": {} },
+    "yarn-receive": { "tables": {} },
+    "yarn-issue": { "tables": {} },
+    "warping": { "tables": {} },
+    "sizing": { "tables": {} },
+    "loom": { "tables": {} },
+    "folding": { "tables": {} },
+    "greige-delivery": { "tables": {} }
+  }
+}

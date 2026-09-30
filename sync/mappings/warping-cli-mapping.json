@@ -1,0 +1,626 @@
+{
+  "profile": {
+    "id": "warping",
+    "name": "Warping Import",
+    "sourceFile": "Warping database.csv",
+    "googleSheetSource": null
+  },
+  "source": {
+    "filePath": "/home/weavonpq/import_mapper_cli/csv_files/Warping database.csv",
+    "configuredFilePath": "/home/weavonpq/import_mapper_cli/csv_files/Warping database.csv",
+    "usedLocalReference": false,
+    "headers": [
+      "Machine Type",
+      "Warping Date",
+      "Dispo No",
+      "Buyer",
+      "Construction",
+      "Total Ends",
+      "Warping Program No",
+      "Section",
+      "Set",
+      "Warp Length(Mtr)",
+      "Yarn Weight",
+      "Machine No",
+      "Total Beam",
+      "Break/Million",
+      "Machine Speed(M/Min)",
+      "Left Over Yarn(kg)",
+      "Created By",
+      "Last Modified date",
+      "Search Column"
+    ],
+    "rawHeaders": [
+      "Machine Type",
+      "Warping Date",
+      "Dispo No",
+      "Buyer",
+      "Construction",
+      "Total Ends",
+      "Warping Program No",
+      "Section",
+      "Set",
+      "Warp Length(Mtr)",
+      "Yarn Weight",
+      "Machine No",
+      "Total Beam",
+      "Break/Million",
+      "Machine Speed(M/Min)",
+      "Left Over Yarn(kg)",
+      "Created By",
+      "Last Modified date",
+      "Search Column"
+    ],
+    "duplicateHeaders": [],
+    "rowCount": 17002,
+    "sourceType": "csv",
+    "googleSheetSource": null,
+    "headerMode": "csv-file",
+    "headerCount": 19
+  },
+  "version": "3.2.0-consolidated",
+  "exportedAt": "2026-07-26T04:44:56.898046Z",
+  "mappings": [
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_form_step",
+      "target_table": "warping_form",
+      "target_field": "dispo_number",
+      "source_column": "Dispo No",
+      "source_columns": [
+        "Dispo No"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_form_step",
+      "target_table": "warping_form",
+      "target_field": "po_number",
+      "source_column": "",
+      "source_columns": [],
+      "mapping_type": "lookup",
+      "storage_mapping_type": "lookup",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_form_step",
+      "target_table": "warping_form",
+      "target_field": "buyer",
+      "source_column": "Buyer",
+      "source_columns": [
+        "Buyer",
+        "Dispo No"
+      ],
+      "mapping_type": "lookup",
+      "storage_mapping_type": "lookup",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "",
+      "executable_fallbacks": [
+        {
+          "source": "Buyer"
+        },
+        {
+          "lookup": {
+            "table": "dispo_plan_form",
+            "key_field": "dispo_no",
+            "source_column": "Dispo No",
+            "result_field": "buyer"
+          }
+        },
+        {
+          "lookup": {
+            "table": "dispo_form_data",
+            "key_field": "dispo_number",
+            "source_column": "Dispo No",
+            "result_field": "buyer_name"
+          }
+        }
+      ],
+      "allow_null": false
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_form_step",
+      "target_table": "warping_form",
+      "target_field": "production_construction",
+      "source_column": "Construction",
+      "source_columns": [
+        "Construction",
+        "Dispo No"
+      ],
+      "mapping_type": "lookup",
+      "storage_mapping_type": "lookup",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": true,
+      "executable_formula": "",
+      "executable_fallbacks": [
+        {
+          "source": "Construction"
+        },
+        {
+          "lookup": {
+            "table": "dispo_plan_form",
+            "key_field": "dispo_no",
+            "source_column": "Dispo No",
+            "result_field": "production_construction"
+          }
+        },
+        {
+          "lookup": {
+            "table": "dispo_form_data",
+            "key_field": "dispo_number",
+            "source_column": "Dispo No",
+            "result_field": "production_construction"
+          }
+        }
+      ],
+      "allow_null": false
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_form_step",
+      "target_table": "warping_form",
+      "target_field": "fabric_composition",
+      "source_column": "",
+      "source_columns": [],
+      "mapping_type": "lookup",
+      "storage_mapping_type": "lookup",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": true,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_form_step",
+      "target_table": "warping_form",
+      "target_field": "warping_date",
+      "source_column": "Warping Date",
+      "source_columns": [
+        "Warping Date"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_form_step",
+      "target_table": "warping_form",
+      "target_field": "warping_program_no",
+      "source_column": "Warping Program No",
+      "source_columns": [
+        "Warping Program No"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_form_step",
+      "target_table": "warping_form",
+      "target_field": "warping_set",
+      "source_column": "Set",
+      "source_columns": [
+        "Set"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_form_step",
+      "target_table": "warping_form",
+      "target_field": "actual_warp_length_mtr",
+      "source_column": "Warp Length(Mtr)",
+      "source_columns": [
+        "Warp Length(Mtr)"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_form_step",
+      "target_table": "warping_form",
+      "target_field": "machine_type",
+      "source_column": "Machine Type",
+      "source_columns": [
+        "Machine Type"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_form_step",
+      "target_table": "warping_form",
+      "target_field": "beam_total_ends",
+      "source_column": "Total Ends",
+      "source_columns": [
+        "Total Ends"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_form_step",
+      "target_table": "warping_form",
+      "target_field": "number_of_sections",
+      "source_column": "Section",
+      "source_columns": [
+        "Section"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_form_step",
+      "target_table": "warping_form",
+      "target_field": "yarn_weight",
+      "source_column": "Yarn Weight",
+      "source_columns": [
+        "Yarn Weight"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_form_step",
+      "target_table": "warping_form",
+      "target_field": "machine_no",
+      "source_column": "Machine No",
+      "source_columns": [
+        "Machine No"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_form_step",
+      "target_table": "warping_form",
+      "target_field": "total_no_of_beam",
+      "source_column": "Total Beam",
+      "source_columns": [
+        "Total Beam"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_form_step",
+      "target_table": "warping_form",
+      "target_field": "breaks_per_million",
+      "source_column": "Break/Million",
+      "source_columns": [
+        "Break/Million"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_form_step",
+      "target_table": "warping_form",
+      "target_field": "machine_speed_meter_min",
+      "source_column": "Machine Speed(M/Min)",
+      "source_columns": [
+        "Machine Speed(M/Min)"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_form_step",
+      "target_table": "warping_form",
+      "target_field": "leftover_yarn_kgs",
+      "source_column": "Left Over Yarn(kg)",
+      "source_columns": [
+        "Left Over Yarn(kg)"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_breakdown_step",
+      "target_table": "warping_breakdown",
+      "target_field": "dispo_number",
+      "source_column": "Dispo No",
+      "source_columns": [
+        "Dispo No"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": true,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": false
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_breakdown_step",
+      "target_table": "warping_breakdown",
+      "target_field": "warping_date",
+      "source_column": "Warping Date",
+      "source_columns": [
+        "Warping Date"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_breakdown_step",
+      "target_table": "warping_breakdown",
+      "target_field": "warping_program_no",
+      "source_column": "Warping Program No",
+      "source_columns": [
+        "Warping Program No"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_breakdown_step",
+      "target_table": "warping_breakdown",
+      "target_field": "warping_set",
+      "source_column": "Set",
+      "source_columns": [
+        "Set"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_breakdown_step",
+      "target_table": "warping_breakdown",
+      "target_field": "warping_length_mtr",
+      "source_column": "Warp Length(Mtr)",
+      "source_columns": [
+        "Warp Length(Mtr)"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_breakdown_step",
+      "target_table": "warping_breakdown",
+      "target_field": "warping_form_id",
+      "source_column": "",
+      "source_columns": [],
+      "mapping_type": "computed",
+      "storage_mapping_type": "computed",
+      "formula": "Parent warping_form.id after parent upsert",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    },
+    {
+      "profile_id": "warping",
+      "source_file": "Warping database.csv",
+      "step_id": "warping_breakdown_step",
+      "target_table": "warping_breakdown",
+      "target_field": "total_beam_no",
+      "source_column": "Total Beam",
+      "source_columns": [
+        "Total Beam"
+      ],
+      "mapping_type": "direct",
+      "storage_mapping_type": "direct",
+      "formula": "",
+      "constant_value": "",
+      "required": false,
+      "business_critical": false,
+      "execution_authoritative": false,
+      "executable_formula": "",
+      "executable_fallbacks": [],
+      "allow_null": true
+    }
+  ]
+}

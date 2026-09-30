@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floor Position Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+            --container-bg: #252525;
+            --text-color: #e0e0e0;
+            --accent-color: #00c4ff;
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            --btn-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            --border-glow: rgba(0, 196, 255, 0.3);
+        }
+
+        body {
+            background: var(--primary-bg);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            height: 100vh;
+            overflow: auto;
+            background-attachment: fixed;
+        }
+
+        .main-container {
+            background: var(--container-bg);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border: 2px solid #3a3a3a;
+            height: auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 196, 255, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 196, 255, 0.03) 0%, transparent 20%);
+        }
+
+        .main-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.03) 50%, transparent 51%);
+            background-size: 10px 10px;
+            pointer-events: none;
+        }
+
+        .header-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 18px 15px;
+            border-radius: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 1050;
+            overflow: visible;
+        }
+
+        .header-title {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .header-controls::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 15%;
+            width: 70%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        }
+
+        .header-controls h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--text-color);
+            text-shadow: var(--text-shadow);
+            margin: 0;
+            background: linear-gradient(45deg, #FFA500, #FFD580);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .header-controls .btn, .header-controls .btn.dropdown-toggle {
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: none;
+            color: #fff;
+            box-shadow: var(--btn-shadow);
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            font-weight: 600;
+            white-space: nowrap;
+            min-width: 140px;
+            text-align: center;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #0d8991, #3bbcc4, #4fb4db) !important;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107, #fd7e14) !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0a3a57, #0c8731, #09ad92) !important;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #1e3954, #3b80db) !important;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #991509, #e83e8c) !important;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057) !important;
+        }
+
+        .header-controls .btn::before, .header-controls .btn.dropdown-toggle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.5s ease;
+            z-index: -1;
+        }
+
+        .header-controls .btn:hover, .header-controls .btn.dropdown-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.6);
+        }
+
+        .header-controls .btn:hover::before, .header-controls .btn.dropdown-toggle:hover::before {
+            left: 100%;
+        }
+
+        .header-controls .btn i {
+            margin-right: 6px;
+        }
+
+        .dropdown-menu {
+            background: #303030;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            z-index: 1051;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .dropdown-item {
+            color: var(--text-color);
+            font-size: 0.8rem;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            word-wrap: break-word;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .dropdown-item:hover {
+            background: #404040;
+            color: #ffffff;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item-multiline {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .dropdown-item-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .dropdown-item-field {
+            font-size: 0.75rem;
+        }
+
+        .dropdown-item-field strong {
+            color: var(--accent-color);
+        }
+
+        .form-container {
+            background: #252525;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .form-container:hover {
+            background: #2D2D2D;
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-glow);
+            border-color: rgba(0, 196, 255, 0.2);
+        }
+
+        .form-label {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 0;
+            font-size: 0.8rem;
+            width: 40%;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .form-control, .form-select {
+            background-color: #404040;
+            border: 1px solid #505050;
+            color: var(--text-color);
+            border-radius: 10px;
+            padding: 6px 10px;
+            height: 35px;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            width: 60%;
+        }
+
+        .form-group i.fa-calendar-alt,
+        .form-group i.fa-calendar-check {
+            color: var(--accent-color) !important;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #454545;
+            color: var(--text-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(0, 196, 255, 0.25);
+        }
+
+        .form-control:hover, .form-select:hover {
+            border-color: var(--accent-color);
+        }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 10px;
+            position: relative;
+        }
+
+        .form-group i {
+            position: absolute;
+            right: 10px;
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .form-group .form-control, .form-group .form-select {
+            padding-right: 30px;
+        }
+
+        .form-group .form-control:focus ~ i,
+        .form-group .form-select:focus ~ i {
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+
+        .result-field {
+            background-color: #d68733 !important;
+            border: none;
+            color: #000 !important;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+        }
+
+        .vertical-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        @media (max-width: 1200px) {
+            .button-row {
+                justify-content: center;
+                gap: 6px;
+            }
+            
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+                min-width: 120px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .button-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                width: 100%;
+                max-width: 200px;
+                margin: 0 auto;
+            }
+
+            .vertical-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 5px;
+            }
+
+            .form-label {
+                width: 100%;
+            }
+
+            .form-control, .form-select {
+                width: 100%;
+            }
+
+            .form-group i {
+                position: absolute;
+                right: 10px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header-controls">
+            <div class="header-title">
+                <h1>Floor Data Entry Form</h1>
+            </div>
+            <div class="header-buttons">
+                <div class="button-row">
+                    <div class="dropdown">
+                        <button class="btn btn-info dropdown-toggle" type="button" id="floorDataSearchDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-search"></i> Floor Data Search
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="floorDataSearchDropdown" id="floorDataSearchMenu">
+                            <li><a class="dropdown-item disabled" href="#">No records available</a></li>
+                        </ul>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-info dropdown-toggle" type="button" id="searchDispoNumberDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-search"></i> Search Dispo Number
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="searchDispoNumberDropdown" id="searchDispoNumberMenu">
+                            <li><a class="dropdown-item disabled" href="#">No dispo numbers available</a></li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-warning" id="clearFormBtn"><i class="fas fa-eraser"></i> Clear Form</button>
+                </div>
+                
+                <div class="button-row">
+                    <button class="btn btn-primary" id="saveBtn"><i class="fas fa-save"></i> Save Record</button>
+                    <button class="btn btn-primary" id="updateBtn"><i class="fas fa-refresh"></i> Update Record</button>
+                    <button class="btn btn-success" id="exportBtn"><i class="fas fa-file-excel"></i> Export to Excel</button>
+                    <button class="btn btn-danger" id="deleteBtn"><i class="fas fa-trash-alt"></i> Delete Record</button>
+                    <a href="#" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+                </div>
+            </div>
+        </div>
+
+        <form id="floorPositionForm">
+            <!-- Form Fields in Two-Column Layout -->
+            <div class="form-container">
+                <div class="vertical-layout">
+                    <!-- Left Column -->
+                    <div class="column">
+                        <div class="form-group">
+                            <label for="loomNo" class="form-label">Loom No</label>
+                            <input type="text" class="form-control" id="loomNo" name="loom_no">
+                            <i class="fas fa-industry"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="beamNo" class="form-label">Beam No</label>
+                            <input type="text" class="form-control" id="beamNo" name="beam_no">
+                            <i class="fas fa-barcode"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="typeOfLoom" class="form-label">Type of Loom</label>
+                            <select class="form-select" id="typeOfLoom" name="type_of_loom">
+                                <option value="">Select Type</option>
+                                <option value="Air Jet">Air Jet</option>
+                                <option value="Water Jet">Water Jet</option>
+                                <option value="Rapier">Rapier</option>
+                                <option value="Projectile">Projectile</option>
+                            </select>
+                            <i class="fas fa-cogs"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="colorCapacity" class="form-label">Color Capacity</label>
+                            <input type="number" step="1" class="form-control" id="colorCapacity" name="color_capacity">
+                            <i class="fas fa-palette"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="noOfColorInWarp" class="form-label">No of Color in Warp</label>
+                            <input type="number" step="1" class="form-control" id="noOfColorInWarp" name="no_of_color_in_warp">
+                            <i class="fas fa-fill-drip"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="noOfCountInWeft" class="form-label">No of Count in Weft</label>
+                            <input type="number" step="1" class="form-control" id="noOfCountInWeft" name="no_of_count_in_weft">
+                            <i class="fas fa-sort-numeric-up"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="beamLengthInYds" class="form-label">Beam Length In yds</label>
+                            <input type="number" step="0.01" class="form-control" id="beamLengthInYds" name="beam_length_in_yds">
+                            <i class="fas fa-ruler"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="weavingBeamSetNo" class="form-label">Weaving Beam Set No</label>
+                            <input type="text" class="form-control" id="weavingBeamSetNo" name="weaving_beam_set_no">
+                            <i class="fas fa-hashtag"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="beamFinishTime" class="form-label">Beam Finish Time</label>
+                            <input type="time" class="form-control" id="beamFinishTime" name="beam_finish_time">
+                            <i class="fas fa-clock"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="beamStartDate" class="form-label">Beam Start Date</label>
+                            <input type="date" class="form-control" id="beamStartDate" name="beam_start_date">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="beamStartTime" class="form-label">Beam Start Time</label>
+                            <input type="time" class="form-control" id="beamStartTime" name="beam_start_time">
+                            <i class="fas fa-clock"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="totalDownTime" class="form-label">Total Down Time</label>
+                            <input type="text" class="form-control" id="totalDownTime" name="total_down_time">
+                            <i class="fas fa-stopwatch"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fillLength" class="form-label">Fill Length</label>
+                            <input type="number" step="0.01" class="form-control" id="fillLength" name="fill_length">
+                            <i class="fas fa-ruler-horizontal"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="weftCount" class="form-label">Weft Count</label>
+                            <input type="text" class="form-control" id="weftCount" name="weft_count">
+                            <i class="fas fa-sort-numeric-down"></i>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="column">
+                        <div class="form-group">
+                            <label for="machineRPM" class="form-label">Machine RPM</label>
+                            <input type="number" step="1" class="form-control" id="machineRPM" name="machine_rpm">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loomStatus" class="form-label">Loom Status</label>
+                            <select class="form-select" id="loomStatus" name="loom_status">
+                                <option value="">Select Status</option>
+                                <option value="Running">Running</option>
+                                <option value="Stopped">Stopped</option>
+                                <option value="Maintenance">Maintenance</option>
+                                <option value="Idle">Idle</option>
+                            </select>
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="buyer" class="form-label">Buyer</label>
+                            <input type="text" class="form-control" id="buyer" name="buyer">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="poNo" class="form-label">PO No.</label>
+                            <input type="text" class="form-control" id="poNo" name="po_no">
+                            <i class="fas fa-file-invoice"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dispoNo" class="form-label">Dispo No.</label>
+                            <input type="text" class="form-control" id="dispoNo" name="dispo_no">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="construction" class="form-label">Construction</label>
+                            <input type="text" class="form-control" id="construction" name="construction">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="totalEnds" class="form-label">Total Ends</label>
+                            <input type="number" step="1" class="form-control" id="totalEnds" name="total_ends">
+                            <i class="fas fa-stream"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="finishedWidth" class="form-label">Finished Width</label>
+                            <input type="number" step="0.01" class="form-control" id="finishedWidth" name="finished_width">
+                            <i class="fas fa-arrows-alt-h"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="blend" class="form-label">Blend</label>
+                            <input type="text" class="form-control" id="blend" name="blend">
+                            <i class="fas fa-blender"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="weave" class="form-label">Weave</label>
+                            <input type="text" class="form-control" id="weave" name="weave">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reedCount" class="form-label">Reed Count</label>
+                            <input type="text" class="form-control" id="reedCount" name="reed_count">
+                            <i class="fas fa-align-justify"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="crimpPercent" class="form-label">Crimp%</label>
+                            <input type="number" step="0.01" class="form-control" id="crimpPercent" name="crimp_percent">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="greigePick" class="form-label">Greige Pick</label>
+                            <input type="number" step="0.01" class="form-control" id="greigePick" name="greige_pick">
+                            <i class="fas fa-grip-lines"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="customerRefStl" class="form-label">Customer Ref/Stl</label>
+                            <input type="text" class="form-control" id="customerRefStl" name="customer_ref_stl">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/main/public/js/erp-smart-dropdown.js"></script>
+<script src="/main/public/js/erp-async-search-dropdown.js"></script>
+    <script>
+        let currentRecordId = null;
+
+        // ========== FETCH FLOOR DATA RECORDS FOR SEARCH ==========
+        async function fetchFloorDataRecords() {
+    try {
+        const response = await fetch('/main/api/floor-position/search-records', {
+            method: 'GET',
+            credentials: 'include'
+        });
+        
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        
+        const records = await response.json();
+        const recordMenu = document.getElementById('floorDataSearchMenu');
+        
+        if (!recordMenu) return;
+        
+        if (records.length === 0) {
+            recordMenu.innerHTML = '<li><a class="dropdown-item disabled" href="#">No records available</a></li>';
+        } else {
+            // Compact single-line format
+            recordMenu.innerHTML = records.map(record => {
+                let parts = [];
+                
+                if (record.loom_no) parts.push(`Loom: ${record.loom_no}`);
+                if (record.beam_no) parts.push(`Beam: ${record.beam_no}`);
+                if (record.beam_length_in_yds) parts.push(`Length: ${record.beam_length_in_yds} yds`);
+                if (record.weaving_beam_set_no) parts.push(`Set: ${record.weaving_beam_set_no}`);
+                if (record.beam_start_date) {
+                    parts.push(`Start: ${record.beam_start_date}${record.beam_start_time ? ' ' + record.beam_start_time : ''}`);
+                }
+                if (record.loom_status) parts.push(record.loom_status);
+                if (record.dispo_no) parts.push(record.dispo_no);
+                
+                const displayText = parts.join(' | ');
+                
+                return `<li><a class="dropdown-item" href="#" data-record-id="${record.id}">${displayText}</a></li>`;
+            }).join('');
+        }
+        
+        attachFloorDataRecordListeners();
+        
+    } catch (error) {
+        console.error('Failed to load floor data records:', error);
+    }
+}
+
+
+        // ========== FETCH DISPO NUMBERS ==========
+        async function fetchDispoNumbers() {
+            try {
+                const response = await fetch('/main/api/floor-position/dispo-numbers', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                
+                const dispoNumbers = await response.json();
+                const dispoMenu = document.getElementById('searchDispoNumberMenu');
+                
+                if (!dispoMenu) return;
+                
+                dispoMenu.innerHTML = dispoNumbers.length === 0 
+                    ? '<li><a class="dropdown-item disabled" href="#">No dispo numbers available</a></li>'
+                    : dispoNumbers.map(number => 
+                        `<li><a class="dropdown-item" href="#" data-dispo-number="${number}">${number}</a></li>`
+                      ).join('');
+                
+                attachDispoNumberListeners();
+                
+            } catch (error) {
+                console.error('Failed to load dispo numbers:', error);
+            }
+        }
+
+        // ========== ATTACH DROPDOWN LISTENERS ==========
+        function attachFloorDataRecordListeners() {
+            document.querySelectorAll('#floorDataSearchMenu .dropdown-item').forEach(item => {
+                const newItem = item.cloneNode(true);
+                item.parentNode.replaceChild(newItem, item);
+                
+                newItem.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const recordId = this.getAttribute('data-record-id');
+                    if (recordId && !this.classList.contains('disabled')) {
+                        const dropdown = bootstrap.Dropdown.getInstance(document.getElementById('floorDataSearchDropdown'));
+                        if (dropdown) dropdown.hide();
+                        
+                        await loadRecord(recordId);
+                    }
+                });
+            });
+        }
+
+        function attachDispoNumberListeners() {
+            document.querySelectorAll('#searchDispoNumberMenu .dropdown-item').forEach(item => {
+                const newItem = item.cloneNode(true);
+                item.parentNode.replaceChild(newItem, item);
+
+                newItem.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const dispoNumber = this.getAttribute('data-dispo-number');
+                    if (dispoNumber && !this.classList.contains('disabled')) {
+                        const searchButton = document.getElementById('searchDispoNumberDropdown');
+                        if (searchButton) {
+                            searchButton.innerHTML = `<i class="fas fa-search"></i> Dispo: ${dispoNumber}`;
+
+                            const dropdown = bootstrap.Dropdown.getInstance(searchButton);
+                            if (dropdown) dropdown.hide();
+                        }
+
+                        // Fetch and populate complete dispo data
+                        await fetchAndPopulateDispoData(dispoNumber);
+                    }
+                });
+            });
+        }
+
+        // ========== FETCH AND POPULATE DISPO DATA (FIXED - ONLY DISPO FIELDS, NEVER FLOOR FIELDS) ==========
+async function fetchAndPopulateDispoData(dispoNumber) {
+    try {
+        // Call the endpoint that ONLY fetches from dispo_form_data
+        const response = await fetch(`/main/api/floor-position/fetch-dispo-data/${encodeURIComponent(dispoNumber)}`, {
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            console.warn('Dispo data not found in dispo_form_data, only setting dispo number');
+            // Clear form first
+            const form = document.getElementById('floorPositionForm');
+            if (form) form.reset();
+            
+            document.getElementById('dispoNo').value = dispoNumber;
+            currentRecordId = null;
+            return;
+        }
+
+        const result = await response.json();
+        
+        if (!result.success || !result.data) {
+            // Clear form first
+            const form = document.getElementById('floorPositionForm');
+            if (form) form.reset();
+            
+            document.getElementById('dispoNo').value = dispoNumber;
+            currentRecordId = null;
+            return;
+        }
+
+        const data = result.data;
+
+        // IMPORTANT: Clear form FIRST to remove any previous floor-specific data
+        const form = document.getElementById('floorPositionForm');
+        if (form) form.reset();
+
+        // Populate ONLY the dispo-related fields from dispo_form_data
+        // Floor-specific fields (loom_no, beam_no, etc.) remain EMPTY
+        document.getElementById('dispoNo').value = data.dispo_no || '';
+        document.getElementById('poNo').value = data.po_no || '';
+        document.getElementById('buyer').value = data.buyer || '';
+        document.getElementById('construction').value = data.construction || '';
+        
+        if (data.total_ends) {
+            document.getElementById('totalEnds').value = data.total_ends;
+        }
+        if (data.finished_width) {
+            document.getElementById('finishedWidth').value = data.finished_width;
+        }
+        
+        document.getElementById('blend').value = data.blend || '';
+        document.getElementById('weave').value = data.weave || '';
+        
+        if (data.reed_count) {
+            document.getElementById('reedCount').value = data.reed_count;
+        }
+        
+        document.getElementById('customerRefStl').value = data.customer_ref_stl || '';
+        
+        // NEW: Map Crimp% from Lower Beam Crimp
+        if (data.crimp_percent) {
+            document.getElementById('crimpPercent').value = data.crimp_percent;
+        }
+        
+        // NEW: Map Greige Pick from Grey PPI
+        if (data.greige_pick) {
+            document.getElementById('greigePick').value = data.greige_pick;
+        }
+
+        // CRITICAL: Clear record ID because this is NOT loading a saved floor record
+        // This ensures "Save" creates a NEW floor record, not update existing
+        currentRecordId = null;
+
+        console.log('✅ Dispo data populated from dispo_form_data');
+        console.log('✅ Floor-specific fields remain empty');
+        console.log('✅ Ready to enter new floor data for dispo:', dispoNumber);
+
+    } catch (error) {
+        console.error('Error fetching dispo data:', error);
+        
+        // Still set the dispo number and clear form even if fetch fails
+        const form = document.getElementById('floorPositionForm');
+        if (form) form.reset();
+        
+        document.getElementById('dispoNo').value = dispoNumber;
+        currentRecordId = null;
+    }
+}
+
+        // ========== LOAD RECORD ==========
+        async function loadRecord(recordId) {
+            try {
+                const response = await fetch(`/main/api/floor-position/fetch-by-id/${recordId}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+                const data = await response.json();
+                
+                currentRecordId = data.id;
+                
+                const form = document.getElementById('floorPositionForm');
+                if (form) {
+                    for (const [key, value] of Object.entries(data)) {
+                        const input = form.querySelector(`[name="${key}"]`);
+                        if (input) {
+                            if (input.type === 'date' && value) {
+                                try {
+                                    input.value = new Date(value).toISOString().split('T')[0];
+                                } catch (e) {
+                                    input.value = '';
+                                }
+                            } else if (input.type === 'time' && value) {
+                                input.value = value;
+                            } else {
+                                input.value = value || '';
+                            }
+                        }
+                    }
+                }
+                
+                const searchButton = document.getElementById('floorDataSearchDropdown');
+                if (searchButton && data.loom_no) {
+                    searchButton.innerHTML = `<i class="fas fa-search"></i> Loom: ${data.loom_no}`;
+                }
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+            } catch (error) {
+                console.error('Error loading record:', error);
+                alert('Failed to load record: ' + error.message);
+            }
+        }
+
+        // ========== DOM CONTENT LOADED ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            // Clear form button
+            document.getElementById('clearFormBtn')?.addEventListener('click', function() {
+                const form = document.getElementById('floorPositionForm');
+                if (form) form.reset();
+                
+                currentRecordId = null;
+                
+                const searchFloorDataBtn = document.getElementById('floorDataSearchDropdown');
+                if (searchFloorDataBtn) {
+                    searchFloorDataBtn.innerHTML = '<i class="fas fa-search"></i> Floor Data Search';
+                }
+                
+                const searchDispoBtn = document.getElementById('searchDispoNumberDropdown');
+                if (searchDispoBtn) {
+                    searchDispoBtn.innerHTML = '<i class="fas fa-search"></i> Search Dispo Number';
+                }
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // Save button
+            document.getElementById('saveBtn')?.addEventListener('click', async function() {
+                try {
+                    const form = document.getElementById('floorPositionForm');
+                    const formData = new FormData(form);
+                    const data = {};
+                    
+                    for (let [key, value] of formData.entries()) {
+                        data[key] = value;
+                    }
+                    
+                    console.log('Saving payload:', data);
+                    
+                    const response = await fetch('/main/api/floor-position/save', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (!response.ok) {
+                        console.error('Server error details:', result);
+                        throw new Error(result.message || result.error || `HTTP error! Status: ${response.status}`);
+                    }
+                    
+                    currentRecordId = result.id;
+                    alert('Data saved successfully!');
+                    console.log('Save successful:', result);
+                    
+                    fetchFloorDataRecords();
+                    
+                } catch (error) {
+                    console.error('Error saving data:', error);
+                    alert('Failed to save data: ' + error.message);
+                }
+            });
+
+            // Update button
+            document.getElementById('updateBtn')?.addEventListener('click', async function() {
+                if (!currentRecordId) {
+                    alert('No record selected for update. Please search and load a record first.');
+                    return;
+                }
+                
+                try {
+                    const form = document.getElementById('floorPositionForm');
+                    const formData = new FormData(form);
+                    const data = {};
+                    
+                    for (let [key, value] of formData.entries()) {
+                        data[key] = value;
+                    }
+                    
+                    console.log('Updating payload:', data);
+                    
+                    const response = await fetch(`/main/api/floor-position/update/${currentRecordId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify(data)
+                    });
+                    
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    
+                    const result = await response.json();
+                    alert('Data updated successfully!');
+                    console.log('Update successful:', result);
+                    
+                    fetchFloorDataRecords();
+                    
+                } catch (error) {
+                    console.error('Error updating data:', error);
+                    alert('Failed to update data: ' + error.message);
+                }
+            });
+
+            // Export button
+            document.getElementById('exportBtn')?.addEventListener('click', async function() {
+                try {
+                    const response = await fetch('/main/api/floor-position/export-excel', {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = 'floor_position_records.csv';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    console.log('Export successful');
+                } catch (error) {
+                    console.error('Error exporting data:', error);
+                    alert('Failed to export data: ' + error.message);
+                }
+            });
+
+            // Delete button
+            document.getElementById('deleteBtn')?.addEventListener('click', async function() {
+                if (!currentRecordId) {
+                    alert('No record selected for deletion. Please search and load a record first.');
+                    return;
+                }
+
+                if (!confirm(`Are you sure you want to delete this record? This action cannot be undone.`)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/main/api/floor-position/delete/${currentRecordId}`, {
+                        method: 'DELETE',
+                        credentials: 'include'
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+                    const result = await response.json();
+                    alert('Record deleted successfully!');
+                    console.log('Delete successful:', result);
+                    
+                    document.getElementById('clearFormBtn').click();
+                    fetchFloorDataRecords();
+                    
+                } catch (error) {
+                    console.error('Error deleting record:', error);
+                    alert('Failed to delete record: ' + error.message);
+                }
+            });
+
+            // Initialize dropdowns
+            setTimeout(() => {
+                fetchFloorDataRecords();
+                fetchDispoNumbers();
+            }, 100);
+
+            console.log('Floor Position Form initialized successfully');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+[
+  {
+    "constraint": "dispo_form_data_ibfk_1",
+    "child_table": "dispo_form_data",
+    "child_field": "po_no",
+    "parent_table": "PO_form_data",
+    "parent_field": "po_no",
+    "on_delete": "CASCADE",
+    "on_update": "CASCADE"
+  },
+  {
+    "constraint": "fk_breakdown_dyed_yarn",
+    "child_table": "dyed_yarn_breakdown",
+    "child_field": "dyed_yarn_id",
+    "parent_table": "dyed_yarn_receive",
+    "parent_field": "id",
+    "on_delete": "CASCADE",
+    "on_update": "CASCADE"
+  },
+  {
+    "constraint": "dyed_yarn_issue_breakdown_ibfk_1",
+    "child_table": "dyed_yarn_issue_breakdown",
+    "child_field": "dyed_yarn_issue_id",
+    "parent_table": "dyed_yarn_issue",
+    "parent_field": "id",
+    "on_delete": "CASCADE",
+    "on_update": null
+  },
+  {
+    "constraint": "fk_finish_delivery_breakdown",
+    "child_table": "finish_delivery_breakdown",
+    "child_field": "finish_delivery_id",
+    "parent_table": "finish_delivery_form",
+    "parent_field": "id",
+    "on_delete": "CASCADE",
+    "on_update": "CASCADE"
+  },
+  {
+    "constraint": "fk_folding_production_breakdown",
+    "child_table": "folding_production_breakdown",
+    "child_field": "folding_production_id",
+    "parent_table": "folding_production_form",
+    "parent_field": "id",
+    "on_delete": "CASCADE",
+    "on_update": "CASCADE"
+  },
+  {
+    "constraint": "greige_delivery_breakdown_ibfk_1",
+    "child_table": "greige_delivery_breakdown",
+    "child_field": "greige_delivery_id",
+    "parent_table": "greige_delivery_form",
+    "parent_field": "id",
+    "on_delete": "CASCADE",
+    "on_update": null
+  },
+  {
+    "constraint": "fk_loom_production_breakdown",
+    "child_table": "loom_production_breakdown",
+    "child_field": "loom_production_id",
+    "parent_table": "loom_production_form",
+    "parent_field": "id",
+    "on_delete": "CASCADE",
+    "on_update": "CASCADE"
+  },
+  {
+    "constraint": "PO_form_data_ibfk_1",
+    "child_table": "PO_form_data",
+    "child_field": "pre_costing_no",
+    "parent_table": "pre_costing_data",
+    "parent_field": "pre_costing_no",
+    "on_delete": "CASCADE",
+    "on_update": "CASCADE"
+  },
+  {
+    "constraint": "production_timeline_ibfk_1",
+    "child_table": "production_timeline",
+    "child_field": "order_report_id",
+    "parent_table": "order_closing_reports",
+    "parent_field": "id",
+    "on_delete": "CASCADE",
+    "on_update": null
+  },
+  {
+    "constraint": "sizing_breakdown_ibfk_1",
+    "child_table": "sizing_breakdown",
+    "child_field": "sizing_form_id",
+    "parent_table": "sizing_form",
+    "parent_field": "id",
+    "on_delete": "CASCADE",
+    "on_update": null
+  },
+  {
+    "constraint": "user_privileges_ibfk_1",
+    "child_table": "user_privileges",
+    "child_field": "user_id",
+    "parent_table": "users",
+    "parent_field": "id",
+    "on_delete": "CASCADE",
+    "on_update": null
+  },
+  {
+    "constraint": "warping_breakdown_ibfk_1",
+    "child_table": "warping_breakdown",
+    "child_field": "warping_form_id",
+    "parent_table": "warping_form",
+    "parent_field": "id",
+    "on_delete": "CASCADE",
+    "on_update": null
+  },
+  {
+    "constraint": "warp_broken_pattern_ibfk_1",
+    "child_table": "warp_broken_pattern",
+    "child_field": "dispo_number",
+    "parent_table": "dispo_form_data",
+    "parent_field": "dispo_number",
+    "on_delete": "CASCADE",
+    "on_update": "CASCADE"
+  },
+  {
+    "constraint": "warp_broken_section_ibfk_1",
+    "child_table": "warp_broken_section",
+    "child_field": "dispo_number",
+    "parent_table": "dispo_form_data",
+    "parent_field": "dispo_number",
+    "on_delete": "CASCADE",
+    "on_update": "CASCADE"
+  },
+  {
+    "constraint": "fk_warp_details_pre_costing",
+    "child_table": "warp_details",
+    "child_field": "pre_costing_no",
+    "parent_table": "pre_costing_data",
+    "parent_field": "pre_costing_no",
+    "on_delete": "CASCADE",
+    "on_update": "CASCADE"
+  },
+  {
+    "constraint": "warp_yarn_details_ibfk_1",
+    "child_table": "warp_yarn_details",
+    "child_field": "dispo_number",
+    "parent_table": "dispo_form_data",
+    "parent_field": "dispo_number",
+    "on_delete": "CASCADE",
+    "on_update": "CASCADE"
+  },
+  {
+    "constraint": "fk_weft_details_pre_costing",
+    "child_table": "weft_details",
+    "child_field": "pre_costing_no",
+    "parent_table": "pre_costing_data",
+    "parent_field": "pre_costing_no",
+    "on_delete": "CASCADE",
+    "on_update": "CASCADE"
+  },
+  {
+    "constraint": "weft_yarn_details_ibfk_1",
+    "child_table": "weft_yarn_details",
+    "child_field": "dispo_number",
+    "parent_table": "dispo_form_data",
+    "parent_field": "dispo_number",
+    "on_delete": "CASCADE",
+    "on_update": "CASCADE"
+  },
+  {
+    "constraint": "fk_yarn_issue_details_form",
+    "child_table": "yarn_issue_details",
+    "child_field": "yarn_issue_form_id",
+    "parent_table": "yarn_issue_form",
+    "parent_field": "id",
+    "on_delete": "CASCADE",
+    "on_update": "CASCADE"
+  },
+  {
+    "constraint": "fk_yarn_received_details",
+    "child_table": "yarn_received_details",
+    "child_field": "yarn_receive_form_id",
+    "parent_table": "yarn_receive_form",
+    "parent_field": "id",
+    "on_delete": "CASCADE",
+    "on_update": "CASCADE"
+  },
+  {
+    "constraint": "fk_yarn_requirements_details",
+    "child_table": "yarn_requirements_details",
+    "child_field": "yarn_receive_form_id",
+    "parent_table": "yarn_receive_form",
+    "parent_field": "id",
+    "on_delete": "CASCADE",
+    "on_update": "CASCADE"
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "table": "warp_yarn_details",
+  "description": "Strict production contract for lower-beam Warp N yarn rows. Seersucker/upper-beam fallback fields are intentionally excluded.",
+  "requiredPositive": [
+    "yarn_per_repeat",
+    "dyed_qty_kg",
+    "grey_qty_kg",
+    "no_of_cones",
+    "cone_length"
+  ]
+}

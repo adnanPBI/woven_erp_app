@@ -1,0 +1,1980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loom Production Data Entry Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-bg: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+            --container-bg: #252525;
+            --text-color: #e0e0e0;
+            --accent-color: #00c4ff;
+            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            --btn-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            --border-glow: rgba(0, 196, 255, 0.3);
+        }
+
+        body {
+            background: var(--primary-bg);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+            box-sizing: border-box;
+            height: 100vh;
+            overflow: auto;
+            background-attachment: fixed;
+        }
+        
+        .section-header-height {
+            min-height: 24px;
+            line-height: 24px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .main-container {
+            background: var(--container-bg);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border: 2px solid #3a3a3a;
+            height: auto;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 196, 255, 0.03) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 196, 255, 0.03) 0%, transparent 20%);
+        }
+
+        .main-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.03) 50%, transparent 51%);
+            background-size: 10px 10px;
+            pointer-events: none;
+        }
+
+        .header-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 18px 15px;
+            border-radius: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 1050;
+            overflow: visible;
+        }
+
+        .header-title {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .header-controls::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 15%;
+            width: 70%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+        }
+
+        .header-controls h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--text-color);
+            text-shadow: var(--text-shadow);
+            margin: 0;
+            background: linear-gradient(45deg, #FFA500, #FFD580);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .header-controls .btn, .header-controls .btn.dropdown-toggle {
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: none;
+            color: #fff;
+            box-shadow: var(--btn-shadow);
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            font-weight: 600;
+            white-space: nowrap;
+            min-width: 140px;
+            text-align: center;
+        }
+
+        .btn-info { background: linear-gradient(135deg, #0d8991, #3bbcc4, #4fb4db) !important; }
+        .btn-warning { background: linear-gradient(135deg, #ffc107, #fd7e14) !important; }
+        .btn-primary { background: linear-gradient(135deg, #0a3a57, #0c8731, #09ad92) !important; }
+        .btn-success { background: linear-gradient(135deg, #1e3954, #3b80db) !important; }
+        .btn-danger { background: linear-gradient(135deg, #991509, #e83e8c) !important; }
+        .btn-tertiary { background: linear-gradient(125deg, #090669, #394f99) !important; }
+        .btn-secondary { background: linear-gradient(135deg, #6c757d, #495057) !important; }
+
+        .header-controls .btn::before, .header-controls .btn.dropdown-toggle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.5s ease;
+            z-index: -1;
+        }
+
+        .header-controls .btn:hover, .header-controls .btn.dropdown-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.6);
+        }
+
+        .header-controls .btn:hover::before, .header-controls .btn.dropdown-toggle:hover::before {
+            left: 100%;
+        }
+
+        .header-controls .btn i { margin-right: 6px; }
+
+        .dropdown-menu {
+            background: #303030;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            z-index: 1051;
+        }
+
+        .dropdown-item {
+            color: var(--text-color);
+            font-size: 0.85rem;
+            padding: 8px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background: #404040;
+            color: #ffffff;
+        }
+
+        .form-container {
+            background: #252525;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .form-container:hover {
+            background: #2D2D2D;
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-glow);
+            border-color: rgba(0, 196, 255, 0.2);
+        }
+
+        .form-label {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 0;
+            font-size: 0.8rem;
+            width: 40%;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .form-control, .form-select {
+            background-color: #404040;
+            border: 1px solid #505050;
+            color: var(--text-color);
+            border-radius: 10px;
+            padding: 6px 10px;
+            height: 35px;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            width: 60%;
+        }
+
+        .form-group i.fa-calendar-alt,
+        .form-group i.fa-calendar-check {
+            color: var(--accent-color) !important;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] { -moz-appearance: textfield; }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #454545;
+            color: var(--text-color);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.25rem rgba(0, 196, 255, 0.25);
+        }
+
+        .form-control:hover, .form-select:hover { border-color: var(--accent-color); }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 10px;
+            position: relative;
+        }
+
+        .form-group i {
+            position: absolute;
+            right: 10px;
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .form-group .form-control, .form-group .form-select { padding-right: 30px; }
+
+        .form-group .form-control:focus ~ i,
+        .form-group .form-select:focus ~ i {
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+        
+        html, body {
+            scroll-behavior: auto !important;
+            overflow-x: hidden;
+        }
+
+        html { scroll-padding-top: 0; }
+        body { position: relative; }
+
+        .result-field {
+            background-color: #d68733 !important;
+            border: none;
+            color: #000 !important;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+        }
+
+        .breakdown-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid #3a3a3a;
+            border-radius: 15px;
+            padding: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .collapsible-toggle {
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+            width: 100%;
+            padding: 14px 0;
+        }
+
+        .collapsible-toggle:hover {
+            background: rgba(0, 196, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .breakdown-title {
+            color: var(--accent-color);
+            font-size: 1.4rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 15px;
+            text-shadow: var(--text-shadow);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .breakdown-title i { position: absolute; right: 0; }
+
+        .collapsible-section { display: none; }
+
+        .vertical-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .form-group textarea.form-control {
+            width: 60%;
+            height: auto;
+            min-height: 35px;
+            resize: vertical;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 15px;
+        }
+
+        .table-dark {
+            --bs-table-bg: #2D2D2D;
+            --bs-table-border-color: #505050;
+        }
+
+        .table th, .table td {
+            vertical-align: middle;
+            white-space: nowrap;
+            padding: 4px;
+            font-size: 0.85rem;
+        }
+
+        .table th {
+            background-color: #252525;
+            color: var(--accent-color);
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .table-input-sm .form-control {
+            padding: 0px 4px;
+            font-size: 0.9rem;
+            height: 30px;
+            text-align: center;
+            background-color: #404040;
+            border: 1px solid #505050;
+            color: var(--text-color);
+        }
+
+        .table-input-sm .result-field {
+            background-color: #d68733;
+            color: #000;
+            font-weight: 600;
+        }
+
+        .btn-sm { padding: 4px 8px; font-size: 0.78rem; }
+
+        @media (max-width: 1200px) {
+            .button-row { justify-content: center; gap: 6px; }
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+                min-width: 120px;
+            }
+            .vertical-layout { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 992px) {
+            .button-row { flex-direction: column; align-items: stretch; gap: 8px; }
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                width: 100%;
+                max-width: 200px;
+                margin: 0 auto;
+            }
+            .vertical-layout { grid-template-columns: 1fr; }
+            .form-group { flex-direction: column; align-items: stretch; gap: 5px; }
+            .form-label { width: 100%; }
+            .form-control, .form-select, .form-group textarea.form-control { width: 100%; }
+            .form-group i {
+                position: absolute;
+                right: 10px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-controls .btn, .header-controls .btn.dropdown-toggle {
+                font-size: 0.75rem;
+                padding: 6px 10px;
+                min-width: 100px;
+            }
+            .form-label { font-size: 0.75rem; }
+            .form-control, .form-select {
+                font-size: 0.8rem;
+                padding: 5px 8px;
+                height: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header-controls">
+            <div class="header-title">
+                <h1>Loom Production Data Entry Form</h1>
+            </div>
+            <div class="header-buttons">
+                <div class="button-row">
+                    <div class="dropdown">
+                        <button class="btn btn-info dropdown-toggle" type="button" id="searchLoomProductionDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-search"></i> Search Loom Production Data
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="searchLoomProductionDropdown"></ul>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-info dropdown-toggle" type="button" id="searchDispoBreakdownDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-search"></i> Search Dispo Breakdown
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="searchDispoBreakdownDropdown"></ul>
+                    </div>
+                    <button class="btn btn-warning" id="clearFormBtn"><i class="fas fa-eraser"></i> Clear Form</button>
+                </div>
+                
+                <div class="button-row">
+                    <button class="btn btn-primary btn-submit" id="saveToMySQLBtn"><i class="fas fa-save"></i> Save to MySQL</button>
+                    <button class="btn btn-primary btn-submit" id="updateToMySQLBtn"><i class="fas fa-refresh"></i> Update MySQL Data</button>
+                    <button class="btn btn-success" id="saveToExcelBtn"><i class="fas fa-file-excel"></i> Export to Excel</button>
+                    <button class="btn btn-tertiary" id="savedLoomProductionBtn"><i class="fas fa-list"></i> Saved Records</button>
+                    <button class="btn btn-danger" id="deleteLoomProductionBtn"><i class="fas fa-trash-alt"></i> Delete Record</button>
+                    <a href="#" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+                </div>
+            </div>
+        </div>
+
+        <form id="loomProductionForm">
+            <div class="breakdown-card">
+                <div class="collapsible-toggle" id="loomProductionBreakdownToggle">
+                    <div class="breakdown-title">
+                        Loom Production Data Breakdown
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+                <div class="collapsible-section" id="loomProductionBreakdownContent">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-bordered table-input-sm" id="loomProductionBreakdownTable">
+                            <thead>
+                                <tr>
+                                    <th style="min-width: 30px;">SL</th>
+                                    <th style="min-width: 120px;">Loom Production Date</th>
+                                    <th style="min-width: 150px;">Count of Running Loom</th>
+                                    <th style="min-width: 150px;">Loom Production Quantity (Yds)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td><input type="date" class="form-control" name="loom_production_date[]"></td>
+                                    <td><input type="number" class="form-control" name="run_loom[]" min="0" step="1"></td>
+                                    <td><input type="number" step="0.01" class="form-control" name="loom_production_quantity_yds[]"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="d-flex gap-2 mb-3">
+                            <button type="button" class="btn btn-success btn-sm" id="addLoomProductionRowBtn">
+                                <i class="fas fa-plus"></i> Add Row
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" id="deleteLoomProductionRowBtn">
+                                <i class="fas fa-trash"></i> Delete Row
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="breakdown-card">
+                <div class="collapsible-toggle" id="dispoDetailsToggle">
+                    <div class="breakdown-title">
+                        Dispo Warp & Weft Yarn Details
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+                <div class="collapsible-section" id="dispoDetailsContent">
+                    <h6 class="text-info mb-2">Warp Yarn Details</h6>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-bordered table-input-sm" id="warpYarnDetailsTable">
+                            <thead>
+                                <tr>
+                                    <th style="min-width: 30px;">SL</th>
+                                    <th style="min-width: 50px;">Count</th>
+                                    <th style="min-width: 30px;">Ply</th>
+                                    <th style="min-width: 60px;">Cal. Count</th>
+                                    <th style="min-width: 100px;">Warp Color Name</th>
+                                    <th style="min-width: 50px;">LD Number</th>
+                                    <th style="min-width: 70px;">Yarn Type</th>
+                                    <th style="min-width: 50px;">Yarn/Repeat</th>
+                                    <th style="min-width: 60px;">Dyed Qty (KG)</th>
+                                    <th style="min-width: 60px;">Grey Qty (KG)</th>
+                                    <th style="min-width: 50px;">No of Cones</th>
+                                    <th style="min-width: 70px;">Cone Length</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td><input type="text" class="form-control" name="warp_count[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="warp_ply[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="warp_cal_count[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="warp_color_name[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="warp_ld_number[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="warp_yarn_type[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="warp_yarn_per_repeat[]" readonly></td>
+                                    <td><input type="text" class="form-control result-field" name="warp_dyed_qty[]" readonly></td>
+                                    <td><input type="text" class="form-control result-field" name="warp_grey_qty[]" readonly></td>
+                                    <td><input type="text" class="form-control result-field" name="warp_no_of_cones[]" readonly></td>
+                                    <td><input type="text" class="form-control result-field" name="warp_cone_length[]" readonly></td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="7"><strong>Total</strong></td>
+                                    <td><span id="totalWarpYarnRepeat" class="result-field">0</span></td>
+                                    <td><span id="totalWarpDyedQty" class="result-field">0.00</span></td>
+                                    <td><span id="totalWarpGreyQty" class="result-field">0.00</span></td>
+                                    <td><span id="totalWarpCones" class="result-field">0</span></td>
+                                    <td><span id="totalWarpConeLength" class="result-field">0</span></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <div class="d-flex gap-2 mb-3">
+                            <button type="button" class="btn btn-success btn-sm" id="addWarpRowBtn">
+                                <i class="fas fa-plus"></i> Add Row
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" id="deleteWarpRowBtn">
+                                <i class="fas fa-trash"></i> Delete Row
+                            </button>
+                        </div>
+                    </div>
+
+                    <h6 class="text-info mb-2">Weft Yarn Details</h6>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-bordered table-input-sm" id="weftYarnDetailsTable">
+                            <thead>
+                                <tr>
+                                    <th style="min-width: 30px;">SL</th>
+                                    <th style="min-width: 50px;">Count</th>
+                                    <th style="min-width: 30px;">Ply</th>
+                                    <th style="min-width: 60px;">Cal. Count</th>
+                                    <th style="min-width: 100px;">Weft Color Name</th>
+                                    <th style="min-width: 50px;">LD Number</th>
+                                    <th style="min-width: 70px;">Yarn Type</th>
+                                    <th style="min-width: 50px;">Yarn/Repeat</th>
+                                    <th style="min-width: 60px;">Dyed Qty (KG)</th>
+                                    <th style="min-width: 60px;">Grey Qty (KG)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td><input type="text" class="form-control" name="weft_count[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="weft_ply[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="weft_cal_count[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="weft_color_name[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="weft_ld_number[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="weft_yarn_type[]" readonly></td>
+                                    <td><input type="text" class="form-control" name="weft_yarn_per_repeat[]" readonly></td>
+                                    <td><input type="text" class="form-control result-field" name="weft_dyed_qty[]" readonly></td>
+                                    <td><input type="text" class="form-control result-field" name="weft_grey_qty[]" readonly></td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="7"><strong>Total</strong></td>
+                                    <td><span id="totalWeftYarnRepeat" class="result-field">0</span></td>
+                                    <td><span id="totalWeftDyedQty" class="result-field">0.00</span></td>
+                                    <td><span id="totalWeftGreyQty" class="result-field">0.00</span></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-success btn-sm" id="addWeftRowBtn">
+                                <i class="fas fa-plus"></i> Add Row
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm" id="deleteWeftRowBtn">
+                                <i class="fas fa-trash"></i> Delete Row
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-container">
+                <div class="vertical-layout">
+                    <div class="column">
+                        <div class="form-group">
+                            <label for="weavingDate" class="form-label">Weaving Date</label>
+                            <input type="date" class="form-control" id="weavingDate" name="weaving_date" value="">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loomNo" class="form-label">Loom No</label>
+                            <input type="text" class="form-control" id="loomNo" name="loom_no" value="">
+                            <i class="fas fa-server"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loomRpm" class="form-label">Loom RPM</label>
+                            <input type="number" step="0.01" class="form-control" id="loomRpm" name="loom_rpm" value="">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="poNumber" class="form-label">PO Number</label>
+                            <select class="form-select result-field" id="poNumber" name="po_number">
+                                <option value="">Select PO</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dispoNumber" class="form-label">Dispo Number</label>
+                            <select class="form-select result-field" id="dispoNumber" name="dispo_number">
+                                <option value="">Select Dispo</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="buyer" class="form-label">Buyer</label>
+                            <input type="text" class="form-control" id="buyer" name="buyer" value="">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="customerRef" class="form-label">Customer Ref</label>
+                            <input type="text" class="form-control" id="customerRef" name="customer_ref" value="">
+                            <i class="fas fa-hashtag"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="weave" class="form-label">Weave</label>
+                            <input type="text" class="form-control" id="weave" name="weave" value="">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="totalBeam" class="form-label">Total Number of Beam</label>
+                            <input type="text" class="form-control" id="totalBeam" name="total_beam" value="">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        
+                        <hr style="border-color: #555; margin: 15px 0 10px 0;">
+                        <h6 class="text-info section-header-height">Dispo Information</h6>
+                        
+                        <div class="form-group">
+                            <label for="poIssueDate" class="form-label">PO Issue Date</label>
+                            <input type="date" class="form-control" id="poIssueDate" name="po_issue_date" value="">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="poReceivedDate" class="form-label">PO Received Date</label>
+                            <input type="date" class="form-control" id="poReceivedDate" name="po_received_date" value="">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bulkFabricDeliveryDate" class="form-label">Bulk Fabric Delivery Date</label>
+                            <input type="date" class="form-control" id="bulkFabricDeliveryDate" name="bulk_fabric_delivery_date" value="">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="accountHolder" class="form-label">Account Holder</label>
+                            <input type="text" class="form-control" id="accountHolder" name="account_holder" value="">
+                            <i class="fas fa-user"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="marketingRefTrackingNo" class="form-label">Marketing Ref/Tracking No</label>
+                            <input type="text" class="form-control" id="marketingRefTrackingNo" name="marketing_ref_tracking_no" value="">
+                            <i class="fas fa-tag"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="finishType" class="form-label">Finish Type</label>
+                            <input type="text" class="form-control" id="finishType" name="finish_type" value="">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+
+                    <div class="column">
+                        <div class="form-group">
+                            <label for="productionConstruction" class="form-label">Production Construction</label>
+                            <input type="text" class="form-control" id="productionConstruction" name="production_construction" value="">
+                            <i class="fas fa-industry"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fabricComposition" class="form-label">Fabric Composition</label>
+                            <textarea class="form-control" id="fabricComposition" name="fabric_composition" rows="2"></textarea>
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lowerBeamCrimp" class="form-label">Lower Beam Crimp</label>
+                            <input type="number" step="0.01" class="form-control" id="lowerBeamCrimp" name="lower_beam_crimp" value="">
+                            <i class="fas fa-compress"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="weavingBeamSetNo" class="form-label">Weaving Beam Set No</label>
+                            <input type="text" class="form-control" id="weavingBeamSetNo" name="weaving_beam_set_no" value="">
+                            <i class="fas fa-barcode"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inHouseProductionDay" class="form-label">In house Production/Day</label>
+                            <input type="text" class="form-control" id="inHouseProductionDay" name="in_house_production_day" value="">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="outsideProductionDay" class="form-label">Outside Production/Day</label>
+                            <input type="text" class="form-control" id="outsideProductionDay" name="outside_production_day" value="">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="beamStartDate" class="form-label">Beam Start Date</label>
+                            <input type="date" class="form-control" id="beamStartDate" name="beam_start_date" value="">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="remarks" class="form-label">Remarks</label>
+                            <textarea class="form-control" id="remarks" name="remarks" rows="2"></textarea>
+                            <i class="fas fa-sticky-note"></i>
+                        </div>
+
+                        <div class="form-group" style="visibility: hidden;"><input class="form-control"></div>
+                        
+                        <hr style="border-color: #555; margin: -26px 0 10px 0;">
+                        <h6 class="text-info section-header-height">&nbsp;</h6>
+
+                        <div class="form-group">
+                            <label for="endUse" class="form-label">End Use</label>
+                            <input type="text" class="form-control" id="endUse" name="end_use" value="">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="orderType" class="form-label">Order Type</label>
+                            <input type="text" class="form-control" id="orderType" name="order_type" value="">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="yarnType" class="form-label">Yarn Type</label>
+                            <input type="text" class="form-control" id="yarnType" name="yarn_type" value="">
+                            <i class="fas fa-certificate"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="processType" class="form-label">Process Type</label>
+                            <input type="text" class="form-control" id="processType" name="process_type" value="">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="poQuantityYds" class="form-label">PO Quantity (Yds)</label>
+                            <input type="number" step="0.01" class="form-control" id="poQuantityYds" name="po_quantity_yds" value="">
+                            <i class="fas fa-ruler"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dispoQuantityYds" class="form-label">Dispo Quantity (Yds)</label>
+                            <input type="number" step="0.01" class="form-control" id="dispoQuantityYds" name="dispo_quantity_yds" value="">
+                            <i class="fas fa-ruler-combined"></i>
+                        </div>
+                    </div>
+
+                    <div class="column">
+                        <div class="form-group" style="visibility: hidden;"><input class="form-control"></div>
+                        <div class="form-group" style="visibility: hidden;"><input class="form-control"></div>
+                        <div class="form-group" style="visibility: hidden;"><input class="form-control"></div>
+                        <div class="form-group" style="visibility: hidden;"><input class="form-control"></div>
+                        <div class="form-group" style="visibility: hidden;"><input class="form-control"></div>
+                        <div class="form-group" style="visibility: hidden;"><input class="form-control"></div>
+                        <div class="form-group" style="visibility: hidden;"><input class="form-control"></div>
+                        <div class="form-group" style="visibility: hidden;"><input class="form-control"></div>
+
+                        <hr style="border-color: #555; margin: 60px 0 10px 0;">
+                        <h6 class="text-info section-header-height">&nbsp;</h6>
+
+                        <div class="form-group">
+                            <label for="requiredPrintProductionMtr" class="form-label">Req. Print Prod. (Mtr)</label>
+                            <input type="number" step="0.01" class="form-control" id="requiredPrintProductionMtr" name="required_print_production_mtr" value="">
+                            <i class="fas fa-print"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="requiredGreigeProductionMtr" class="form-label">Req. Greige Prod. (Mtr)</label>
+                            <input type="number" step="0.01" class="form-control" id="requiredGreigeProductionMtr" name="required_greige_production_mtr" value="">
+                            <i class="fas fa-ruler-vertical"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="requiredLoomProductionMtr" class="form-label">Req. Loom Prod. (Mtr)</label>
+                            <input type="number" step="0.01" class="form-control" id="requiredLoomProductionMtr" name="required_loom_production_mtr" value="">
+                            <i class="fas fa-industry"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="requiredWarpLengthMtr" class="form-label">Req. Warp Length (Mtr)</label>
+                            <input type="number" step="0.01" class="form-control" id="requiredWarpLengthMtr" name="required_warp_length_mtr" value="">
+                            <i class="fas fa-arrows-alt-v"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cuttableWidthInch" class="form-label">Cuttable Width (Inch)</label>
+                            <input type="number" step="0.01" class="form-control" id="cuttableWidthInch" name="cuttable_width_inch" value="">
+                            <i class="fas fa-cut"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="greyWidthInch" class="form-label">Grey Width (Inch)</label>
+                            <input type="number" step="0.01" class="form-control" id="greyWidthInch" name="grey_width_inch" value="">
+                            <i class="fas fa-arrows-alt-h"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="beamTotalEnds" class="form-label">Beam Total Ends</label>
+                            <input type="number" class="form-control" id="beamTotalEnds" name="beam_total_ends" value="">
+                            <i class="fas fa-sort-numeric-up"></i>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reedCount" class="form-label">Reed Count</label>
+                            <input type="text" class="form-control" id="reedCount" name="reed_count" value="">
+                            <i class="fas fa-hashtag"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/main/public/js/erp-smart-dropdown.js"></script>
+<script src="/main/public/js/erp-async-search-dropdown.js"></script>
+    <script>
+    let currentRecordId = null;
+
+    // ========== CALCULATION FUNCTIONS ==========
+    function calculateYarnTotals() {
+        // Calculate warp totals
+        let totalWarpYarnRepeat = 0, totalWarpDyedQty = 0, totalWarpGreyQty = 0;
+        let totalWarpCones = 0, totalWarpConeLength = 0;
+        
+        document.querySelectorAll('input[name="warp_yarn_per_repeat[]"]').forEach(input => {
+            totalWarpYarnRepeat += parseFloat(input.value) || 0;
+        });
+        document.querySelectorAll('input[name="warp_dyed_qty[]"]').forEach(input => {
+            totalWarpDyedQty += parseFloat(input.value) || 0;
+        });
+        document.querySelectorAll('input[name="warp_grey_qty[]"]').forEach(input => {
+            totalWarpGreyQty += parseFloat(input.value) || 0;
+        });
+        document.querySelectorAll('input[name="warp_no_of_cones[]"]').forEach(input => {
+            totalWarpCones += parseFloat(input.value) || 0;
+        });
+        document.querySelectorAll('input[name="warp_cone_length[]"]').forEach(input => {
+            totalWarpConeLength += parseFloat(input.value) || 0;
+        });
+
+        // Update warp totals
+        const totalWarpYarnRepeatEl = document.getElementById('totalWarpYarnRepeat');
+        const totalWarpDyedQtyEl = document.getElementById('totalWarpDyedQty');
+        const totalWarpGreyQtyEl = document.getElementById('totalWarpGreyQty');
+        const totalWarpConesEl = document.getElementById('totalWarpCones');
+        const totalWarpConeLengthEl = document.getElementById('totalWarpConeLength');
+        
+        if (totalWarpYarnRepeatEl) totalWarpYarnRepeatEl.textContent = totalWarpYarnRepeat.toFixed(0);
+        if (totalWarpDyedQtyEl) totalWarpDyedQtyEl.textContent = totalWarpDyedQty.toFixed(2);
+        if (totalWarpGreyQtyEl) totalWarpGreyQtyEl.textContent = totalWarpGreyQty.toFixed(2);
+        if (totalWarpConesEl) totalWarpConesEl.textContent = Math.round(totalWarpCones);
+        if (totalWarpConeLengthEl) totalWarpConeLengthEl.textContent = Math.ceil(totalWarpConeLength);
+
+        // Calculate weft totals
+        let totalWeftYarnRepeat = 0, totalWeftDyedQty = 0, totalWeftGreyQty = 0;
+        document.querySelectorAll('input[name="weft_yarn_per_repeat[]"]').forEach(input => {
+            totalWeftYarnRepeat += parseFloat(input.value) || 0;
+        });
+        document.querySelectorAll('input[name="weft_dyed_qty[]"]').forEach(input => {
+            totalWeftDyedQty += parseFloat(input.value) || 0;
+        });
+        document.querySelectorAll('input[name="weft_grey_qty[]"]').forEach(input => {
+            totalWeftGreyQty += parseFloat(input.value) || 0;
+        });
+
+        // Update weft totals
+        const totalWeftYarnRepeatEl = document.getElementById('totalWeftYarnRepeat');
+        const totalWeftDyedQtyEl = document.getElementById('totalWeftDyedQty');
+        const totalWeftGreyQtyEl = document.getElementById('totalWeftGreyQty');
+        
+        if (totalWeftYarnRepeatEl) totalWeftYarnRepeatEl.textContent = totalWeftYarnRepeat.toFixed(0);
+        if (totalWeftDyedQtyEl) totalWeftDyedQtyEl.textContent = totalWeftDyedQty.toFixed(2);
+        if (totalWeftGreyQtyEl) totalWeftGreyQtyEl.textContent = totalWeftGreyQty.toFixed(2);
+    }
+
+    // ========== HELPER TO ATTACH CALCULATION LISTENERS ==========
+    function attachCalculationListeners() {
+        const inputs = document.querySelectorAll('#warpYarnDetailsTable input, #weftYarnDetailsTable input');
+        inputs.forEach(input => {
+            input.removeEventListener('input', calculateYarnTotals);
+            input.addEventListener('input', calculateYarnTotals);
+        });
+    }
+
+    // ========== KEYBOARD NAVIGATION SETUP ==========
+    function setupKeyboardNavigation() {
+        const formFields = [
+            'weavingDate', 'loomNo', 'loomRpm', 'poNumber', 'dispoNumber',
+            'buyer', 'customerRef', 'weave', 'poIssueDate', 'poReceivedDate',
+            'bulkFabricDeliveryDate', 'accountHolder', 'marketingRefTrackingNo', 'finishType',
+            'productionConstruction', 'fabricComposition', 'lowerBeamCrimp', 'weavingBeamSetNo',
+            'inHouseProductionDay', 'beamStartDate', 'remarks', 'endUse', 'orderType',
+            'yarnType', 'processType', 'poQuantityYds', 'dispoQuantityYds',
+            'requiredPrintProductionMtr', 'requiredGreigeProductionMtr', 'requiredLoomProductionMtr',
+            'requiredWarpLengthMtr', 'cuttableWidthInch', 'greyWidthInch', 'beamTotalEnds', 'reedCount'
+        ];
+
+        formFields.forEach((fieldId, index) => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.addEventListener('keydown', function(e) {
+                    if (e.key === 'ArrowDown' || (e.key === 'Tab' && !e.shiftKey)) {
+                        e.preventDefault();
+                        const nextIndex = (index + 1) % formFields.length;
+                        const nextField = document.getElementById(formFields[nextIndex]);
+                        if (nextField) {
+                            nextField.focus();
+                            if (nextField.type === 'text' || nextField.type === 'number') {
+                                nextField.select();
+                            }
+                        }
+                    } else if (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) {
+                        e.preventDefault();
+                        const prevIndex = index === 0 ? formFields.length - 1 : index - 1;
+                        const prevField = document.getElementById(formFields[prevIndex]);
+                        if (prevField) {
+                            prevField.focus();
+                            if (prevField.type === 'text' || prevField.type === 'number') {
+                                prevField.select();
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    // ========== COLLAPSIBLE TOGGLE ==========
+    function toggleCollapsible(toggleId, contentId) {
+        const collapsibleSection = document.getElementById(contentId);
+        const chevronIcon = document.querySelector(`#${toggleId} .breakdown-title i`);
+        
+        if (!collapsibleSection) return;
+        
+        const isCurrentlyHidden = collapsibleSection.style.display === 'none' || collapsibleSection.style.display === '';
+        collapsibleSection.style.display = isCurrentlyHidden ? 'block' : 'none';
+        
+        if (chevronIcon) {
+            chevronIcon.classList.toggle('fa-chevron-down', !isCurrentlyHidden);
+            chevronIcon.classList.toggle('fa-chevron-up', isCurrentlyHidden);
+        }
+    }
+
+    // ========== INITIALIZE TO TOP OF PAGE ==========
+    function initializeFormFromTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        
+        setTimeout(() => {
+            const firstField = document.getElementById('weavingDate');
+            if (firstField) {
+                firstField.focus();
+            }
+        }, 500);
+    }
+
+    // ========== FETCH PO NUMBERS ==========
+    async function fetchPONumbers() {
+        try {
+            const response = await fetch('/main/api/po/numbers', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            if (!response.ok) {
+                console.warn(`PO fetch returned status ${response.status}, continuing without POs`);
+                return;
+            }
+            const poNumbers = await response.json();
+            populatePOField(poNumbers);
+        } catch (error) {
+            console.error('Failed to load PO numbers:', error);
+        }
+    }
+
+    function populatePOField(poNumbers) {
+        const poField = document.getElementById('poNumber');
+        if (!poField) return;
+        const currentValue = poField.value;
+        poField.innerHTML = '<option value="">Select PO</option>';
+        poNumbers.forEach(poNo => {
+            const option = document.createElement('option');
+            option.value = poNo;
+            option.textContent = poNo;
+            if (poNo === currentValue) option.selected = true;
+            poField.appendChild(option);
+        });
+        if (currentValue) poField.value = currentValue;
+    }
+    
+    // ========== POPULATE LOOM PRODUCTION BREAKDOWN TABLE (CORRECTED) ==========
+function populateLoomProductionBreakdownTable(breakdownData) {
+    const tbody = document.querySelector('#loomProductionBreakdownTable tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = ''; // Clear existing rows
+    
+    if (!breakdownData || breakdownData.length === 0) {
+        addEmptyLoomProductionRow();
+        calculateLoomProductionTotals();
+        return;
+    }
+    
+    breakdownData.forEach((breakdown, index) => {
+        const row = tbody.insertRow();
+        
+        // Format date properly
+        let formattedDate = '';
+        if (breakdown.loom_production_date) {
+            try {
+                const date = new Date(breakdown.loom_production_date);
+                formattedDate = date.toISOString().split('T')[0];
+            } catch (e) {
+                console.warn('Failed to parse date:', breakdown.loom_production_date);
+            }
+        }
+        
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td><input type="date" class="form-control" name="loom_production_date[]" value="${formattedDate}"></td>
+            <td><input type="number" class="form-control" name="run_loom[]" min="0" step="1" value="${breakdown.run_loom ?? ''}"></td>
+            <td><input type="number" step="0.01" class="form-control" name="loom_production_quantity_yds[]" value="${breakdown.loom_production_quantity_yds || ''}" oninput="calculateLoomProductionTotals()"></td>
+        `;
+    });
+    
+    // Add total row
+    addLoomProductionTotalRow();
+    calculateLoomProductionTotals();
+}
+
+ // ========== ADD LOOM PRODUCTION TOTAL ROW ==========
+function addLoomProductionTotalRow() {
+    const tbody = document.querySelector('#loomProductionBreakdownTable tbody');
+    if (!tbody) return;
+    
+    // Remove existing total row if any
+    const existingTotal = tbody.querySelector('.total-row');
+    if (existingTotal) {
+        existingTotal.remove();
+    }
+    
+    const totalRow = tbody.insertRow(-1);
+    totalRow.className = 'total-row';
+    totalRow.style.background = 'rgba(0, 196, 255, 0.1)';
+    totalRow.style.fontWeight = '700';
+    
+    totalRow.innerHTML = `
+        <td colspan="3" style="text-align: center; color: var(--accent-color);"><strong>Total Rows</strong></td>
+        <td><input type="text" class="form-control result-field" id="totalLoomProductionQty" value="0.00" readonly></td>
+    `;
+}
+
+// ========== CALCULATE LOOM PRODUCTION TOTALS ==========
+function calculateLoomProductionTotals() {
+    const tbody = document.querySelector('#loomProductionBreakdownTable tbody');
+    if (!tbody) return;
+    
+    let totalQty = 0;
+    const rows = tbody.querySelectorAll('tr:not(.total-row)');
+    
+    rows.forEach(row => {
+        const qtyInput = row.querySelector('input[name="loom_production_quantity_yds[]"]');
+        if (qtyInput) {
+            totalQty += parseFloat(qtyInput.value) || 0;
+        }
+    });
+    
+    const totalQtyField = document.getElementById('totalLoomProductionQty');
+    if (totalQtyField) {
+        totalQtyField.value = totalQty.toFixed(2);
+    }
+}
+    // ========== FETCH DISPO NUMBERS ==========
+    async function fetchDispoNumbers() {
+        try {
+            const response = await fetch('/main/api/dyed-yarn/dispo-numbers', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            
+            const dispoNumbers = await response.json();
+            const dispoSelect = document.getElementById('dispoNumber');
+            
+            if (!dispoSelect) return;
+            dispoSelect.innerHTML = '<option value="">Select Dispo</option>';
+            dispoNumbers.forEach(dispo => {
+                const option = document.createElement('option');
+                option.value = dispo;
+                option.textContent = dispo;
+                dispoSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Failed to load dispo numbers:', error);
+        }
+    }
+
+    async function fetchDispoNumbersForBreakdown() {
+        try {
+            const response = await fetch('/main/api/dyed-yarn/dispo-numbers', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+            
+            const dispoNumbers = await response.json();
+            const dispoMenu = document.querySelector('ul[aria-labelledby="searchDispoBreakdownDropdown"]');
+            
+            if (!dispoMenu) return;
+            dispoMenu.innerHTML = dispoNumbers.length === 0 
+                ? '<li><a class="dropdown-item disabled" href="#">No dispo numbers available</a></li>'
+                : dispoNumbers.map(number => 
+                    `<li><a class="dropdown-item" href="#" data-dispo-number="${number}">${number}</a></li>`
+                  ).join('');
+            attachDispoBreakdownListeners();
+        } catch (error) {
+            console.error('Failed to load dispo numbers:', error);
+        }
+    }
+
+    // ========== FETCH LOOM PRODUCTION RECORDS (CORRECTED DATE DISPLAY) ==========
+async function fetchLoomProductionRecords() {
+    try {
+        const response = await fetch('/main/api/loom-production/search-records', {
+            method: 'GET',
+            credentials: 'include'
+        });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        
+        const records = await response.json();
+        const recordMenu = document.querySelector('ul[aria-labelledby="searchLoomProductionDropdown"]');
+        
+        if (!recordMenu) return;
+        recordMenu.innerHTML = records.length === 0 
+            ? '<li><a class="dropdown-item disabled" href="#">No records available</a></li>'
+            : records.map(record => {
+                // Format date without timestamp
+                const formattedDate = record.weaving_date 
+                    ? new Date(record.weaving_date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                    })
+                    : 'N/A';
+                    
+                const displayText = `Dispo: ${record.dispo_number || 'N/A'} | Buyer: ${record.buyer || 'N/A'} | Construction: ${record.production_construction || 'N/A'} | Date: ${formattedDate}`;
+                return `<li><a class="dropdown-item" href="#" data-record-id="${record.id}" style="font-size: 0.85rem;">${displayText}</a></li>`;
+            }).join('');
+        
+        attachLoomProductionRecordListeners();
+    } catch (error) {
+        console.error('Failed to load loom production records:', error);
+    }
+}
+
+
+    function attachLoomProductionRecordListeners() {
+        document.querySelectorAll('ul[aria-labelledby="searchLoomProductionDropdown"] .dropdown-item').forEach(item => {
+            const newItem = item.cloneNode(true);
+            item.parentNode.replaceChild(newItem, item);
+            
+            newItem.addEventListener('click', async function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const recordId = this.getAttribute('data-record-id');
+                if (recordId && !this.classList.contains('disabled')) {
+                    const searchButton = document.getElementById('searchLoomProductionDropdown');
+                    if (searchButton) {
+                        const dropdown = bootstrap.Dropdown.getInstance(searchButton);
+                        if (dropdown) dropdown.hide();
+                    }
+                    await loadLoomProductionRecord(recordId);
+                }
+            });
+        });
+    }
+
+    function attachDispoBreakdownListeners() {
+        document.querySelectorAll('ul[aria-labelledby="searchDispoBreakdownDropdown"] .dropdown-item').forEach(item => {
+            const newItem = item.cloneNode(true);
+            item.parentNode.replaceChild(newItem, item);
+            
+            newItem.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const dispoNumber = this.getAttribute('data-dispo-number');
+                if (dispoNumber && !this.classList.contains('disabled')) {
+                    const searchButton = document.getElementById('searchDispoBreakdownDropdown');
+                    if (searchButton) {
+                        searchButton.innerHTML = `<i class="fas fa-search"></i> Dispo: ${dispoNumber}`;
+                        const dropdown = bootstrap.Dropdown.getInstance(searchButton);
+                        if (dropdown) dropdown.hide();
+                    }
+                    fetchYarnDetailsByDispo(dispoNumber);
+                }
+            });
+        });
+    }
+
+    // ========== ENHANCED: FETCH DISPO DATA INCLUDING MAIN FORM FIELDS ==========
+async function fetchYarnDetailsByDispo(dispoNumber) {
+    try {
+        const encodedDispoNumber = encodeURIComponent(dispoNumber);
+        const response = await fetch(`/main/api/dispo/fetch-for-loom-production/${encodedDispoNumber}`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // ✅ ADDED: Set PO number in dropdown FIRST
+            if (data.dispoInfo && data.dispoInfo.po_number) {
+                const poSelect = document.getElementById('poNumber');
+                if (poSelect) {
+                    // Ensure PO dropdown is populated before setting value
+                    await fetchPONumbers(); // Refresh PO list
+                    
+                    // Small delay to ensure dropdown is populated
+                    setTimeout(() => {
+                        poSelect.value = data.dispoInfo.po_number;
+                        console.log('Set PO Number:', data.dispoInfo.po_number);
+                    }, 100);
+                }
+            }
+            
+            // Set dispo number in dropdown
+            const dispoSelect = document.getElementById('dispoNumber');
+            if (dispoSelect) {
+                dispoSelect.value = dispoNumber;
+            }
+            
+            // Populate Dispo Information Section Fields
+            if (data.dispoInfo) {
+                populateDispoInformationFields(data.dispoInfo);
+            }
+            
+            // Populate yarn tables (existing functionality)
+            populateWarpYarnTable(data.warpDetails);
+            populateWeftYarnTable(data.weftDetails);
+            calculateYarnTotals();
+            
+            // Show success message with PO info
+            console.log('Successfully loaded dispo data:', {
+                ...data.sourceInfo,
+                fieldsPopulated: Object.keys(data.dispoInfo || {}).length
+            });
+            
+        } else {
+            alert('Failed to load dispo data: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error fetching dispo data:', error);
+        alert('Failed to load dispo data: ' + error.message);
+    }
+}
+
+// ========== CORRECTED: POPULATE DISPO INFORMATION SECTION FIELDS ==========
+function populateDispoInformationFields(dispoInfo) {
+    const fieldMappings = {
+        // ✅ Main Fields (Top Section)
+        'buyer': dispoInfo.buyer,
+        'customerRef': dispoInfo.customer_ref,
+        'weave': dispoInfo.weave,
+        
+        // Dispo Information Section (Column 1)
+        'poIssueDate': dispoInfo.po_issue_date,
+        'poReceivedDate': dispoInfo.po_received_date,
+        'bulkFabricDeliveryDate': dispoInfo.bulk_fabric_delivery_date,
+        'accountHolder': dispoInfo.account_holder,
+        'marketingRefTrackingNo': dispoInfo.marketing_ref_tracking_no,
+        'finishType': dispoInfo.finish_type,
+        
+        // Column 2 (Additional fields)
+        'lowerBeamCrimp': dispoInfo.lower_beam_crimp,
+        'fabricComposition': dispoInfo.fabric_composition,
+        'productionConstruction': dispoInfo.production_construction,
+        
+        // Dispo Information Section (Column 2 continued)
+        'endUse': dispoInfo.end_use,
+        'orderType': dispoInfo.order_type,
+        'yarnType': dispoInfo.yarn_type,
+        'processType': dispoInfo.process_type,
+        'poQuantityYds': dispoInfo.po_quantity_yds,
+        'dispoQuantityYds': dispoInfo.dispo_quantity_yds,
+        
+        // Column 3 (Production metrics)
+        'requiredPrintProductionMtr': dispoInfo.required_print_production_mtr,
+        'requiredGreigeProductionMtr': dispoInfo.required_greige_production_mtr,
+        'requiredLoomProductionMtr': dispoInfo.required_loom_production_mtr,
+        'requiredWarpLengthMtr': dispoInfo.required_warp_length_mtr,
+        'cuttableWidthInch': dispoInfo.cuttable_width_inch,
+        'greyWidthInch': dispoInfo.grey_width_inch,
+        'beamTotalEnds': dispoInfo.beam_total_ends,
+        'reedCount': dispoInfo.reed_count
+    };
+
+    // Populate each field if it exists and has a value
+    let populatedCount = 0;
+    for (const [fieldId, value] of Object.entries(fieldMappings)) {
+        const field = document.getElementById(fieldId);
+        if (field && value !== null && value !== undefined) {
+            if (field.type === 'date' && value) {
+                try {
+                    // Format date properly for date input fields
+                    field.value = new Date(value).toISOString().split('T')[0];
+                    populatedCount++;
+                } catch (e) {
+                    console.warn(`Failed to parse date for ${fieldId}:`, value);
+                    field.value = '';
+                }
+            } else if (field.tagName === 'TEXTAREA') {
+                field.value = value;
+                populatedCount++;
+            } else if (field.type !== 'date') {
+                field.value = value;
+                populatedCount++;
+            }
+        }
+    }
+    
+    console.log(`Populated ${populatedCount} Dispo Information fields from dispo data`);
+}
+
+    function populateWarpYarnTable(warpDetails) {
+        const tbody = document.querySelector('#warpYarnDetailsTable tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (warpDetails.length === 0) {
+            addEmptyWarpRow();
+            return;
+        }
+        warpDetails.forEach((detail, index) => {
+            const row = tbody.insertRow();
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td><input type="text" class="form-control" name="warp_count[]" value="${detail.count || ''}" readonly></td>
+                <td><input type="text" class="form-control" name="warp_ply[]" value="${detail.warp_ply || ''}" readonly></td>
+                <td><input type="text" class="form-control" name="warp_cal_count[]" value="${detail.cal_count || ''}" readonly></td>
+                <td><input type="text" class="form-control" name="warp_color_name[]" value="${detail.warp_color_name || ''}" readonly></td>
+                <td><input type="text" class="form-control" name="warp_ld_number[]" value="${detail.ld_number || ''}" readonly></td>
+                <td><input type="text" class="form-control" name="warp_yarn_type[]" value="${detail.yarn_type || ''}" readonly></td>
+                <td><input type="text" class="form-control" name="warp_yarn_per_repeat[]" value="${detail.yarn_per_repeat || ''}" readonly></td>
+                <td><input type="text" class="form-control result-field" name="warp_dyed_qty[]" value="${parseFloat(detail.dyed_qty_kg || 0).toFixed(2)}" readonly></td>
+                <td><input type="text" class="form-control result-field" name="warp_grey_qty[]" value="${parseFloat(detail.grey_qty_kg || 0).toFixed(2)}" readonly></td>
+                <td><input type="text" class="form-control result-field" name="warp_no_of_cones[]" value="${detail.no_of_cones || ''}" readonly></td>
+                <td><input type="text" class="form-control result-field" name="warp_cone_length[]" value="${detail.cone_length || ''}" readonly></td>
+            `;
+        });
+        attachCalculationListeners();
+    }
+
+    function populateWeftYarnTable(weftDetails) {
+        const tbody = document.querySelector('#weftYarnDetailsTable tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (weftDetails.length === 0) {
+            addEmptyWeftRow();
+            return;
+        }
+        weftDetails.forEach((detail, index) => {
+            const row = tbody.insertRow();
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td><input type="text" class="form-control" name="weft_count[]" value="${detail.count || ''}" readonly></td>
+                <td><input type="text" class="form-control" name="weft_ply[]" value="${detail.weft_ply || ''}" readonly></td>
+                <td><input type="text" class="form-control" name="weft_cal_count[]" value="${detail.cal_count || ''}" readonly></td>
+                <td><input type="text" class="form-control" name="weft_color_name[]" value="${detail.weft_color_name || ''}" readonly></td>
+                <td><input type="text" class="form-control" name="weft_ld_number[]" value="${detail.ld_number || ''}" readonly></td>
+                <td><input type="text" class="form-control" name="weft_yarn_type[]" value="${detail.yarn_type || ''}" readonly></td>
+                <td><input type="text" class="form-control" name="weft_yarn_per_repeat[]" value="${detail.yarn_per_repeat || ''}" readonly></td>
+                <td><input type="text" class="form-control result-field" name="weft_dyed_qty[]" value="${parseFloat(detail.dyed_qty_kg || 0).toFixed(2)}" readonly></td>
+                <td><input type="text" class="form-control result-field" name="weft_grey_qty[]" value="${parseFloat(detail.grey_qty_kg || 0).toFixed(2)}" readonly></td>
+            `;
+        });
+        attachCalculationListeners();
+    }
+
+    // ========== ADD EMPTY ROWS ==========
+    function addEmptyWarpRow() {
+        const tbody = document.querySelector('#warpYarnDetailsTable tbody');
+        if (!tbody) return;
+        const rowCount = tbody.querySelectorAll('tr').length;
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${rowCount + 1}</td>
+            <td><input type="text" class="form-control" name="warp_count[]" readonly></td>
+            <td><input type="text" class="form-control" name="warp_ply[]" readonly></td>
+            <td><input type="text" class="form-control" name="warp_cal_count[]" readonly></td>
+            <td><input type="text" class="form-control" name="warp_color_name[]" readonly></td>
+            <td><input type="text" class="form-control" name="warp_ld_number[]" readonly></td>
+            <td><input type="text" class="form-control" name="warp_yarn_type[]" readonly></td>
+            <td><input type="text" class="form-control" name="warp_yarn_per_repeat[]" readonly></td>
+            <td><input type="text" class="form-control result-field" name="warp_dyed_qty[]" readonly></td>
+            <td><input type="text" class="form-control result-field" name="warp_grey_qty[]" readonly></td>
+            <td><input type="text" class="form-control result-field" name="warp_no_of_cones[]" readonly></td>
+            <td><input type="text" class="form-control result-field" name="warp_cone_length[]" readonly></td>
+        `;
+        attachCalculationListeners();
+    }
+
+    function addEmptyWeftRow() {
+        const tbody = document.querySelector('#weftYarnDetailsTable tbody');
+        if (!tbody) return;
+        const rowCount = tbody.querySelectorAll('tr').length;
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${rowCount + 1}</td>
+            <td><input type="text" class="form-control" name="weft_count[]" readonly></td>
+            <td><input type="text" class="form-control" name="weft_ply[]" readonly></td>
+            <td><input type="text" class="form-control" name="weft_cal_count[]" readonly></td>
+            <td><input type="text" class="form-control" name="weft_color_name[]" readonly></td>
+            <td><input type="text" class="form-control" name="weft_ld_number[]" readonly></td>
+            <td><input type="text" class="form-control" name="weft_yarn_type[]" readonly></td>
+            <td><input type="text" class="form-control" name="weft_yarn_per_repeat[]" readonly></td>
+            <td><input type="text" class="form-control result-field" name="weft_dyed_qty[]" readonly></td>
+            <td><input type="text" class="form-control result-field" name="weft_grey_qty[]" readonly></td>
+        `;
+        attachCalculationListeners();
+    }
+
+    // ========== ADD EMPTY LOOM PRODUCTION ROW (UPDATED) ==========
+function addEmptyLoomProductionRow() {
+    const tbody = document.querySelector('#loomProductionBreakdownTable tbody');
+    if (!tbody) return;
+    
+    // Count rows excluding total row
+    const dataRows = tbody.querySelectorAll('tr:not(.total-row)');
+    const rowCount = dataRows.length;
+    
+    // Insert before total row if it exists
+    const totalRow = tbody.querySelector('.total-row');
+    const insertIndex = totalRow ? totalRow.rowIndex - 1 : -1;
+    
+    const row = tbody.insertRow(insertIndex);
+    row.innerHTML = `
+        <td>${rowCount + 1}</td>
+        <td><input type="date" class="form-control" name="loom_production_date[]"></td>
+        <td><input type="number" class="form-control" name="run_loom[]" min="0" step="1"></td>
+        <td><input type="number" step="0.01" class="form-control" name="loom_production_quantity_yds[]" oninput="calculateLoomProductionTotals()"></td>
+    `;
+    
+    // Recalculate serial numbers
+    updateLoomProductionSerialNumbers();
+}
+
+// ========== UPDATE SERIAL NUMBERS ==========
+function updateLoomProductionSerialNumbers() {
+    const tbody = document.querySelector('#loomProductionBreakdownTable tbody');
+    if (!tbody) return;
+    
+    const dataRows = tbody.querySelectorAll('tr:not(.total-row)');
+    dataRows.forEach((row, index) => {
+        const firstCell = row.cells[0];
+        if (firstCell) {
+            firstCell.textContent = index + 1;
+        }
+    });
+}
+
+    // ========== LOAD LOOM PRODUCTION RECORD (UPDATED) ==========
+async function loadLoomProductionRecord(recordId) {
+    try {
+        const response = await fetch(`/main/api/loom-production/fetch-by-id/${recordId}`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+        const data = await response.json();
+        currentRecordId = data.id;
+        
+        const form = document.getElementById('loomProductionForm');
+        if (form) {
+            for (const [key, value] of Object.entries(data)) {
+                // Skip breakdownData as we'll handle it separately
+                if (key === 'breakdownData') continue;
+                
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) {
+                    if (input.type === 'date' && value) {
+                        try {
+                            input.value = new Date(value).toISOString().split('T')[0];
+                        } catch (e) {
+                            input.value = '';
+                        }
+                    } else {
+                        input.value = value || '';
+                    }
+                }
+            }
+        }
+        
+        // ✅ ADDED: Populate breakdown table
+        if (data.breakdownData) {
+            populateLoomProductionBreakdownTable(data.breakdownData);
+        }
+        
+        calculateYarnTotals();
+        
+        const modalEl = document.getElementById('savedRecordsModal');
+        if (modalEl) {
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+        }
+        
+        initializeFormFromTop();
+        
+    } catch (error) {
+        console.error('Error loading loom production record:', error);
+        alert('Failed to load record: ' + error.message);
+    }
+}
+
+    // ========== DOM CONTENT LOADED ==========
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeFormFromTop();
+        setupKeyboardNavigation();
+        
+        // Collapsible functionality
+        document.getElementById('loomProductionBreakdownToggle')?.addEventListener('click', function(e) {
+            if (!['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA'].includes(e.target.tagName)) {
+                toggleCollapsible('loomProductionBreakdownToggle', 'loomProductionBreakdownContent');
+            }
+        });
+
+        document.getElementById('dispoDetailsToggle')?.addEventListener('click', function(e) {
+            if (!['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA'].includes(e.target.tagName)) {
+                toggleCollapsible('dispoDetailsToggle', 'dispoDetailsContent');
+            }
+        });
+
+        // Loom Production Breakdown table row management (UPDATED)
+document.getElementById('addLoomProductionRowBtn')?.addEventListener('click', function() {
+    const tbody = document.querySelector('#loomProductionBreakdownTable tbody');
+    if (!tbody) return;
+    
+    const dataRows = tbody.querySelectorAll('tr:not(.total-row)');
+    if (dataRows.length < 30) {
+        addEmptyLoomProductionRow();
+        calculateLoomProductionTotals();
+    } else {
+        alert('Maximum 30 rows allowed');
+    }
+});
+
+        document.getElementById('deleteLoomProductionRowBtn')?.addEventListener('click', function() {
+    const tbody = document.querySelector('#loomProductionBreakdownTable tbody');
+    if (!tbody) return;
+    
+    const dataRows = tbody.querySelectorAll('tr:not(.total-row)');
+    if (dataRows.length > 1) {
+        // Delete last data row
+        dataRows[dataRows.length - 1].remove();
+        updateLoomProductionSerialNumbers();
+        calculateLoomProductionTotals();
+    } else {
+        alert('At least one row is required');
+    }
+});
+
+        // Warp/Weft table management
+        document.getElementById('addWarpRowBtn')?.addEventListener('click', function() {
+            const tbody = document.querySelector('#warpYarnDetailsTable tbody');
+            if (tbody && tbody.querySelectorAll('tr').length < 30) addEmptyWarpRow();
+        });
+        document.getElementById('deleteWarpRowBtn')?.addEventListener('click', function() {
+            const tbody = document.querySelector('#warpYarnDetailsTable tbody');
+            const rows = tbody?.querySelectorAll('tr');
+            if (rows && rows.length > 1) {
+                tbody.deleteRow(rows.length - 1);
+                calculateYarnTotals();
+            }
+        });
+
+        document.getElementById('addWeftRowBtn')?.addEventListener('click', function() {
+            const tbody = document.querySelector('#weftYarnDetailsTable tbody');
+            if (tbody && tbody.querySelectorAll('tr').length < 30) addEmptyWeftRow();
+        });
+        document.getElementById('deleteWeftRowBtn')?.addEventListener('click', function() {
+            const tbody = document.querySelector('#weftYarnDetailsTable tbody');
+            const rows = tbody?.querySelectorAll('tr');
+            if (rows && rows.length > 1) {
+                tbody.deleteRow(rows.length - 1);
+                calculateYarnTotals();
+            }
+        });
+
+        // Clear form (UPDATED)
+document.getElementById('clearFormBtn')?.addEventListener('click', function() {
+    const form = document.getElementById('loomProductionForm');
+    if (form) form.reset();
+    currentRecordId = null;
+    
+    ['loomProductionBreakdownTable', 'warpYarnDetailsTable', 'weftYarnDetailsTable'].forEach(id => {
+        const tbody = document.querySelector(`#${id} tbody`);
+        if(tbody) tbody.innerHTML = '';
+    });
+    
+    addEmptyLoomProductionRow();
+    addLoomProductionTotalRow(); // ✅ ADD THIS LINE
+    calculateLoomProductionTotals(); // ✅ ADD THIS LINE
+    addEmptyWarpRow();
+    addEmptyWeftRow();
+    
+    document.getElementById('searchLoomProductionDropdown').innerHTML = '<i class="fas fa-search"></i> Search Loom Production Data';
+    document.getElementById('searchDispoBreakdownDropdown').innerHTML = '<i class="fas fa-search"></i> Search Dispo Breakdown';
+    
+    calculateYarnTotals();
+    initializeFormFromTop();
+});
+
+       // ========== SAVE TO MYSQL (CORRECTED WITH BREAKDOWN) ==========
+document.getElementById('saveToMySQLBtn')?.addEventListener('click', async function() {
+    try {
+        const form = document.getElementById('loomProductionForm');
+        const formData = new FormData(form);
+        const data = {};
+        
+        // Collect main form data
+        for (let [key, value] of formData.entries()) {
+            if (!key.includes('[]')) {
+                data[key] = value;
+            }
+        }
+        
+        // Collect breakdown data
+        const breakdownData = [];
+        const breakdownRows = document.querySelectorAll('#loomProductionBreakdownTable tbody tr');
+        breakdownRows.forEach(row => {
+            const dateInput = row.querySelector('input[name="loom_production_date[]"]');
+            const runLoomInput = row.querySelector('input[name="run_loom[]"]');
+            const qtyInput = row.querySelector('input[name="loom_production_quantity_yds[]"]');
+            
+            if ((dateInput || runLoomInput || qtyInput) && (dateInput?.value || runLoomInput?.value || qtyInput?.value)) {
+                breakdownData.push({
+                    loom_production_date: dateInput?.value || null,
+                    run_loom: runLoomInput?.value || null,
+                    loom_production_quantity_yds: qtyInput?.value || null
+                });
+            }
+        });
+        
+        const payload = { 
+            formData: data,
+            breakdownData: breakdownData
+        };
+        
+        const response = await fetch('/main/api/loom-production/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || `HTTP error! Status: ${response.status}`);
+        
+        currentRecordId = result.id;
+        alert('Data saved successfully with breakdown records!');
+        initializeFormFromTop();
+    } catch (error) {
+        console.error('Error saving data:', error);
+        alert('Failed to save data: ' + error.message);
+    }
+});
+
+// ========== UPDATE MYSQL (CORRECTED WITH BREAKDOWN) ==========
+document.getElementById('updateToMySQLBtn')?.addEventListener('click', async function() {
+    if (!currentRecordId) {
+        alert('No record selected for update.');
+        return;
+    }
+    try {
+        const form = document.getElementById('loomProductionForm');
+        const formData = new FormData(form);
+        const data = {};
+        
+        // Collect main form data
+        for (let [key, value] of formData.entries()) {
+            if (!key.includes('[]')) {
+                data[key] = value;
+            }
+        }
+        
+        // Collect breakdown data
+        const breakdownData = [];
+        const breakdownRows = document.querySelectorAll('#loomProductionBreakdownTable tbody tr');
+        breakdownRows.forEach(row => {
+            const dateInput = row.querySelector('input[name="loom_production_date[]"]');
+            const runLoomInput = row.querySelector('input[name="run_loom[]"]');
+            const qtyInput = row.querySelector('input[name="loom_production_quantity_yds[]"]');
+            
+            if ((dateInput || runLoomInput || qtyInput) && (dateInput?.value || runLoomInput?.value || qtyInput?.value)) {
+                breakdownData.push({
+                    loom_production_date: dateInput?.value || null,
+                    run_loom: runLoomInput?.value || null,
+                    loom_production_quantity_yds: qtyInput?.value || null
+                });
+            }
+        });
+        
+        const payload = { 
+            formData: data,
+            breakdownData: breakdownData
+        };
+        
+        const response = await fetch(`/main/api/loom-production/update/${currentRecordId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        alert('Data updated successfully with breakdown records!');
+        initializeFormFromTop();
+    } catch (error) {
+        console.error('Error updating data:', error);
+        alert('Failed to update data: ' + error.message);
+    }
+});
+
+
+        // Export to Excel
+        document.getElementById('saveToExcelBtn')?.addEventListener('click', async function() {
+            try {
+                const response = await fetch('/main/api/loom-production/export-excel', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'loom_production_records.csv';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                console.error('Error exporting data:', error);
+                alert('Failed to export data: ' + error.message);
+            }
+        });
+
+        // Saved Records
+        document.getElementById('savedLoomProductionBtn')?.addEventListener('click', async function() {
+            try {
+                const response = await fetch('/main/api/loom-production/saved-records', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                const records = await response.json();
+                displaySavedRecords(records);
+            } catch (error) {
+                console.error('Error fetching saved records:', error);
+                alert('Failed to fetch saved records: ' + error.message);
+            }
+        });
+
+        // Delete Record
+        document.getElementById('deleteLoomProductionBtn')?.addEventListener('click', async function() {
+            const recordId = prompt('Enter the ID of the record to delete:');
+            if (!recordId) return;
+            if (!confirm(`Are you sure you want to delete record ID: ${recordId}?`)) return;
+
+            try {
+                const response = await fetch(`/main/api/loom-production/delete/${recordId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                alert('Record deleted successfully!');
+                if (currentRecordId == recordId) document.getElementById('clearFormBtn').click();
+            } catch (error) {
+                console.error('Error deleting record:', error);
+                alert('Failed to delete record: ' + error.message);
+            }
+        });
+        
+        // Initialize Loom Production Breakdown table with total row
+const loomProductionTbody = document.querySelector('#loomProductionBreakdownTable tbody');
+if (loomProductionTbody && loomProductionTbody.rows.length > 0) {
+    addLoomProductionTotalRow();
+    calculateLoomProductionTotals();
+}
+
+        // Initial calls
+        calculateYarnTotals();
+        attachCalculationListeners();
+        setTimeout(() => {
+            fetchPONumbers();
+            fetchDispoNumbers();
+            fetchDispoNumbersForBreakdown();
+            fetchLoomProductionRecords();
+        }, 100);
+    });
+
+    // ========== DISPLAY SAVED RECORDS MODAL ==========
+    function displaySavedRecords(records) {
+        const modalHTML = `
+        <div class="modal fade" id="savedRecordsModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content" style="background-color: #252525; color: #e0e0e0;">
+                    <div class="modal-header" style="border-bottom: 1px solid #3a3a3a;">
+                        <h5 class="modal-title">Saved Loom Production Records</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Weaving Date</th>
+                                        <th>Loom No</th>
+                                        <th>Buyer</th>
+                                        <th>Dispo No</th>
+                                        <th>PO No</th>
+                                        <th>Construction</th>
+                                        <th>Created At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${records.map(record => `
+                                    <tr>
+                                        <td>${record.id}</td>
+                                        <td>${record.weaving_date || 'N/A'}</td>
+                                        <td>${record.loom_no || 'N/A'}</td>
+                                        <td>${record.buyer || 'N/A'}</td>
+                                        <td>${record.dispo_number || 'N/A'}</td>
+                                        <td>${record.po_number || 'N/A'}</td>
+                                        <td>${record.production_construction || 'N/A'}</td>
+                                        <td>${new Date(record.created_at).toLocaleDateString()}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary" onclick="loadLoomProductionRecord(${record.id})">Load</button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteRecordFromModal(${record.id})">Delete</button>
+                                        </td>
+                                    </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid #3a3a3a;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-success" onclick="document.getElementById('saveToExcelBtn').click()">Export All</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+
+        const existingModal = document.getElementById('savedRecordsModal');
+        if (existingModal) existingModal.remove();
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        const modal = new bootstrap.Modal(document.getElementById('savedRecordsModal'));
+        modal.show();
+    }
+
+    async function deleteRecordFromModal(recordId) {
+        if (!confirm(`Delete record ID: ${recordId}?`)) return;
+        try {
+            const response = await fetch(`/main/api/loom-production/delete/${recordId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            if (!response.ok) throw new Error(`Status: ${response.status}`);
+            alert('Record deleted successfully!');
+            
+            const modalEl = document.getElementById('savedRecordsModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if(modal) modal.hide();
+            document.getElementById('savedLoomProductionBtn').click();
+            
+            if (currentRecordId == recordId) document.getElementById('clearFormBtn').click();
+        } catch (error) {
+            console.error('Error deleting record:', error);
+            alert('Failed to delete record: ' + error.message);
+        }
+    }
+    </script>
+</body>
+</html>

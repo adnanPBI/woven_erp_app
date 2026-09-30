@@ -1,0 +1,118 @@
+{
+  "configVersion": "1.0",
+  "window": {
+    "start": "2024-01-01",
+    "end": "2026-09-22"
+  },
+  "notes": "Exact source tabs supplied by user; rebuild 2024-01-01 through 2026-09-22 inclusive. Preserve all retained 2023 data.",
+  "profiles": [
+    {
+      "id": "po",
+      "label": "PO",
+      "sourceFile": "po database.csv",
+      "spreadsheetId": "1GarMsII80e2BQ_unfDLd7MiWAPa5IIpyIhId8HsiAYM",
+      "sheetName": "po database",
+      "headerRow": 1,
+      "dateColumns": [
+        "PO Issue Date"
+      ],
+      "sheetId": 0
+    },
+    {
+      "id": "dispo",
+      "label": "Dispo",
+      "sourceFile": "Dispo create form.csv",
+      "spreadsheetId": "1ertsDJb00tZaSqYpeHW2gBAgoF-A_19eA8T6ye9MPfI",
+      "sheetName": "rnd database",
+      "headerRow": 2,
+      "dateColumns": [
+        "PO Received Date"
+      ],
+      "sheetId": 0
+    },
+    {
+      "id": "yarn-receive",
+      "label": "Yarn Receive",
+      "sourceFile": "Greige yarn receive.csv",
+      "spreadsheetId": "1qzBz2t_HG0vKcWw7w4Fbbdvyk9cQAYyVKRB0XbT2b-I",
+      "sheetName": "yarn received database2",
+      "headerRow": 2,
+      "dateColumns": [
+        "Received Date"
+      ],
+      "sheetId": 1953265917
+    },
+    {
+      "id": "yarn-issue",
+      "label": "Yarn Issue",
+      "sourceFile": "Greige yarn issue.csv",
+      "spreadsheetId": "1MYeGqh9yoBRMMRUUk0X3JsZ4oke-AaUgdJ2iWw7hIrs",
+      "sheetName": "Yarn issue database2",
+      "headerRow": 2,
+      "dateColumns": [
+        "Issue Date"
+      ],
+      "sheetId": 1175924799
+    },
+    {
+      "id": "warping",
+      "label": "Warping",
+      "sourceFile": "Warping database.csv",
+      "spreadsheetId": "1UGwnr100wKUjUBx-advCEim4RU2nBMa01cSgvQncw4w",
+      "sheetName": "database Warping",
+      "headerRow": 2,
+      "dateColumns": [
+        "Warping Date"
+      ],
+      "sheetId": 0
+    },
+    {
+      "id": "sizing",
+      "label": "Sizing",
+      "sourceFile": "sizing database.csv",
+      "spreadsheetId": "19M9-dHKQzfoho4ebbXDBvVlOqwcTil0xBImU-rwDx1o",
+      "sheetName": "database sizing",
+      "headerRow": 2,
+      "dateColumns": [
+        "Sizing Date"
+      ],
+      "sheetId": 0
+    },
+    {
+      "id": "loom",
+      "label": "Loom",
+      "sourceFile": "Loom production database.csv",
+      "spreadsheetId": "1k1EGfw2JBEvW45dabZbu_Ph_UXpZyzsDm5Y8npe6NhY",
+      "sheetName": "Copy of database loom prod",
+      "headerRow": 2,
+      "dateColumns": [
+        "Weaving Dates"
+      ],
+      "sheetId": 1227379397
+    },
+    {
+      "id": "folding",
+      "label": "Folding",
+      "sourceFile": "Folding production database.csv",
+      "spreadsheetId": "1Dy8IMiurIRSkTqfO1_4XQ3dxg8mNkyiRl5I88ZVFSi8",
+      "sheetName": "folding database",
+      "headerRow": 2,
+      "dateColumns": [
+        "Folding Production Date"
+      ],
+      "sheetId": 0
+    },
+    {
+      "id": "greige-delivery",
+      "label": "Greige Delivery",
+      "sourceFile": "Greige delivery database.csv",
+      "spreadsheetId": "1UpcukBPiaJFUYBh1nDLjNSMIMxIjprc0JafroaGiDgI",
+      "sheetName": "greige deliverydatabase",
+      "headerRow": 2,
+      "dateColumns": [
+        "Delivery Date"
+      ],
+      "sheetId": 0
+    }
+  ]
+}

@@ -6,60 +6,248 @@
     <title>Weaving Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-bg: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
-            --container-bg: #252525;
-            --card-bg: #353535;
-            --card-hover-bg: #454545;
-            --text-color: #e0e0e0;
-            --accent-color: #00c4ff;
-            --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-            --btn-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-            --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            --border-glow: rgba(0, 196, 255, 0.3);
+            --bg: #0f0f12;
+            --bg-secondary: #1a1a20;
+            --fg: #fafafa;
+            --muted: #8a8a9a;
+            --accent-primary: #ff6b4a;
+            --accent-secondary: #4ae0d2;
+            --accent-glow: rgba(255, 107, 74, 0.3);
+            --card: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --gradient-start: #1a0a1e;
+            --gradient-end: #0a1520;
+        }
+
+        /* Theme presets */
+        [data-theme="gunmetal"] {
+            --bg: #1a1d23;
+            --bg-secondary: #252525;
+            --fg: #e0e0e0;
+            --muted: #9ca3af;
+            --accent-primary: #00c4ff;
+            --accent-secondary: #007bff;
+            --accent-glow: rgba(0, 196, 255, 0.3);
+            --card: rgba(48, 48, 48, 0.7);
+            --card-border: rgba(255, 255, 255, 0.05);
+            --gradient-start: #121212;
+            --gradient-end: #1e1e1e;
+        }
+
+        [data-theme="ocean"] {
+            --accent-primary: #0ea5e9;
+            --accent-secondary: #06b6d4;
+            --accent-glow: rgba(14, 165, 233, 0.3);
+            --gradient-start: #0a1f2e;
+            --gradient-end: #0a152e;
+        }
+
+        [data-theme="forest"] {
+            --accent-primary: #10b981;
+            --accent-secondary: #34d399;
+            --accent-glow: rgba(16, 185, 129, 0.3);
+            --gradient-start: #0a1e1a;
+            --gradient-end: #0a150f;
+        }
+
+        [data-theme="sunset"] {
+            --accent-primary: #f59e0b;
+            --accent-secondary: #f97316;
+            --accent-glow: rgba(245, 158, 11, 0.3);
+            --gradient-start: #1e1a0a;
+            --gradient-end: #150a0a;
+        }
+
+        [data-theme="purple"] {
+            --accent-primary: #a855f7;
+            --accent-secondary: #c084fc;
+            --accent-glow: rgba(168, 85, 247, 0.3);
+            --gradient-start: #1a0a2e;
+            --gradient-end: #150a20;
+        }
+
+        [data-theme="cyberpunk"] {
+            --accent-primary: #ff0080;
+            --accent-secondary: #00ff9f;
+            --accent-glow: rgba(255, 0, 128, 0.3);
+            --gradient-start: #2e0a1e;
+            --gradient-end: #0a2e1e;
+        }
+
+        [data-theme="solarized-dark"] {
+            --bg: #002b36;
+            --bg-secondary: #073642;
+            --fg: #839496;
+            --muted: #586e75;
+            --accent-primary: #268bd2;
+            --accent-secondary: #2aa198;
+            --accent-glow: rgba(38, 139, 210, 0.3);
+            --card: rgba(7, 54, 66, 0.6);
+            --card-border: rgba(88, 110, 117, 0.3);
+            --gradient-start: #073642;
+            --gradient-end: #002b36;
+        }
+
+        [data-theme="solarized-light"] {
+            --bg: #fdf6e3;
+            --bg-secondary: #eee8d5;
+            --fg: #657b83;
+            --muted: #93a1a1;
+            --accent-primary: #268bd2;
+            --accent-secondary: #2aa198;
+            --accent-glow: rgba(38, 139, 210, 0.3);
+            --card: rgba(238, 232, 213, 0.6);
+            --card-border: rgba(147, 161, 161, 0.3);
+            --gradient-start: #eee8d5;
+            --gradient-end: #fdf6e3;
+        }
+
+        [data-theme="nord"] {
+            --bg: #2e3440;
+            --bg-secondary: #3b4252;
+            --fg: #eceff4;
+            --muted: #d8dee9;
+            --accent-primary: #88c0d0;
+            --accent-secondary: #81a1c1;
+            --accent-glow: rgba(136, 192, 208, 0.3);
+            --card: rgba(59, 66, 82, 0.6);
+            --card-border: rgba(216, 222, 233, 0.2);
+            --gradient-start: #3b4252;
+            --gradient-end: #2e3440;
+        }
+
+        [data-theme="dracula"] {
+            --bg: #282a36;
+            --bg-secondary: #44475a;
+            --fg: #f8f8f2;
+            --muted: #6272a4;
+            --accent-primary: #ff79c6;
+            --accent-secondary: #bd93f9;
+            --accent-glow: rgba(255, 121, 198, 0.3);
+            --card: rgba(68, 71, 90, 0.6);
+            --card-border: rgba(98, 114, 164, 0.3);
+            --gradient-start: #44475a;
+            --gradient-end: #282a36;
+        }
+
+        [data-theme="monokai"] {
+            --bg: #272822;
+            --bg-secondary: #3e3d32;
+            --fg: #f8f8f2;
+            --muted: #75715e;
+            --accent-primary: #f92672;
+            --accent-secondary: #66d9ef;
+            --accent-glow: rgba(249, 38, 114, 0.3);
+            --card: rgba(62, 61, 50, 0.6);
+            --card-border: rgba(117, 113, 94, 0.3);
+            --gradient-start: #3e3d32;
+            --gradient-end: #272822;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
-            background: var(--primary-bg);
-            font-family: 'Poppins', sans-serif;
-            color: var(--text-color);
-            margin: 0;
-            padding: 12px;
-            box-sizing: border-box;
-            height: 100vh;
-            overflow: hidden;
-            background-attachment: fixed;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--bg) 50%, var(--gradient-end) 100%);
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            transition: background 0.5s ease;
+        }
+
+        .gradient-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.4;
+            z-index: -1;
+            pointer-events: none;
+            transition: background 0.5s ease;
+        }
+
+        .orb-1 {
+            width: 600px;
+            height: 600px;
+            background: var(--accent-primary);
+            top: -200px;
+            right: -200px;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: var(--accent-secondary);
+            bottom: -150px;
+            left: -150px;
+            animation: float 25s ease-in-out infinite reverse;
+        }
+
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: #9b6dff;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -30px) scale(1.05); }
+            50% { transform: translate(-20px, 20px) scale(0.95); }
+            75% { transform: translate(20px, 10px) scale(1.02); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.5; transform: translate(-50%, -50%) scale(1.2); }
+        }
+
+        .glass-card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
         }
 
         .main-container {
-            background: var(--container-bg);
             border-radius: 20px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
             padding: 15px;
-            border: 1px solid #3a3a3a;
-            height: 100%;
+            border: 1px solid var(--card-border);
+            height: 100vh;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
             position: relative;
             overflow: hidden;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(0, 196, 255, 0.03) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(0, 196, 255, 0.03) 0%, transparent 20%);
-        }
-
-        .main-container::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.03) 50%, transparent 51%);
-            background-size: 10px 10px;
-            pointer-events: none;
+            background: var(--card);
+            backdrop-filter: blur(20px);
         }
 
         .header-controls {
@@ -69,11 +257,11 @@
             margin-bottom: 15px;
             flex-shrink: 0;
             background: rgba(0, 0, 0, 0.2);
-            padding: 10px 15px;
+            padding: 15px 20px;
             border-radius: 15px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             position: relative;
-            overflow: visible; /* Changed from hidden to visible to allow dropdowns to show */
+            overflow: visible;
         }
 
         .header-controls::after {
@@ -83,54 +271,79 @@
             left: 15%;
             width: 70%;
             height: 1px;
-            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
         }
 
         .header-controls h1 {
-            font-size: 1.5rem;
+            font-size: 2rem;
             font-weight: 700;
-            color: var(--text-color);
-            text-shadow: var(--text-shadow);
             margin: 0;
-            background: linear-gradient(45deg, #e0e0e0, #ffffff);
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             position: relative;
             letter-spacing: 1px;
             white-space: nowrap;
-        }
-
-        .header-controls h1::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 40%;
-            height: 3px;
-            background: linear-gradient(90deg, var(--accent-color), transparent);
-            border-radius: 3px;
+            transition: all 0.3s ease;
         }
 
         .header-controls .btn-group {
             display: flex;
             align-items: center;
+            gap: 8px; /* EQUAL SPACING BETWEEN ALL BUTTONS */
             flex-wrap: nowrap;
         }
 
+        /* BASE BUTTON STYLES - NO OVERLAP */
         .header-controls .btn {
-            border-radius: 10px;
+            border-radius: 12px;
             transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             color: #fff;
-            box-shadow: var(--btn-shadow);
-            font-size: 0.85rem;
-            padding: 6px 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            font-size: 0.9rem;
+            padding: 10px 20px;
             position: relative;
             overflow: hidden;
             z-index: 1;
             font-weight: 600;
             white-space: nowrap;
-            margin-left: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            margin: 0; /* REMOVE ANY MARGIN */
+        }
+
+        /* DISTINCT GRADIENT FOR USER PRIVILEGE - YELLOW/GOLD */
+        #userPrivilegeBtn {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.4), rgba(255, 152, 0, 0.4));
+            border-color: rgba(255, 193, 7, 0.5);
+        }
+
+        #userPrivilegeBtn:hover {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.6), rgba(255, 152, 0, 0.6));
+            box-shadow: 0 12px 30px rgba(255, 193, 7, 0.4);
+        }
+
+        /* DISTINCT GRADIENT FOR REPORT GENERATOR - BLUE/PURPLE */
+        .btn-secondary {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(139, 92, 246, 0.4)) !important;
+            border-color: rgba(99, 102, 241, 0.5) !important;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.6), rgba(139, 92, 246, 0.6)) !important;
+            box-shadow: 0 12px 30px rgba(99, 102, 241, 0.4) !important;
+        }
+
+        /* DISTINCT GRADIENT FOR LOGOUT - RED/PINK */
+        #logoutBtn {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.4), rgba(236, 72, 153, 0.4));
+            border-color: rgba(220, 53, 69, 0.5);
+        }
+
+        #logoutBtn:hover {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.6), rgba(236, 72, 153, 0.6));
+            box-shadow: 0 12px 30px rgba(220, 53, 69, 0.4);
         }
 
         .header-controls .btn::before {
@@ -140,14 +353,14 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: all 0.5s ease;
             z-index: -1;
         }
 
         .header-controls .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.5);
         }
 
         .header-controls .btn:hover::before {
@@ -155,171 +368,388 @@
         }
 
         .header-controls .btn i {
-            margin-right: 6px;
-            font-size: 0.9em;
+            margin-right: 8px;
+            font-size: 1em;
         }
 
-        .kanban-board {
+        /* Theme Selector Button - BOTTOM RIGHT CORNER */
+        .theme-selector-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            cursor: pointer;
             display: flex;
-            flex-wrap: nowrap;
-            justify-content: flex-start;
-            gap: 6px;
-            flex-grow: 1;
-            overflow: auto;
-            padding: 5px;
-            max-height: calc(100vh - 100px);
-            position: relative;
-            z-index: 1; /* Lower z-index than dropdowns */
-        }
-
-        .kanban-column {
-            flex: 0 0 180px;
-            min-width: 180px;
-            background: rgba(48, 48, 48, 0.7);
-            border-radius: 15px;
-            padding: 12px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            max-height: 100%;
-            overflow-y: auto;
-            position: relative;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
             transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            z-index: 9999;
         }
 
-        .kanban-column:hover {
-            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-glow);
-            border-color: rgba(0, 196, 255, 0.2);
+        .theme-selector-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 12px 35px var(--accent-glow);
         }
 
-        .kanban-column::-webkit-scrollbar {
-            width: 6px;
+        .theme-selector-btn i {
+            color: white;
+            font-size: 1.3rem;
         }
 
-        .kanban-column::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
+        /* Theme Dropdown Menu - POSITIONED ABOVE BUTTON */
+        .theme-dropdown {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            background: rgba(26, 26, 32, 0.98);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 16px;
+            min-width: 300px;
+            max-height: 70vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            z-index: 9998;
+            display: none;
+            animation: slideUp 0.3s ease;
+        }
+
+        .theme-dropdown.show {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .theme-dropdown::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .theme-dropdown::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
             border-radius: 10px;
         }
 
-        .kanban-column::-webkit-scrollbar-thumb {
-            background: rgba(0, 196, 255, 0.3);
+        .theme-dropdown::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
             border-radius: 10px;
         }
 
-        .kanban-column h3 {
+        .theme-dropdown-header {
             font-size: 0.85rem;
             font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
             margin-bottom: 12px;
-            color: var(--accent-color);
-            text-align: center;
-            flex-shrink: 0;
-            text-shadow: var(--text-shadow);
-            position: relative;
             padding-bottom: 8px;
-            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--card-border);
         }
 
-        .kanban-column h3::after {
+        .theme-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 6px;
+        }
+
+        .theme-option:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .theme-option.active {
+            background: rgba(255, 107, 74, 0.1);
+            border: 1px solid rgba(255, 107, 74, 0.3);
+        }
+
+        .theme-color-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .theme-info {
+            flex: 1;
+        }
+
+        .theme-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--fg);
+            margin-bottom: 2px;
+        }
+
+        .theme-description {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        /* TABBED INTERFACE */
+        .tabbed-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 140px);
+            overflow: hidden;
+        }
+
+        .tab-navigation {
+            display: flex;
+            gap: 8px;
+            padding: 15px 20px 0;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.15); /* MORE VISIBLE */
+            overflow-x: auto;
+            flex-shrink: 0;
+        }
+
+        .tab-navigation::-webkit-scrollbar {
+            height: 0px;
+            display: none;
+        }
+
+        .tab-navigation {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        /* WIDER TABS WITH MUCH MORE VISIBLE BORDERS */
+        .tab-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 32px;
+            background: rgba(255, 255, 255, 0.04); /* SLIGHTLY MORE VISIBLE */
+            border: 2px solid rgba(255, 255, 255, 0.2); /* THICKER AND MORE VISIBLE BORDER */
+            border-bottom: none;
+            border-radius: 14px 14px 0 0;
+            color: var(--fg);
+            opacity: 0.8; /* SLIGHTLY HIGHER OPACITY */
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            white-space: nowrap;
+            outline: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* SUBTLE SHADOW FOR DEPTH */
+        }
+
+        .tab-btn::after {
             content: '';
             position: absolute;
-            bottom: 0;
-            left: 25%;
-            width: 50%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
-            border-radius: 2px;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
         }
 
-        .kanban-card {
-            background: var(--card-bg);
-            border-radius: 10px;
-            padding: 10px;
-            margin-bottom: 10px;
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3); /* MORE VISIBLE ON HOVER */
+            transform: translateY(-2px);
+            opacity: 1;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* VISUALLY RICH ACTIVE TAB */
+        .tab-btn.active {
+            background: linear-gradient(135deg, 
+                rgba(255, 107, 74, 0.25),
+                rgba(74, 224, 210, 0.15)
+            );
+            border: 2px solid var(--accent-primary);
+            border-bottom: none;
+            color: var(--accent-primary);
+            opacity: 1;
+            box-shadow: 
+                0 -6px 16px rgba(255, 107, 74, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                0 0 20px rgba(255, 107, 74, 0.15); /* ADDITIONAL GLOW */
+            font-weight: 700;
+        }
+
+        .tab-btn.active::after {
+            transform: scaleX(1);
+        }
+
+        .tab-btn i {
+            font-size: 18px;
+        }
+
+        .tab-content-wrapper {
+            flex: 1;
+            padding: 24px;
+            padding-right: 24px;
+            position: relative;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .tab-content-wrapper::-webkit-scrollbar {
+            width: 0 !important;
+            height: 0 !important;
+            display: none !important;
+        }
+
+        .tab-content-wrapper {
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(10px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        .tab-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding-right: 0;
+        }
+
+        .tab-card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 28px;
+            text-decoration: none;
+            color: var(--fg);
             transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            cursor: pointer;
-            flex-shrink: 0;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             position: relative;
             overflow: hidden;
-            transform-style: preserve-3d;
-            perspective: 950px;
+            display: flex;
+            flex-direction: column;
         }
 
-        .kanban-card::before {
+        .tab-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
             transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.4s ease;
+            transition: transform 0.3s ease;
         }
 
-        .kanban-card:hover:not(.disabled) {
-            transform: translateY(-3px) rotateX(5deg);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
-            background: var(--card-hover-bg);
-            border-color: rgba(0, 196, 255, 0.2);
+        .tab-card:hover:not(.disabled) {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(255, 107, 74, 0.2);
+            border-color: rgba(255, 107, 74, 0.4);
         }
 
-        .kanban-card:hover:not(.disabled)::before {
+        .tab-card:hover:not(.disabled)::before {
             transform: scaleX(1);
         }
 
-        .kanban-card.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            pointer-events: none; /* This prevents all pointer events on disabled cards */
-        }
-
-        .kanban-card a {
-            color: var(--text-color);
-            text-decoration: none;
+        .tab-card-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            background: linear-gradient(135deg,
+                rgba(255, 107, 74, 0.15),
+                rgba(74, 224, 210, 0.05)
+            );
+            border: 1px solid rgba(255, 107, 74, 0.2);
             display: flex;
             align-items: center;
-            font-size: 0.8rem;
-            font-weight: 500;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* This style is for disabled links */
-        .kanban-card.disabled a {
-            pointer-events: none; /* Prevent clicks */
-            color: #808080; /* Grayed out text */
-        }
-
-        .kanban-card i {
-            margin-right: 8px;
-            color: var(--accent-color);
-            font-size: 1em;
-            text-shadow: 0 0 5px rgba(0, 196, 255, 0.5);
+            justify-content: center;
+            margin-bottom: 16px;
             transition: all 0.3s ease;
-            min-width: 16px;
         }
 
-        .kanban-card:hover:not(.disabled) i {
-            transform: scale(1.2);
-            color: #ffffff;
+        .tab-card-icon i {
+            font-size: 28px;
+            color: var(--accent-primary);
+            text-shadow: 0 0 20px rgba(255, 107, 74, 0.6);
+        }
+
+        .tab-card:hover:not(.disabled) .tab-card-icon {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 0 30px rgba(255, 107, 74, 0.3);
+            background: linear-gradient(135deg,
+                rgba(255, 107, 74, 0.25),
+                rgba(74, 224, 210, 0.1)
+            );
+        }
+
+        .tab-card:hover:not(.disabled) .tab-card-icon i {
+            filter: drop-shadow(0 0 10px rgba(255, 107, 74, 0.8));
+        }
+
+        .tab-card h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--fg);
+            margin: 0 0 8px;
+        }
+
+        .tab-card p {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .tab-card.disabled {
+            opacity: 0.4;
+            pointer-events: none;
         }
 
         .modal-content {
             border-radius: 20px;
-            background: #252525;
-            border: 1px solid #3a3a3a;
+            background: var(--bg-secondary);
+            border: 1px solid var(--card-border);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
             overflow: hidden;
         }
 
         .modal-header {
-            background: linear-gradient(90deg, #007bff, #00c4ff);
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
             color: #ffffff;
             border-radius: 20px 20px 0 0;
             border-bottom: none;
@@ -329,12 +759,12 @@
         .modal-header .modal-title {
             font-weight: 600;
             letter-spacing: 0.5px;
-            text-shadow: var(--text-shadow);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
         .modal-body {
             background: #303030;
-            color: var(--text-color);
+            color: var(--fg);
             padding: 20px;
         }
 
@@ -348,7 +778,7 @@
             transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
             border: none;
             color: #fff;
-            box-shadow: var(--btn-shadow);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -362,171 +792,132 @@
         .form-control, .form-select {
             background-color: #404040;
             border: 1px solid #505050;
-            color: var(--text-color);
+            color: var(--fg);
             border-radius: 10px;
             padding: 10px 15px;
         }
 
         .form-control:focus, .form-select:focus {
             background-color: #454545;
-            color: var(--text-color);
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 0.25rem rgba(0, 196, 255, 0.25);
+            color: var(--fg);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 0.25rem rgba(255, 107, 74, 0.25);
         }
 
         .form-label {
-            color: var(--accent-color);
+            color: var(--accent-primary);
             font-weight: 600;
             margin-bottom: 8px;
         }
 
         #userStatus {
-            background: linear-gradient(90deg, #007bff, #00c4ff);
-            padding: 6px 12px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            padding: 10px 16px;
             border-radius: 10px;
             font-weight: 600;
             letter-spacing: 0.5px;
-            font-size: 0.85rem;
-            box-shadow: var(--btn-shadow);
+            font-size: 0.9rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
             border: none;
             white-space: nowrap;
             cursor: pointer;
         }
 
-        /* Hide horizontal scrollbar for the kanban board */
-        .kanban-board::-webkit-scrollbar {
-            height: 8px;
-        }
-
-        .kanban-board::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-
-        .kanban-board::-webkit-scrollbar-thumb {
-            background: rgba(0, 196, 255, 0.3);
-            border-radius: 8px;
-        }
-        
-        /* Add styles for the user display */
         #currentUserDisplay {
-            background: linear-gradient(90deg, #00c4ff, #007bff);
-            padding: 8px 15px;
+            background: linear-gradient(90deg, var(--accent-secondary), var(--accent-primary));
+            padding: 10px 18px;
             border-radius: 10px;
             font-weight: 600;
             letter-spacing: 0.5px;
-            font-size: 0.9rem;
-            box-shadow: var(--btn-shadow);
+            font-size: 0.95rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
             border: none;
             transition: all 0.3s ease;
         }
-        
+
         #currentUserDisplay:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
         }
-        
+
         .active-user-item {
             padding: 8px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .active-user-item:last-child {
             border-bottom: none;
         }
-        
-        /* CRITICAL FIX FOR DROPDOWN */
-        /* Custom dropdown styling to override Bootstrap */
+
         .custom-dropdown {
             position: relative;
             display: inline-block;
         }
-        
+
         .custom-dropdown-menu {
             display: none;
-            position: fixed !important; /* Using fixed positioning */
+            position: fixed !important;
             background: #303030;
-            border: 1px solid rgba(0, 196, 255, 0.2);
+            border: 1px solid rgba(255, 107, 74, 0.2);
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
             min-width: 220px;
             border-radius: 10px;
             padding: 10px;
-            z-index: 99999 !important; /* Extremely high z-index */
+            z-index: 99999 !important;
         }
-        
+
         .custom-dropdown-menu.show {
             display: block;
         }
-        
+
         .custom-dropdown-header {
-            color: var(--accent-color);
+            color: var(--accent-primary);
             font-weight: 600;
-            border-bottom: 1px solid rgba(0, 196, 255, 0.2);
+            border-bottom: 1px solid rgba(255, 107, 74, 0.2);
             padding: 5px 0;
             margin-bottom: 8px;
         }
-        
+
         .custom-dropdown-toggle {
             cursor: pointer;
         }
 
-        /* No-access tooltip style */
-        .no-access-tooltip {
-            position: relative;
-            display: inline-block;
-        }
-
-        .no-access-tooltip .tooltip-text {
-            visibility: hidden;
-            width: 200px;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1000;
-            bottom: 125%;
-            left: 50%;
-            transform: translateX(-50%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .no-access-tooltip:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
-        }
-
+        /* Responsive */
         @media (max-width: 1400px) {
             .header-controls .btn {
-                padding: 5px 10px;
-                font-size: 0.8rem;
+                padding: 9px 18px;
+                font-size: 0.85rem;
             }
             
             .header-controls h1 {
-                font-size: 1.3rem;
+                font-size: 1.8rem;
+            }
+            
+            .tab-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             }
         }
 
         @media (max-width: 1200px) {
-            .kanban-column {
-                flex: 0 0 170px;
-                min-width: 170px;
-            }
-            
             .header-controls h1 {
-                font-size: 1.2rem;
+                font-size: 1.6rem;
             }
             
             .header-controls .btn {
-                font-size: 0.75rem;
-                padding: 5px 8px;
-                margin-left: 5px;
+                font-size: 0.8rem;
+                padding: 8px 16px;
+            }
+            
+            .tab-grid {
+                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             }
         }
 
         @media (max-width: 992px) {
+            .tab-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
             .header-controls {
                 flex-direction: column;
                 align-items: flex-start;
@@ -538,9 +929,22 @@
                 justify-content: space-between;
             }
             
-            .header-controls .btn {
-                margin-left: 0;
-                margin-right: 5px;
+            .tab-btn {
+                font-size: 0.85rem;
+                padding: 14px 24px;
+            }
+
+            .theme-selector-btn {
+                bottom: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+            }
+
+            .theme-dropdown {
+                bottom: 80px;
+                right: 20px;
+                min-width: 280px;
             }
         }
 
@@ -553,183 +957,439 @@
                 padding: 10px;
             }
             
-            .kanban-column {
-                flex: 0 0 160px;
-                min-width: 160px;
-                padding: 10px;
+            .tab-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .tab-content-wrapper {
+                padding: 16px;
+            }
+            
+            .tab-navigation {
+                padding: 10px 15px 0;
+            }
+            
+            .tab-btn {
+                font-size: 0.8rem;
+                padding: 12px 20px;
             }
             
             .header-controls {
-                padding: 8px 12px;
+                padding: 12px 15px;
             }
             
             .header-controls h1 {
-                font-size: 1.1rem;
+                font-size: 1.4rem;
             }
             
             .header-controls .btn {
-                font-size: 0.7rem;
-                padding: 4px 8px;
+                font-size: 0.75rem;
+                padding: 8px 14px;
+            }
+
+            .theme-selector-btn {
+                width: 48px;
+                height: 48px;
+            }
+
+            .theme-dropdown {
+                right: 10px;
+                bottom: 70px;
+                min-width: calc(100vw - 40px);
             }
         }
     </style>
 </head>
 <body>
+    <div class="gradient-bg"></div>
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+    <div class="gradient-orb orb-3"></div>
+
     <div class="main-container" style="display: none;" id="mainContainer">
         <div class="header-controls">
             <h1>Weaving Management</h1>
-             <div class="d-flex align-items-center flex-wrap">
-                <!-- Current user display -->
-                <span id="currentUserDisplay" class="badge me-2" style="background: linear-gradient(90deg, #00c4ff, #007bff); padding: 8px 15px; border-radius: 10px; font-weight: 600; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);">
+            <div class="d-flex align-items-center flex-wrap">
+                <span id="currentUserDisplay" class="badge me-2">
                     <i class="fas fa-user"></i> Guest
                 </span>
                 
-                <!-- Active users display (Custom Dropdown) -->
                 <div class="custom-dropdown me-2">
-                    <span id="userStatus" class="badge custom-dropdown-toggle" style="background: linear-gradient(90deg, #007bff, #00c4ff); padding: 8px 15px; border-radius: 10px; font-weight: 600; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);">
+                    <span id="userStatus" class="badge custom-dropdown-toggle">
                         <i class="fas fa-users"></i> Active Users: 0
                     </span>
                     <div id="customDropdownMenu" class="custom-dropdown-menu">
                         <h6 class="custom-dropdown-header">Currently Active Users</h6>
                         <div id="activeUsersList" style="max-height: 200px; overflow-y: auto;">
-                            <!-- Users will be listed here -->
                             <div class="text-center text-muted">No active users</div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Buttons -->
-                <button class="btn btn-warning" id="userPrivilegeBtn"><i class="fas fa-user-shield"></i> User Privilege</button>
-                <a href="/reportgenerator_app/" class="btn btn-secondary"><i class="fas fa-file-alt"></i> Report Generator</a>
-                <a href="/sql_database/" class="btn btn-info"><i class="fas fa-database"></i> SQL Database</a>
-                <button class="btn btn-danger" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                <button class="btn btn-warning" id="userPrivilegeBtn">
+                    <i class="fas fa-user-shield"></i> User Privilege
+                </button>
+                <a href="/reportgenerator_app/" class="btn btn-secondary">
+                    <i class="fas fa-file-alt"></i> Report Generator
+                </a>
+                <button class="btn btn-danger" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
             </div>
         </div>
-        <!-- Access Denied Modal -->
-<div class="modal fade" id="accessDeniedModal" tabindex="-1" aria-labelledby="accessDeniedModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header" style="background-color: #dc3545;">
-                <h5 class="modal-title text-white" id="accessDeniedModalLabel">Access Denied</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+        <!-- TABBED CONTAINER -->
+        <div class="tabbed-container">
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="mis-tab">
+                    <i class="fas fa-chart-line"></i>
+                    <span>MIS</span>
+                </button>
+                <button class="tab-btn" data-tab="order-tab">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>Order Info</span>
+                </button>
+                <button class="tab-btn" data-tab="yarn-tab">
+                    <i class="fas fa-spool"></i>
+                    <span>Yarn</span>
+                </button>
+                <button class="tab-btn" data-tab="prep-tab">
+                    <i class="fas fa-tools"></i>
+                    <span>Preparatory</span>
+                </button>
+                <button class="tab-btn" data-tab="loom-tab">
+                    <i class="fas fa-industry"></i>
+                    <span>Loom</span>
+                </button>
+                <button class="tab-btn" data-tab="greige-tab">
+                    <i class="fas fa-box"></i>
+                    <span>Greige</span>
+                </button>
+                <button class="tab-btn" data-tab="finish-tab">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Finish</span>
+                </button>
             </div>
-            <div class="modal-body">
-                <p>You do not have permission to access this module.</p>
-                <p>Please contact your administrator if you need access to this feature.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-        <div class="kanban-board">
-            <!-- MIS Module -->
-            <div class="kanban-column">
-                <h3>MIS MODULE</h3>
-                <div class="kanban-card" data-module="mis_module" data-sub-ui="orderfollowup_app">
-                    <a href="/mis_module/orderfollowup_app/"><i class="fas fa-tasks"></i> Order Follow Up</a>
+
+            <!-- Tab Content (same as before - all tabs) -->
+            <div class="tab-content-wrapper">
+                <!-- MIS Tab -->
+                <div class="tab-content active" id="mis-tab">
+                    <div class="tab-grid">
+                        <a href="/main/mis_module/orderfollowup_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <h4>Order Follow Up</h4>
+                            <p>Track and manage order progress throughout the production cycle</p>
+                        </a>
+                        <a href="/main/mis_module/floorposition_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <h4>Floor Position Entry</h4>
+                            <p>Record and manage floor positions and production layouts</p>
+                        </a>
+                        <a href="/main/mis_module/logreport_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <h4>LOG Report</h4>
+                            <p>Generate comprehensive production logs and reports</p>
+                        </a>
+                        <a href="/main/mis_module/mainplan_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <h4>Main Plan</h4>
+                            <p>Strategic planning and production scheduling tools</p>
+                        </a>
+                    </div>
                 </div>
-                <div class="kanban-card" data-module="mis_module" data-sub-ui="floorposition_app">
-                    <a href="/main/mis_module/floorposition_app/"><i class="fas fa-map-marker-alt"></i> Floor Position Entry Form</a>
+
+                <!-- Order Info Tab -->
+                <div class="tab-content" id="order-tab">
+                    <div class="tab-grid">
+                        <a href="/main/orderinformation_module/precosting_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-calculator"></i>
+                            </div>
+                            <h4>Pre-Costing Form</h4>
+                            <p>Calculate and estimate project costs before production</p>
+                        </a>
+                        <a href="/main/orderinformation_module/poentry_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-file-invoice"></i>
+                            </div>
+                            <h4>PO Entry Form</h4>
+                            <p>Create and manage purchase order entries</p>
+                        </a>
+                        <a href="/main/orderinformation_module/dispocreate_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <h4>Dispo Create Form</h4>
+                            <p>Create and manage disposition records and documentation</p>
+                        </a>
+                    </div>
                 </div>
-                <div class="kanban-card" data-module="mis_module" data-sub-ui="logreport_app">
-                    <a href="/main/mis_module/logreport_app/"><i class="fas fa-clipboard-list"></i> LOG Report</a>
+
+                <!-- Other tabs content remain the same -->
+                <!-- Yarn Tab -->
+                <div class="tab-content" id="yarn-tab">
+                    <div class="tab-grid">
+                        <a href="/main/yarn_module/greigeyarnreceive_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-box-open"></i>
+                            </div>
+                            <h4>Greige Yarn Receive</h4>
+                            <p>Record and process incoming greige yarn shipments</p>
+                        </a>
+                        <a href="/main/yarn_module/greigeyarnissue_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </div>
+                            <h4>Greige Yarn Issue</h4>
+                            <p>Issue greige yarn for production processes</p>
+                        </a>
+                        <a href="/main/yarn_module/greigeyarnstock_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-warehouse"></i>
+                            </div>
+                            <h4>Greige Yarn Stock</h4>
+                            <p>Monitor and manage greige yarn inventory levels</p>
+                        </a>
+                        <a href="/main/yarn_module/dyedyarnreceive_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-box-open"></i>
+                            </div>
+                            <h4>Dyed Yarn Receive</h4>
+                            <p>Record and process incoming dyed yarn shipments</p>
+                        </a>
+                        <a href="/main/yarn_module/dyedyarnissue_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </div>
+                            <h4>Dyed Yarn Issue</h4>
+                            <p>Issue dyed yarn for production processes</p>
+                        </a>
+                        <a href="/main/yarn_module/dyedyarnstock_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-warehouse"></i>
+                            </div>
+                            <h4>Dyed Yarn Stock</h4>
+                            <p>Monitor and manage dyed yarn inventory levels</p>
+                        </a>
+                    </div>
                 </div>
-                <div class="kanban-card" data-module="mis_module" data-sub-ui="mainplan_app">
-                    <a href="/main/mis_module/mainplan_app/"><i class="fas fa-calendar-alt"></i> Main Plan</a>
+
+                <!-- Preparatory Tab -->
+                <div class="tab-content" id="prep-tab">
+                    <div class="tab-grid">
+                        <a href="/main/preparatory_module/warpingentry_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <h4>Warping Entry Form</h4>
+                            <p>Record warping process data and machine operations</p>
+                        </a>
+                        <a href="/main/preparatory_module/sizingentry_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-ruler"></i>
+                            </div>
+                            <h4>Sizing Entry Form</h4>
+                            <p>Document sizing process and quality parameters</p>
+                        </a>
+                    </div>
                 </div>
-            </div>
-            <!-- Order Information Module -->
-            <div class="kanban-column">
-                <h3>ORDER INFORMATION MODULE</h3>
-                <div class="kanban-card" data-module="orderinformation_module" data-sub-ui="precosting_app">
-                    <a href="/main/orderinformation_module/precosting_app/" target="_blank">
-                        <i class="fas fa-calculator"></i> Pre-Costing Form
-                    </a>
+
+                <!-- Loom Tab -->
+                <div class="tab-content" id="loom-tab">
+                    <div class="tab-grid">
+                        <a href="/main/loomproduction_module/loomproductionentry_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-industry"></i>
+                            </div>
+                            <h4>Loom Production Entry</h4>
+                            <p>Track loom production metrics and daily output data</p>
+                        </a>
+                    </div>
                 </div>
-                <div class="kanban-card" data-module="orderinformation_module" data-sub-ui="poentry_app">
-                    <a href="/main/orderinformation_module/poentry_app/" target="_blank"><i class="fas fa-file-invoice"></i> PO Entry Form</a>
+
+                <!-- Greige Tab -->
+                <div class="tab-content" id="greige-tab">
+                    <div class="tab-grid">
+                        <a href="/main/greigefabric_module/foldingproduction_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-folder"></i>
+                            </div>
+                            <h4>Folding Production</h4>
+                            <p>Record folding production activities and quality checks</p>
+                        </a>
+                        <a href="/main/greigefabric_module/greigedelivery_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <h4>Greige Delivery</h4>
+                            <p>Manage greige fabric delivery and shipment tracking</p>
+                        </a>
+                        <a href="/main/greigefabric_module/greigefabricstock_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-warehouse"></i>
+                            </div>
+                            <h4>Greige Fabric Stock</h4>
+                            <p>Monitor greige fabric inventory and stock levels</p>
+                        </a>
+                    </div>
                 </div>
-                <div class="kanban-card" data-module="orderinformation_module" data-sub-ui="dispocreate_app">
-                    <a href="/main/orderinformation_module/dispocreate_app/" target="_blank"><i class="fas fa-file-alt"></i> Dispo Create Form</a>
-                </div>
-            </div>
-            <!-- Yarn Module -->
-            <div class="kanban-column">
-                <h3>YARN MODULE</h3>
-                <div class="kanban-card" data-module="yarn_module" data-sub-ui="greigeyarnreceive_app">
-                    <a href="/main/yarn_module/greigeyarnreceive_app/" target="_blank"><i class="fas fa-box-open"></i> Greige Yarn Receive Form</a>
-                </div>
-                <div class="kanban-card" data-module="yarn_module" data-sub-ui="greigeyarnissue_app">
-                    <a href="/main/yarn_module/greigeyarnissue_app/" target="_blank"><i class="fas fa-sign-out-alt"></i> Greige Yarn Issue Form</a>
-                </div>
-                <div class="kanban-card" data-module="yarn_module" data-sub-ui="greigeyarnstock_app">
-                    <a href="/main/yarn_module/greigeyarnstock_app/" target="_blank"><i class="fas fa-warehouse"></i> Greige Yarn Stock Report</a>
-                </div>
-                <div class="kanban-card" data-module="yarn_module" data-sub-ui="dyedyarnreceive_app">
-                    <a href="/main/yarn_module/dyedyarnreceive_app/" target="_blank"><i class="fas fa-box-open"></i> Dyed Yarn Receive Form</a>
-                </div>
-                <div class="kanban-card" data-module="yarn_module" data-sub-ui="dyedyarnissue_app">
-                    <a href="/main/yarn_module/dyedyarnissue_app/" target="_blank"><i class="fas fa-sign-out-alt"></i> Dyed Yarn Issue Form</a>
-                </div>
-                <div class="kanban-card" data-module="yarn_module" data-sub-ui="dyedyarnstock_app">
-                    <a href="/main/yarn_module/dyedyarnstock_app/" target="_blank"><i class="fas fa-warehouse"></i> Dyed Yarn Stock Report</a>
-                </div>
-            </div>
-            <!-- Preparatory Module -->
-            <div class="kanban-column">
-                <h3>PREPARATORY MODULE</h3>
-                <div class="kanban-card" data-module="preparatory_module" data-sub-ui="warpingentry_app">
-                    <a href="/main/preparatory_module/warpingentry_app/" target="_blank"><i class="fas fa-cogs"></i> Warping Entry Form</a>
-                </div>
-                <div class="kanban-card" data-module="preparatory_module" data-sub-ui="sizingentry_app">
-                    <a href="/main/preparatory_module/sizingentry_app/" target="_blank"><i class="fas fa-ruler"></i> Sizing Entry Form</a>
-                </div>
-            </div>
-            <!-- Loom Production Module -->
-            <div class="kanban-column">
-                <h3>LOOM PRODUCTION MODULE</h3>
-                <div class="kanban-card" data-module="loomproduction_module" data-sub-ui="loomproductionentry_app">
-                    <a href="/main/loomproduction_module/loomproductionentry_app/" target="_blank"><i class="fas fa-industry"></i> Loom Production Entry Form</a>
-                </div>
-            </div>
-            <!-- Greige Fabric Module -->
-            <div class="kanban-column">
-                <h3>GREIGE FABRIC MODULE</h3>
-                <div class="kanban-card" data-module="greigefabric_module" data-sub-ui="foldingproduction_app">
-                    <a href="/main/greigefabric_module/foldingproduction_app/" target="_blank"><i class="fas fa-folder"></i> Folding Production Entry Form</a>
-                </div>
-                <div class="kanban-card" data-module="greigefabric_module" data-sub-ui="greigedelivery_app">
-                    <a href="/main/greigefabric_module/greigedelivery_app/" target="_blank"><i class="fas fa-truck"></i> Greige Delivery Form</a>
-                </div>
-                <div class="kanban-card" data-module="greigefabric_module" data-sub-ui="greigefabricstock_app">
-                    <a href="/main/greigefabric_module/greigefabricstock_app/" target="_blank"><i class="fas fa-warehouse"></i> Greige Fabric Stock</a>
-                </div>
-            </div>
-            <!-- Finish Fabric Module -->
-            <div class="kanban-column">
-                <h3>FINISH FABRIC MODULE</h3>
-                <div class="kanban-card" data-module="finishfabric_module" data-sub-ui="finishfabricreceive_app">
-                    <a href="/main/finishfabric_module/finishfabricreceive_app/" target="_blank"><i class="fas fa-box-open"></i> Finish Fabric Receive Entry Form</a>
-                </div>
-                <div class="kanban-card" data-module="finishfabric_module" data-sub-ui="finishfabricdelivery_app">
-                    <a href="/main/finishfabric_module/finishfabricdelivery_app/" target="_blank"><i class="fas fa-truck"></i> Finish Fabric Delivery Entry Form</a>
-                </div>
-                <div class="kanban-card" data-module="finishfabric_module" data-sub-ui="finishfabricstock_app">
-                    <a href="/main/finishfabric_module/finishfabricstock_app/" target="_blank"><i class="fas fa-warehouse"></i> Finish Fabric Stock Report</a>
+
+                <!-- Finish Tab -->
+                <div class="tab-content" id="finish-tab">
+                    <div class="tab-grid">
+                        <a href="/main/finishfabric_module/finishfabricreceive_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-box-open"></i>
+                            </div>
+                            <h4>Finish Fabric Receive</h4>
+                            <p>Process incoming finished fabric and quality inspection</p>
+                        </a>
+                        <a href="/main/finishfabric_module/finishfabricdelivery_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <h4>Finish Fabric Delivery</h4>
+                            <p>Manage finished fabric delivery and shipment operations</p>
+                        </a>
+                        <a href="/main/finishfabric_module/finishfabricstock_app/" target="_blank" class="tab-card">
+                            <div class="tab-card-icon">
+                                <i class="fas fa-warehouse"></i>
+                            </div>
+                            <h4>Finish Fabric Stock</h4>
+                            <p>Monitor finished fabric inventory and stock reports</p>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Login Modal -->
-    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <!-- Theme Selector Button -->
+    <button class="theme-selector-btn" id="themeSelectorBtn">
+        <i class="fas fa-palette"></i>
+    </button>
+
+    <!-- Theme Dropdown -->
+    <div class="theme-dropdown" id="themeDropdown">
+        <div class="theme-dropdown-header">Choose Theme</div>
+        
+        <div class="theme-option active" data-theme="default">
+            <div class="theme-color-preview" style="background: linear-gradient(135deg, #ff6b4a, #4ae0d2);">
+                <i class="fas fa-check" style="color: white; font-size: 1rem;"></i>
+            </div>
+            <div class="theme-info">
+                <div class="theme-name">Default</div>
+                <div class="theme-description">Orange & Cyan</div>
+            </div>
+        </div>
+
+        <div class="theme-option" data-theme="gunmetal">
+            <div class="theme-color-preview" style="background: linear-gradient(135deg, #00c4ff, #007bff);"></div>
+            <div class="theme-info">
+                <div class="theme-name">Gunmetal Grey</div>
+                <div class="theme-description">Blue & Indigo</div>
+            </div>
+        </div>
+
+        <div class="theme-option" data-theme="solarized-dark">
+            <div class="theme-color-preview" style="background: linear-gradient(135deg, #268bd2, #2aa198);"></div>
+            <div class="theme-info">
+                <div class="theme-name">Solarized Dark</div>
+                <div class="theme-description">VS Code Classic</div>
+            </div>
+        </div>
+
+        <div class="theme-option" data-theme="solarized-light">
+            <div class="theme-color-preview" style="background: linear-gradient(135deg, #268bd2, #2aa198); border: 1px solid #ddd;"></div>
+            <div class="theme-info">
+                <div class="theme-name">Solarized Light</div>
+                <div class="theme-description">Light Mode</div>
+            </div>
+        </div>
+
+        <div class="theme-option" data-theme="ocean">
+            <div class="theme-color-preview" style="background: linear-gradient(135deg, #0ea5e9, #06b6d4);"></div>
+            <div class="theme-info">
+                <div class="theme-name">Ocean</div>
+                <div class="theme-description">Blue & Teal</div>
+            </div>
+        </div>
+
+        <div class="theme-option" data-theme="forest">
+            <div class="theme-color-preview" style="background: linear-gradient(135deg, #10b981, #34d399);"></div>
+            <div class="theme-info">
+                <div class="theme-name">Forest</div>
+                <div class="theme-description">Green & Emerald</div>
+            </div>
+        </div>
+
+        <div class="theme-option" data-theme="sunset">
+            <div class="theme-color-preview" style="background: linear-gradient(135deg, #f59e0b, #f97316);"></div>
+            <div class="theme-info">
+                <div class="theme-name">Sunset</div>
+                <div class="theme-description">Amber & Orange</div>
+            </div>
+        </div>
+
+        <div class="theme-option" data-theme="purple">
+            <div class="theme-color-preview" style="background: linear-gradient(135deg, #a855f7, #c084fc);"></div>
+            <div class="theme-info">
+                <div class="theme-name">Purple Dream</div>
+                <div class="theme-description">Purple & Violet</div>
+            </div>
+        </div>
+
+        <div class="theme-option" data-theme="cyberpunk">
+            <div class="theme-color-preview" style="background: linear-gradient(135deg, #ff0080, #00ff9f);"></div>
+            <div class="theme-info">
+                <div class="theme-name">Cyberpunk</div>
+                <div class="theme-description">Pink & Neon Green</div>
+            </div>
+        </div>
+
+        <div class="theme-option" data-theme="nord">
+            <div class="theme-color-preview" style="background: linear-gradient(135deg, #88c0d0, #81a1c1);"></div>
+            <div class="theme-info">
+                <div class="theme-name">Nord</div>
+                <div class="theme-description">Arctic Theme</div>
+            </div>
+        </div>
+
+        <div class="theme-option" data-theme="dracula">
+            <div class="theme-color-preview" style="background: linear-gradient(135deg, #ff79c6, #bd93f9);"></div>
+            <div class="theme-info">
+                <div class="theme-name">Dracula</div>
+                <div class="theme-description">Pink & Purple</div>
+            </div>
+        </div>
+
+        <div class="theme-option" data-theme="monokai">
+            <div class="theme-color-preview" style="background: linear-gradient(135deg, #f92672, #66d9ef);"></div>
+            <div class="theme-info">
+                <div class="theme-name">Monokai</div>
+                <div class="theme-description">Magenta & Cyan</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals (same as before) -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="loginModalLabel">Login to Pre-Costing Database</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title">Login to Pre-Costing Database</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -752,13 +1412,12 @@
         </div>
     </div>
 
-    <!-- Registration Modal -->
-    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+    <div class="modal fade" id="registerModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="registerModalLabel">Register New User</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title">Register New User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -782,13 +1441,12 @@
         </div>
     </div>
 
-    <!-- User Privilege Modal -->
-    <div class="modal fade" id="userPrivilegeModal" tabindex="-1" aria-labelledby="userPrivilegeModalLabel" aria-hidden="true">
+    <div class="modal fade" id="userPrivilegeModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="userPrivilegeModalLabel">Manage User Privileges</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title">Manage User Privileges</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -797,9 +1455,7 @@
                             <option value="">Select a user</option>
                         </select>
                     </div>
-                    <div id="privilegesList">
-                        <!-- Dynamically populated -->
-                    </div>
+                    <div id="privilegesList"></div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" id="savePrivilegesBtn">Save Privileges</button>
@@ -809,13 +1465,12 @@
         </div>
     </div>
 
-    <!-- Access Denied Modal -->
-    <div class="modal fade" id="accessDeniedModal" tabindex="-1" aria-labelledby="accessDeniedModalLabel" aria-hidden="true">
+    <div class="modal fade" id="accessDeniedModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-danger">
-                    <h5 class="modal-title text-white" id="accessDeniedModalLabel">Access Denied</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title text-white">Access Denied</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <p>You do not have permission to access this module.</p>
@@ -830,7 +1485,86 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="main.js"></script>
-    <script src="rbac-fix.js"></script>
-    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetTab = this.getAttribute('data-tab');
+                    
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    this.classList.add('active');
+                    document.getElementById(targetTab).classList.add('active');
+                });
+            });
+
+            const themeSelectorBtn = document.getElementById('themeSelectorBtn');
+            const themeDropdown = document.getElementById('themeDropdown');
+            const themeOptions = document.querySelectorAll('.theme-option');
+
+            themeSelectorBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                themeDropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!themeSelectorBtn.contains(e.target) && !themeDropdown.contains(e.target)) {
+                    themeDropdown.classList.remove('show');
+                }
+            });
+
+            themeOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const selectedTheme = this.getAttribute('data-theme');
+                    
+                    themeOptions.forEach(opt => {
+                        opt.classList.remove('active');
+                        const checkIcon = opt.querySelector('.fa-check');
+                        if (checkIcon) checkIcon.remove();
+                    });
+                    
+                    this.classList.add('active');
+                    const colorPreview = this.querySelector('.theme-color-preview');
+                    if (!colorPreview.querySelector('.fa-check')) {
+                        const checkIcon = document.createElement('i');
+                        checkIcon.className = 'fas fa-check';
+                        checkIcon.style.color = 'white';
+                        checkIcon.style.fontSize = '1rem';
+                        colorPreview.appendChild(checkIcon);
+                    }
+                    
+                    if (selectedTheme === 'default') {
+                        document.documentElement.removeAttribute('data-theme');
+                    } else {
+                        document.documentElement.setAttribute('data-theme', selectedTheme);
+                    }
+                    
+                    localStorage.setItem('selectedTheme', selectedTheme);
+                    themeDropdown.classList.remove('show');
+                });
+            });
+
+            const savedTheme = localStorage.getItem('selectedTheme');
+            if (savedTheme && savedTheme !== 'default') {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                
+                themeOptions.forEach(opt => {
+                    if (opt.getAttribute('data-theme') === savedTheme) {
+                        opt.classList.add('active');
+                        const colorPreview = opt.querySelector('.theme-color-preview');
+                        const checkIcon = document.createElement('i');
+                        checkIcon.className = 'fas fa-check';
+                        checkIcon.style.color = 'white';
+                        checkIcon.style.fontSize = '1rem';
+                        colorPreview.appendChild(checkIcon);
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

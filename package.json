@@ -1,22 +1,29 @@
 {
-    "name": "main",
-    "version": "1.0.0",
-    "main": "server.js",
-    "scripts": {
-        "start": "node server.js",
-        "dev": "NODE_ENV=development node server.js",
-        "prod": "NODE_ENV=production node server.js"
-    },
-    "dependencies": {
-        "bcrypt": "^5.1.1",
-        "cors": "^2.8.5",
-        "dotenv": "^17.2.3",
-        "excel": "^1.0.1",
-        "express": "^4.17.1",
-        "express-mysql-session": "^3.0.0",
-        "express-session": "^1.17.3",
-        "mysql2": "^3.14.1",
-        "promise": "^8.3.0",
-        "xlsx": "^0.18.5"
-    }
+  "name": "main",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "NODE_ENV=development node server.js",
+    "prod": "NODE_ENV=production node server.js",
+    "test": "node --test tests/http-boundaries.test.js && node sync/tests/sheets_sync_plan.test.js && node sync/tests/v3/full_dry_run_gate_v323.test.js",
+    "check": "node --check server.js && node --check sync/scripts/sync/run.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "csv-parse": "^5.5.5",
+    "dotenv": "^17.2.3",
+    "excel": "^1.0.1",
+    "express": "^4.17.1",
+    "express-mysql-session": "^3.0.0",
+    "express-session": "^1.17.3",
+    "googleapis": "^171.4.0",
+    "mysql2": "^3.14.1",
+    "promise": "^8.3.0",
+    "xlsx": "^0.18.5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
 }

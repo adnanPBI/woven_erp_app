@@ -1,0 +1,5 @@
+{
+  "table": "dispo_form_data",
+  "description": "A Dispo import unit must have a stable production key.",
+  "required": ["dispo_number"]
+}

@@ -1,0 +1,8 @@
+{
+  "table": "warp_broken_section",
+  "description": "A lower-beam section calculation is valid only when both source values are positive.",
+  "requiredPositive": [
+    "lower_beam_total_ends",
+    "round_no_of_section"
+  ]
+}

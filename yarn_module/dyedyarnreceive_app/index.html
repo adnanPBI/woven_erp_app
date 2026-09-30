@@ -876,8 +876,11 @@ body {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-   <script>
+<script src="/main/public/js/erp-smart-dropdown.js"></script>
+<script src="/main/public/js/erp-async-search-dropdown.js"></script>
+  
+  
+<script>
 let currentRecordId = null;
 
 // ========== CALCULATION FUNCTIONS ==========
@@ -983,10 +986,63 @@ function toggleCollapsible(toggleId, contentId) {
     }
 }
 
-// ========== FETCH PO NUMBERS (USE EXISTING ENDPOINT) ==========
+// ========== INITIALIZE TO TOP OF PAGE ==========
+function initializeFormFromTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    
+    setTimeout(() => {
+        const firstField = document.getElementById('dyedYarnReceivedDate');
+        if (firstField) {
+            firstField.focus();
+        }
+    }, 500);
+}
+
+// ========== KEYBOARD NAVIGATION SETUP ==========
+function setupKeyboardNavigation() {
+    const formFields = [
+        'dyedYarnReceivedDate', 'receivedAgainstPONo', 'receivedAgainstDispoNo',
+        'buyer', 'batchNo', 'yarnCount', 'numberOfPly', 'yarnShadeCategory',
+        'challanNo', 'dyedYarnReceivedForWarp', 'dyedYarnReceivedForWeft',
+        'yarnDyeingPrice', 'greigeYarnPrice', 'dollarRate', 'totalDyedYarnPrice',
+        'specialNotes'
+    ];
+
+    formFields.forEach((fieldId, index) => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowDown' || (e.key === 'Tab' && !e.shiftKey)) {
+                    e.preventDefault();
+                    const nextIndex = (index + 1) % formFields.length;
+                    const nextField = document.getElementById(formFields[nextIndex]);
+                    if (nextField) {
+                        nextField.focus();
+                        if (nextField.type === 'text' || nextField.type === 'number') {
+                            nextField.select();
+                        }
+                    }
+                } else if (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) {
+                    e.preventDefault();
+                    const prevIndex = index === 0 ? formFields.length - 1 : index - 1;
+                    const prevField = document.getElementById(formFields[prevIndex]);
+                    if (prevField) {
+                        prevField.focus();
+                        if (prevField.type === 'text' || prevField.type === 'number') {
+                            prevField.select();
+                        }
+                    }
+                }
+            });
+        }
+    });
+}
+
+// ========== FETCH PO NUMBERS ==========
 async function fetchPONumbers() {
     try {
-        // Use the existing endpoint that's already working
         const response = await fetch('/main/api/po/numbers', {
             method: 'GET',
             credentials: 'include'
@@ -1002,7 +1058,6 @@ async function fetchPONumbers() {
         
     } catch (error) {
         console.error('Failed to load PO numbers:', error);
-        // Don't alert, just log - form can work without PO numbers
     }
 }
 
@@ -1010,7 +1065,6 @@ function populatePOField(poNumbers) {
     const receivedAgainstPOField = document.getElementById('receivedAgainstPONo');
     if (!receivedAgainstPOField) return;
     
-    // Check if it's an input field and convert to select if needed
     if (receivedAgainstPOField.tagName.toLowerCase() === 'input') {
         const select = document.createElement('select');
         select.className = receivedAgainstPOField.className;
@@ -1018,10 +1072,8 @@ function populatePOField(poNumbers) {
         select.name = receivedAgainstPOField.name;
         const currentValue = receivedAgainstPOField.value;
         
-        // Replace input with select
         receivedAgainstPOField.parentNode.replaceChild(select, receivedAgainstPOField);
         
-        // Populate the new select
         select.innerHTML = '<option value="">Select PO</option>';
         poNumbers.forEach(poNo => {
             const option = document.createElement('option');
@@ -1035,7 +1087,6 @@ function populatePOField(poNumbers) {
         
         console.log('Converted PO input to select with', poNumbers.length, 'options');
     } else if (receivedAgainstPOField.tagName.toLowerCase() === 'select') {
-        // It's already a select, just populate it
         const currentValue = receivedAgainstPOField.value;
         receivedAgainstPOField.innerHTML = '<option value="">Select PO</option>';
         
@@ -1049,7 +1100,6 @@ function populatePOField(poNumbers) {
             receivedAgainstPOField.appendChild(option);
         });
         
-        // Restore the value if it existed
         if (currentValue) {
             receivedAgainstPOField.value = currentValue;
         }
@@ -1132,8 +1182,8 @@ async function fetchDyedYarnRecords() {
         recordMenu.innerHTML = records.length === 0 
             ? '<li><a class="dropdown-item disabled" href="#">No records available</a></li>'
             : records.map(record => {
-                const displayText = `ID: ${record.id} | Date: ${record.dyed_yarn_received_date || 'N/A'} | PO: ${record.received_against_po_no || 'N/A'} | Buyer: ${record.buyer || 'N/A'}`;
-                return `<li><a class="dropdown-item" href="#" data-record-id="${record.id}">${displayText}</a></li>`;
+                const displayText = `Dispo: ${record.received_against_dispo_no || 'N/A'} | Count: ${record.yarn_count || 'N/A'} | Ply: ${record.number_of_ply || 'N/A'} | Shade: ${record.yarn_shade_category || 'N/A'} | Batch: ${record.batch_no || 'N/A'} | Date: ${record.dyed_yarn_received_date || 'N/A'}`;
+                return `<li><a class="dropdown-item" href="#" data-record-id="${record.id}" style="font-size: 0.85rem;">${displayText}</a></li>`;
               }).join('');
         
         attachDyedYarnRecordListeners();
@@ -1204,7 +1254,6 @@ async function fetchYarnDetailsByDispo(dispoNumber) {
         const data = await response.json();
         
         if (data.success) {
-            // Set the dispo number in the form
             const dispoSelect = document.getElementById('receivedAgainstDispoNo');
             if (dispoSelect) {
                 dispoSelect.value = dispoNumber;
@@ -1223,7 +1272,7 @@ async function fetchYarnDetailsByDispo(dispoNumber) {
     }
 }
 
-// ========== POPULATE WARP YARN TABLE (WITHOUT DISPO COLUMN) ==========
+// ========== POPULATE WARP YARN TABLE ==========
 function populateWarpYarnTable(warpDetails) {
     const tbody = document.querySelector('#warpYarnDetailsTable tbody');
     if (!tbody) return;
@@ -1254,7 +1303,7 @@ function populateWarpYarnTable(warpDetails) {
     });
 }
 
-// ========== POPULATE WEFT YARN TABLE (WITHOUT DISPO COLUMN) ==========
+// ========== POPULATE WEFT YARN TABLE ==========
 function populateWeftYarnTable(weftDetails) {
     const tbody = document.querySelector('#weftYarnDetailsTable tbody');
     if (!tbody) return;
@@ -1283,7 +1332,7 @@ function populateWeftYarnTable(weftDetails) {
     });
 }
 
-// ========== ADD EMPTY ROWS (WITHOUT DISPO COLUMN) ==========
+// ========== ADD EMPTY ROWS ==========
 function addEmptyWarpRow() {
     const tbody = document.querySelector('#warpYarnDetailsTable tbody');
     if (!tbody) return;
@@ -1326,60 +1375,11 @@ function addEmptyWeftRow() {
     `;
 }
 
-// ========== COLLECT WARP & WEFT DETAILS FOR SAVING ==========
-function collectWarpDetails() {
-    const details = [];
-    const tbody = document.querySelector('#warpYarnDetailsTable tbody');
-    if (!tbody) return details;
-    
-    const dispoNo = document.getElementById('receivedAgainstDispoNo')?.value || '';
-    
-    Array.from(tbody.rows).forEach((row, index) => {
-        const greyQty = parseFloat(row.querySelector('input[name="warp_grey_qty[]"]')?.value) || 0;
-        
-        if (greyQty > 0 && dispoNo) {
-            details.push({
-                warp_required_kgs: greyQty,
-                dispo_no: dispoNo,
-                count: row.querySelector('input[name="warp_count[]"]')?.value || '',
-                ply: row.querySelector('input[name="warp_ply[]"]')?.value || '',
-                color_name: row.querySelector('input[name="warp_color_name[]"]')?.value || '',
-                dyed_qty_kg: parseFloat(row.querySelector('input[name="warp_dyed_qty[]"]')?.value) || 0
-            });
-        }
-    });
-    
-    return details;
-}
-
-function collectWeftDetails() {
-    const details = [];
-    const tbody = document.querySelector('#weftYarnDetailsTable tbody');
-    if (!tbody) return details;
-    
-    const dispoNo = document.getElementById('receivedAgainstDispoNo')?.value || '';
-    
-    Array.from(tbody.rows).forEach((row, index) => {
-        const greyQty = parseFloat(row.querySelector('input[name="weft_grey_qty[]"]')?.value) || 0;
-        
-        if (greyQty > 0 && dispoNo) {
-            details.push({
-                weft_required_kgs: greyQty,
-                dispo_no: dispoNo,
-                count: row.querySelector('input[name="weft_count[]"]')?.value || '',
-                ply: row.querySelector('input[name="weft_ply[]"]')?.value || '',
-                color_name: row.querySelector('input[name="weft_color_name[]"]')?.value || '',
-                dyed_qty_kg: parseFloat(row.querySelector('input[name="weft_dyed_qty[]"]')?.value) || 0
-            });
-        }
-    });
-    
-    return details;
-}
-
 // ========== DOM CONTENT LOADED ==========
 document.addEventListener('DOMContentLoaded', function() {
-    // Collapsible functionality
+    initializeFormFromTop();
+    setupKeyboardNavigation();
+    
     const breakdownToggle = document.getElementById('breakdownToggle');
     if (breakdownToggle) {
         breakdownToggle.addEventListener('click', function(e) {
@@ -1499,53 +1499,51 @@ document.addEventListener('DOMContentLoaded', function() {
         
         currentRecordId = null;
         
-        // Clear warp table
         const warpTbody = document.querySelector('#warpYarnDetailsTable tbody');
         if (warpTbody) {
             warpTbody.innerHTML = '';
             addEmptyWarpRow();
         }
         
-        // Clear weft table
         const weftTbody = document.querySelector('#weftYarnDetailsTable tbody');
         if (weftTbody) {
             weftTbody.innerHTML = '';
             addEmptyWeftRow();
         }
         
-        // Reset dropdown button texts
         const searchDispoYarnReceiveBtn = document.getElementById('searchDispoYarnReceiveDropdown');
         if (searchDispoYarnReceiveBtn) {
             searchDispoYarnReceiveBtn.innerHTML = '<i class="fas fa-search"></i> Search Dispo Yarn Receive';
-        }
-        
-        const searchDispoBreakdownBtn = document.getElementById('searchDispoBreakdownDropdown');
-        if (searchDispoBreakdownBtn) {
-            searchDispoBreakdownBtn.innerHTML = '<i class="fas fa-search"></i> Search Dispo Breakdown';
-        }
-        
+}
+    const searchDispoBreakdownBtn = document.getElementById('searchDispoBreakdownDropdown');
+    if (searchDispoBreakdownBtn) {
+        searchDispoBreakdownBtn.innerHTML = '<i class="fas fa-search"></i> Search Dispo Breakdown';
+    }
+    
+    calculateBreakdownTotal();
+    calculateTotalPrice();
+    calculateYarnTotals();
+    
+    initializeFormFromTop();
+});
+
+// Input event listeners for calculations
+document.addEventListener('input', function(e) {
+    if (e.target.name === 'dyed_yarn_received_qty[]') {
         calculateBreakdownTotal();
-        calculateTotalPrice();
-        calculateYarnTotals();
-    });
+    }
+});
 
-    // Input event listeners for calculations
-    document.addEventListener('input', function(e) {
-        if (e.target.name === 'dyed_yarn_received_qty[]') {
-            calculateBreakdownTotal();
-        }
-    });
+const priceCalculationInputs = ['yarnDyeingPrice', 'greigeYarnPrice', 'dollarRate'];
+priceCalculationInputs.forEach(inputId => {
+    const input = document.getElementById(inputId);
+    if (input) {
+        input.addEventListener('input', calculateTotalPrice);
+        input.addEventListener('change', calculateTotalPrice);
+    }
+});
 
-    const priceCalculationInputs = ['yarnDyeingPrice', 'greigeYarnPrice', 'dollarRate'];
-    priceCalculationInputs.forEach(inputId => {
-        const input = document.getElementById(inputId);
-        if (input) {
-            input.addEventListener('input', calculateTotalPrice);
-            input.addEventListener('change', calculateTotalPrice);
-        }
-    });
-
-   // Save to MySQL button
+// Save to MySQL button
 document.getElementById('saveToMySQLBtn')?.addEventListener('click', async function() {
     try {
         const form = document.getElementById('dyedYarnReceivedForm');
@@ -1558,7 +1556,6 @@ document.getElementById('saveToMySQLBtn')?.addEventListener('click', async funct
             }
         }
         
-        // Collect breakdown details
         const breakdownDetails = [];
         const breakdownDates = document.querySelectorAll('input[name="dyed_yarn_received_date[]"]');
         const breakdownColors = document.querySelectorAll('input[name="dyed_yarn_received_color[]"]');
@@ -1569,7 +1566,6 @@ document.getElementById('saveToMySQLBtn')?.addEventListener('click', async funct
             const color = breakdownColors[index]?.value || '';
             const date = dateInput.value;
             
-            // Only add if there's actual data
             if (date || color || qty > 0) {
                 breakdownDetails.push({
                     dyed_yarn_received_date: date,
@@ -1579,15 +1575,9 @@ document.getElementById('saveToMySQLBtn')?.addEventListener('click', async funct
             }
         });
         
-        // Collect warp and weft details
-        const warpDetails = collectWarpDetails();
-        const weftDetails = collectWeftDetails();
-        
         const payload = {
             formData: data,
-            breakdownDetails: breakdownDetails,
-            warpDetails: warpDetails,
-            weftDetails: weftDetails
+            breakdownDetails: breakdownDetails
         };
         
         console.log('Saving payload:', payload);
@@ -1610,181 +1600,178 @@ document.getElementById('saveToMySQLBtn')?.addEventListener('click', async funct
         alert('Data saved successfully!');
         console.log('Save successful:', result);
         
+        initializeFormFromTop();
+        
     } catch (error) {
         console.error('Error saving data:', error);
         alert('Failed to save data: ' + error.message);
     }
 });
 
-    // Update MySQL button
-    document.getElementById('updateToMySQLBtn')?.addEventListener('click', async function() {
-        if (!currentRecordId) {
-            alert('No record selected for update. Please search and load a record first.');
-            return;
+// Update MySQL button
+document.getElementById('updateToMySQLBtn')?.addEventListener('click', async function() {
+    if (!currentRecordId) {
+        alert('No record selected for update. Please search and load a record first.');
+        return;
+    }
+    
+    try {
+        const form = document.getElementById('dyedYarnReceivedForm');
+        const formData = new FormData(form);
+        const data = {};
+        
+        for (let [key, value] of formData.entries()) {
+            if (!key.includes('[]')) {
+                data[key] = value;
+            }
         }
         
-        try {
-            const form = document.getElementById('dyedYarnReceivedForm');
-            const formData = new FormData(form);
-            const data = {};
-            
-            for (let [key, value] of formData.entries()) {
-                if (!key.includes('[]')) {
-                    data[key] = value;
-                }
-            }
-            
-            // Collect breakdown details
-            const breakdownDetails = [];
-            const breakdownDates = document.querySelectorAll('input[name="dyed_yarn_received_date[]"]');
-            const breakdownColors = document.querySelectorAll('input[name="dyed_yarn_received_color[]"]');
-            const breakdownQtys = document.querySelectorAll('input[name="dyed_yarn_received_qty[]"]');
-            
-            breakdownDates.forEach((dateInput, index) => {
-                if (dateInput.value || breakdownQtys[index]?.value) {
-                    breakdownDetails.push({
-                        dyed_yarn_received_date: dateInput.value,
-                        dyed_yarn_received_color: breakdownColors[index]?.value || '',
-                        dyed_yarn_received_qty: parseFloat(breakdownQtys[index]?.value) || 0
-                    });
-                }
-            });
-            
-            // Collect warp and weft details
-            const warpDetails = collectWarpDetails();
-            const weftDetails = collectWeftDetails();
-            
-            const payload = {
-                formData: data,
-                breakdownDetails: breakdownDetails,
-                warpDetails: warpDetails,
-                weftDetails: weftDetails
-            };
-            
-            console.log('Updating payload:', payload);
-            
-            const response = await fetch(`/main/api/dyed-yarn/update/${currentRecordId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify(payload)
-            });
-            
-            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-            
-            const result = await response.json();
-            alert('Data updated successfully!');
-            console.log('Update successful:', result);
-            
-        } catch (error) {
-            console.error('Error updating data:', error);
-            alert('Failed to update data: ' + error.message);
-        }
-    });
-
-    // Export to Excel button
-    document.getElementById('saveToExcelBtn')?.addEventListener('click', async function() {
-        try {
-            const response = await fetch('/main/api/dyed-yarn/export-excel', {
-                method: 'GET',
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            
-            const contentDisposition = response.headers.get('content-disposition');
-            let filename = 'dyed_yarn_records.csv';
-            if (contentDisposition) {
-                const match = contentDisposition.match(/filename="(.+)"/);
-                if (match) filename = match[1];
-            }
-            
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-            
-            console.log('Export successful');
-        } catch (error) {
-            console.error('Error exporting data:', error);
-            alert('Failed to export data: ' + error.message);
-        }
-    });
-
-    // Saved Dyed Yarn Records button
-    document.getElementById('savedDyedYarnBtn')?.addEventListener('click', async function() {
-        try {
-            const response = await fetch('/main/api/dyed-yarn/saved-records', {
-                method: 'GET',
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-
-            const records = await response.json();
-            displaySavedRecords(records);
-        } catch (error) {
-            console.error('Error fetching saved records:', error);
-            alert('Failed to fetch saved records: ' + error.message);
-        }
-    });
-
-    // Delete Record button
-    document.getElementById('deleteDyedYarnBtn')?.addEventListener('click', async function() {
-        const recordId = prompt('Enter the ID of the record to delete:');
+        const breakdownDetails = [];
+        const breakdownDates = document.querySelectorAll('input[name="dyed_yarn_received_date[]"]');
+        const breakdownColors = document.querySelectorAll('input[name="dyed_yarn_received_color[]"]');
+        const breakdownQtys = document.querySelectorAll('input[name="dyed_yarn_received_qty[]"]');
         
-        if (!recordId) {
-            return;
-        }
-
-        if (!confirm(`Are you sure you want to delete record ID: ${recordId}? This action cannot be undone.`)) {
-            return;
-        }
-
-        try {
-            const response = await fetch(`/main/api/dyed-yarn/delete/${recordId}`, {
-                method: 'DELETE',
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+        breakdownDates.forEach((dateInput, index) => {
+            if (dateInput.value || breakdownQtys[index]?.value) {
+                breakdownDetails.push({
+                    dyed_yarn_received_date: dateInput.value,
+                    dyed_yarn_received_color: breakdownColors[index]?.value || '',
+                    dyed_yarn_received_qty: parseFloat(breakdownQtys[index]?.value) || 0
+                });
             }
+        });
+        
+        const payload = {
+            formData: data,
+            breakdownDetails: breakdownDetails
+        };
+        
+        console.log('Updating payload:', payload);
+        
+        const response = await fetch(`/main/api/dyed-yarn/update/${currentRecordId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        
+        const result = await response.json();
+        alert('Data updated successfully!');
+        console.log('Update successful:', result);
+        
+        initializeFormFromTop();
+        
+    } catch (error) {
+        console.error('Error updating data:', error);
+        alert('Failed to update data: ' + error.message);
+    }
+});
 
-            const result = await response.json();
-            alert('Record deleted successfully!');
-            console.log('Delete successful:', result);
-        } catch (error) {
-            console.error('Error deleting record:', error);
-            alert('Failed to delete record: ' + error.message);
+// Export to Excel button
+document.getElementById('saveToExcelBtn')?.addEventListener('click', async function() {
+    try {
+        const response = await fetch('/main/api/dyed-yarn/export-excel', {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
         }
-    });
 
-    // Initialize calculations
-    calculateBreakdownTotal();
-    calculateTotalPrice();
-    calculateYarnTotals();
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        
+        const contentDisposition = response.headers.get('content-disposition');
+        let filename = 'dyed_yarn_records.csv';
+        if (contentDisposition) {
+            const match = contentDisposition.match(/filename="(.+)"/);
+            if (match) filename = match[1];
+        }
+        
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        console.log('Export successful');
+    } catch (error) {
+        console.error('Error exporting data:', error);
+        alert('Failed to export data: ' + error.message);
+    }
+});
 
-    // Initialize dropdowns
-    setTimeout(() => {
-        fetchPONumbers();
-        fetchDispoNumbers();
-        fetchDispoNumbersForBreakdown();
-        fetchDyedYarnRecords();
-    }, 100);
+// Saved Dyed Yarn Records button
+document.getElementById('savedDyedYarnBtn')?.addEventListener('click', async function() {
+    try {
+        const response = await fetch('/main/api/dyed-yarn/saved-records', {
+            method: 'GET',
+            credentials: 'include'
+        });
 
-    console.log('Dyed Yarn Received Form initialized successfully');
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const records = await response.json();
+        displaySavedRecords(records);
+    } catch (error) {
+        console.error('Error fetching saved records:', error);
+        alert('Failed to fetch saved records: ' + error.message);
+    }
+});
+
+// Delete Record button
+document.getElementById('deleteDyedYarnBtn')?.addEventListener('click', async function() {
+    const recordId = prompt('Enter the ID of the record to delete:');
+    
+    if (!recordId) {
+        return;
+    }
+
+    if (!confirm(`Are you sure you want to delete record ID: ${recordId}? This action cannot be undone.`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/main/api/dyed-yarn/delete/${recordId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        alert('Record deleted successfully!');
+        console.log('Delete successful:', result);
+    } catch (error) {
+        console.error('Error deleting record:', error);
+        alert('Failed to delete record: ' + error.message);
+    }
+});
+
+// Initialize calculations
+calculateBreakdownTotal();
+calculateTotalPrice();
+calculateYarnTotals();
+
+// Initialize dropdowns
+setTimeout(() => {
+    fetchPONumbers();
+    fetchDispoNumbers();
+    fetchDispoNumbersForBreakdown();
+    fetchDyedYarnRecords();
+}, 100);
+
+console.log('Dyed Yarn Received Form initialized successfully');
 });
 
 // ========== DISPLAY SAVED RECORDS MODAL ==========
@@ -1865,7 +1852,13 @@ function displaySavedRecords(records) {
     modal.show();
 }
 
-// ========== LOAD RECORD FROM MODAL ==========
+// ========== FIX C: REPLACE loadRecord() in dyed_yarn_receive.html ==========
+// Problem: breakdown_details rows returned from the fixed API now contain
+// plain date strings, but the old loadRecord() used new Date(value).toISOString()
+// which adds timezone offset — shifting the date by one day in UTC+6.
+// Also the old code re-attached input listeners only to qty, not correctly
+// referencing the new rows. This version is clean and safe.
+
 async function loadRecord(recordId) {
     try {
         const response = await fetch(`/main/api/dyed-yarn/fetch-by-id/${recordId}`, {
@@ -1876,111 +1869,118 @@ async function loadRecord(recordId) {
         if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
         const data = await response.json();
-        
-        // Set current record ID
         currentRecordId = data.id;
-        
-        // Populate form fields
+
+        // --- Populate main form fields ---
         const form = document.getElementById('dyedYarnReceivedForm');
         if (form) {
             for (const [key, value] of Object.entries(data)) {
-                if (key === 'breakdown_details' || key === 'warp_details' || key === 'weft_details') continue;
-                
+                if (['breakdown_details', 'warp_details', 'weft_details'].includes(key)) continue;
+
                 const input = form.querySelector(`[name="${key}"]`);
-                if (input) {
-                    if (input.type === 'date' && value) {
-                        try {
-                            input.value = new Date(value).toISOString().split('T')[0];
-                        } catch (e) {
-                            input.value = '';
-                        }
-                    } else {
-                        input.value = value || '';
-                    }
+                if (!input) continue;
+
+                if (input.type === 'date' && value) {
+                    // Value is already 'YYYY-MM-DD' string from DATE_FORMAT — assign directly
+                    input.value = value.toString().substring(0, 10);
+                } else {
+                    input.value = value ?? '';
                 }
             }
         }
-        
-        // Populate breakdown table
-        if (data.breakdown_details && data.breakdown_details.length > 0) {
-            const tbody = document.querySelector('#dyedYarnBreakdownTable tbody');
-            if (tbody) {
-                tbody.innerHTML = '';
-                data.breakdown_details.forEach(detail => {
-                    const row = tbody.insertRow();
-                    row.innerHTML = `
-                        <td class="date-column"><input type="date" class="form-control" name="dyed_yarn_received_date[]" value="${detail.dyed_yarn_received_date || ''}"></td>
-                        <td class="color-column"><input type="text" class="form-control" name="dyed_yarn_received_color[]" value="${detail.dyed_yarn_received_color || ''}"></td>
-                        <td class="quantity-column"><input type="number" step="0.01" class="form-control" name="dyed_yarn_received_qty[]" value="${detail.dyed_yarn_received_qty || 0}"></td>
-                    `;
-                    
-                    const quantityInput = row.querySelector('input[name="dyed_yarn_received_qty[]"]');
-                    if (quantityInput) {
-                        quantityInput.addEventListener('input', calculateBreakdownTotal);
-                    }
-                });
-            }
+
+        // --- Populate breakdown table ---
+        const tbody = document.querySelector('#dyedYarnBreakdownTable tbody');
+        if (tbody) {
+            tbody.innerHTML = '';
+
+            const rows = (data.breakdown_details && data.breakdown_details.length > 0)
+                ? data.breakdown_details
+                : [{ dyed_yarn_received_date: '', dyed_yarn_received_color: '', dyed_yarn_received_qty: 0 }];
+
+            rows.forEach(detail => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="date-column">
+                        <input type="date" class="form-control"
+                            name="dyed_yarn_received_date[]"
+                            value="${detail.dyed_yarn_received_date || ''}">
+                    </td>
+                    <td class="color-column">
+                        <input type="text" class="form-control"
+                            name="dyed_yarn_received_color[]"
+                            value="${detail.dyed_yarn_received_color || ''}">
+                    </td>
+                    <td class="quantity-column">
+                        <input type="number" step="0.01" class="form-control"
+                            name="dyed_yarn_received_qty[]"
+                            value="${parseFloat(detail.dyed_yarn_received_qty) || 0}">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+
+                tr.querySelector('input[name="dyed_yarn_received_qty[]"]')
+                    .addEventListener('input', calculateBreakdownTotal);
+            });
         }
-        
-        // Populate warp details table
+
+        // --- Populate warp table ---
         if (data.warp_details && data.warp_details.length > 0) {
-            const tbody = document.querySelector('#warpYarnDetailsTable tbody');
-            if (tbody) {
-                tbody.innerHTML = '';
+            const warpTbody = document.querySelector('#warpYarnDetailsTable tbody');
+            if (warpTbody) {
+                warpTbody.innerHTML = '';
                 data.warp_details.forEach((detail, index) => {
-                    const row = tbody.insertRow();
+                    const row = warpTbody.insertRow();
                     row.innerHTML = `
                         <td>${index + 1}</td>
-                        <td><input type="text" class="form-control" name="warp_count[]" value="${detail.count || ''}" readonly></td>
-                        <td><input type="text" class="form-control" name="warp_ply[]" value="${detail.ply || ''}" readonly></td>
-                        <td><input type="text" class="form-control" name="warp_cal_count[]" value="${detail.cal_count || ''}" readonly></td>
-                        <td><input type="text" class="form-control" name="warp_color_name[]" value="${detail.color_name || ''}" readonly></td>
-                        <td><input type="text" class="form-control" name="warp_ld_number[]" value="" readonly></td>
-                        <td><input type="text" class="form-control" name="warp_yarn_type[]" value="" readonly></td>
-                        <td><input type="text" class="form-control" name="warp_yarn_per_repeat[]" value="" readonly></td>
-                        <td><input type="text" class="form-control result-field" name="warp_dyed_qty[]" value="${parseFloat(detail.dyed_qty_kg || 0).toFixed(2)}" readonly></td>
-                        <td><input type="text" class="form-control result-field" name="warp_grey_qty[]" value="${parseFloat(detail.warp_required_kgs || 0).toFixed(2)}" readonly></td>
-                        <td><input type="text" class="form-control result-field" name="warp_no_of_cones[]" value="" readonly></td>
-                        <td><input type="text" class="form-control result-field" name="warp_cone_length[]" value="" readonly></td>
+                        <td><input type="text" class="form-control" name="warp_count[]"         value="${detail.count        || ''}" readonly></td>
+                        <td><input type="text" class="form-control" name="warp_ply[]"            value="${detail.ply          || ''}" readonly></td>
+                        <td><input type="text" class="form-control" name="warp_cal_count[]"      value="${detail.cal_count    || ''}" readonly></td>
+                        <td><input type="text" class="form-control" name="warp_color_name[]"     value="${detail.color_name   || ''}" readonly></td>
+                        <td><input type="text" class="form-control" name="warp_ld_number[]"      value=""                            readonly></td>
+                        <td><input type="text" class="form-control" name="warp_yarn_type[]"      value=""                            readonly></td>
+                        <td><input type="text" class="form-control" name="warp_yarn_per_repeat[]"value=""                            readonly></td>
+                        <td><input type="text" class="form-control result-field" name="warp_dyed_qty[]"    value="${parseFloat(detail.dyed_qty_kg       || 0).toFixed(2)}" readonly></td>
+                        <td><input type="text" class="form-control result-field" name="warp_grey_qty[]"    value="${parseFloat(detail.warp_required_kgs || 0).toFixed(2)}" readonly></td>
+                        <td><input type="text" class="form-control result-field" name="warp_no_of_cones[]" value=""                            readonly></td>
+                        <td><input type="text" class="form-control result-field" name="warp_cone_length[]" value=""                            readonly></td>
                     `;
                 });
             }
         }
-        
-        // Populate weft details table
+
+        // --- Populate weft table ---
         if (data.weft_details && data.weft_details.length > 0) {
-            const tbody = document.querySelector('#weftYarnDetailsTable tbody');
-            if (tbody) {
-                tbody.innerHTML = '';
+            const weftTbody = document.querySelector('#weftYarnDetailsTable tbody');
+            if (weftTbody) {
+                weftTbody.innerHTML = '';
                 data.weft_details.forEach((detail, index) => {
-                    const row = tbody.insertRow();
+                    const row = weftTbody.insertRow();
                     row.innerHTML = `
                         <td>${index + 1}</td>
-                        <td><input type="text" class="form-control" name="weft_count[]" value="${detail.count || ''}" readonly></td>
-                        <td><input type="text" class="form-control" name="weft_ply[]" value="${detail.ply || ''}" readonly></td>
-                        <td><input type="text" class="form-control" name="weft_cal_count[]" value="${detail.cal_count || ''}" readonly></td>
-                        <td><input type="text" class="form-control" name="weft_color_name[]" value="${detail.color_name || ''}" readonly></td>
-                        <td><input type="text" class="form-control" name="weft_ld_number[]" value="" readonly></td>
-                        <td><input type="text" class="form-control" name="weft_yarn_type[]" value="" readonly></td>
-                        <td><input type="text" class="form-control" name="weft_yarn_per_repeat[]" value="" readonly></td>
-                        <td><input type="text" class="form-control result-field" name="weft_dyed_qty[]" value="${parseFloat(detail.dyed_qty_kg || 0).toFixed(2)}" readonly></td>
-                        <td><input type="text" class="form-control result-field" name="weft_grey_qty[]" value="${parseFloat(detail.weft_required_kgs || 0).toFixed(2)}" readonly></td>
+                        <td><input type="text" class="form-control" name="weft_count[]"          value="${detail.count        || ''}" readonly></td>
+                        <td><input type="text" class="form-control" name="weft_ply[]"             value="${detail.ply          || ''}" readonly></td>
+                        <td><input type="text" class="form-control" name="weft_cal_count[]"       value="${detail.cal_count    || ''}" readonly></td>
+                        <td><input type="text" class="form-control" name="weft_color_name[]"      value="${detail.color_name   || ''}" readonly></td>
+                        <td><input type="text" class="form-control" name="weft_ld_number[]"       value=""                            readonly></td>
+                        <td><input type="text" class="form-control" name="weft_yarn_type[]"       value=""                            readonly></td>
+                        <td><input type="text" class="form-control" name="weft_yarn_per_repeat[]" value=""                            readonly></td>
+                        <td><input type="text" class="form-control result-field" name="weft_dyed_qty[]"  value="${parseFloat(detail.dyed_qty_kg        || 0).toFixed(2)}" readonly></td>
+                        <td><input type="text" class="form-control result-field" name="weft_grey_qty[]"  value="${parseFloat(detail.weft_required_kgs  || 0).toFixed(2)}" readonly></td>
                     `;
                 });
             }
         }
-        
-        // Recalculate all totals
+
         calculateBreakdownTotal();
         calculateTotalPrice();
         calculateYarnTotals();
-        
-        // Close modal
+
         const modal = bootstrap.Modal.getInstance(document.getElementById('savedRecordsModal'));
         if (modal) modal.hide();
-        
-        alert('Record loaded successfully!');
-        
+
+        initializeFormFromTop();
+
     } catch (error) {
         console.error('Error loading record:', error);
         alert('Failed to load record: ' + error.message);
@@ -2004,8 +2004,6 @@ async function deleteRecordFromModal(recordId) {
         }
 
         alert('Record deleted successfully!');
-        
-        // Reload the records in the modal
         document.getElementById('savedDyedYarnBtn').click();
         
     } catch (error) {

@@ -6,24 +6,26 @@
     <title>Advanced Pre-Costing Calculator</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/md5-js@0.0.3/md5.min.js"></script>
     
     <style>
         :root {
             --primary-bg: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
             --container-bg: #252525;
-            --card-bg: #353535;
-            --card-hover-bg: #454545;
-            --input-bg: #303030;
-            --input-focus-bg: #353535;
             --text-color: #e0e0e0;
             --accent-color: #00c4ff;
-            --accent-gradient: linear-gradient(90deg, #007bff, #00c4ff);
+            --result-bg: #28a745;
+            --result-text: #000000;
+            --total-row-bg: #d68733;
             --card-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
             --btn-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-            --text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            --text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
             --border-glow: rgba(0, 196, 255, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
@@ -33,8 +35,8 @@
             min-height: 100vh;
             margin: 0;
             padding: 12px;
-            box-sizing: border-box;
             background-attachment: fixed;
+            overflow-x: hidden;
         }
 
         .calculator-container {
@@ -45,9 +47,8 @@
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
             padding: 25px;
             margin: 10px auto;
-            border: 1px solid #3a3a3a;
+            border: 2px solid #3a3a3a;
             position: relative;
-            overflow: hidden;
             background-image: 
                 radial-gradient(circle at 10% 20%, rgba(0, 196, 255, 0.03) 0%, transparent 20%),
                 radial-gradient(circle at 90% 80%, rgba(0, 196, 255, 0.03) 0%, transparent 20%);
@@ -63,53 +64,61 @@
             background: linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.03) 50%, transparent 51%);
             background-size: 10px 10px;
             pointer-events: none;
-            z-index: 0;
+            border-radius: 20px;
         }
 
-        .section-header {
-            background: var(--accent-gradient);
-            color: #ffffff;
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 15px;
+        /* Remove spin buttons from all number inputs */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+            display: none;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        
+        /* Dropdown Styles */
+        .dropdown {
             position: relative;
-            overflow: hidden;
-            text-shadow: var(--text-shadow);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            z-index: 1;
         }
 
-        .section-header::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            transform: skewX(-45deg);
-            animation: shimmer 2s infinite;
+        .dropdown-menu {
+            background: #303030;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            z-index: 1051;
+            max-height: 400px;
+            overflow-y: auto;
         }
 
-        @keyframes shimmer {
-            0% { transform: translateX(-100%) skewX(-45deg); }
-            100% { transform: translateX(100%) skewX(-45deg); }
+        .dropdown-item {
+            color: var(--text-color);
+            font-size: 0.85rem;
+            padding: 8px 15px;
+            transition: all 0.3s ease;
         }
 
+        .dropdown-item:hover {
+            background: #404040;
+            color: #ffffff;
+        }
+
+        /* Header Controls */
         .header-controls {
             display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 10px;
+            flex-direction: column;
+            gap: 24px;
             margin-bottom: 25px;
             background: rgba(0, 0, 0, 0.2);
-            padding: 15px;
+            padding: 18px 15px;
             border-radius: 15px;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             position: relative;
-            z-index: 1;
+            z-index: 1050;
         }
 
         .header-controls::after {
@@ -118,128 +127,378 @@
             bottom: 0;
             left: 15%;
             width: 70%;
-            height: 1px;
+            height: 2px;
             background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
         }
 
+        .header-title {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
         .header-controls h1 {
-            font-size: 1.75rem;
+            font-size: 1.9rem;
             font-weight: 700;
             color: var(--text-color);
             margin: 0;
-            flex: 1;
-            text-shadow: var(--text-shadow);
-            background: linear-gradient(45deg, #e0e0e0, #ffffff);
+            background: linear-gradient(45deg, #FFA500, #FFD580);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            position: relative;
+            letter-spacing: 1px;
+            text-shadow: var(--text-shadow);
         }
 
-        .header-controls h1::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 40%;
-            height: 3px;
-            background: linear-gradient(90deg, var(--accent-color), transparent);
-            border-radius: 3px;
+        .header-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .header-controls .btn,
-        .header-controls .form-select,
-        .btn-sm {
+        .header-controls .btn.dropdown-toggle {
             transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
             border-radius: 10px;
             border: none;
             color: #fff;
+            font-weight: 600;
+            padding: 8px 16px;
+            font-size: 0.85rem;
             box-shadow: var(--btn-shadow);
-            font-weight: 550;
             position: relative;
             overflow: hidden;
             z-index: 1;
+            white-space: nowrap;
+            min-width: 140px;
+            text-align: center;
         }
 
-        .header-controls .btn::before,
-        .btn-sm::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: all 0.5s ease;
-            z-index: -1;
-        }
-
-        .header-controls .btn:hover,
-        .btn-sm:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-        }
-
-        .header-controls .btn:hover::before,
-        .btn-sm:hover::before {
-            left: 100%;
-        }
-
-        .header-controls .btn i,
-        .btn-sm i {
+        .header-controls .btn i {
             margin-right: 6px;
         }
 
-        .header-controls .form-select {
-            background-color: var(--input-bg);
-            color: var(--text-color);
-            font-weight: 500;
-            border: 1px solid #4a4a4a;
-        }
+        /* Enhanced Button Gradients with Shine Effect */
+        .btn-primary { 
+    background: linear-gradient(135deg, #007bff, #0099ff, #00c4ff);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4), 
+                0 2px 4px rgba(0, 0, 0, 0.3),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+}
+.btn-primary:hover { 
+    background: linear-gradient(135deg, #0088ff, #00aaff, #00d2ff);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.5), 
+                0 4px 8px rgba(0, 0, 0, 0.4),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+}
 
-        .header-controls .form-select:focus {
-            background-color: var(--input-focus-bg);
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 0.25rem rgba(0, 196, 255, 0.25);
-            color: #ffffff;
-        }
+.btn-success { 
+    background: linear-gradient(135deg, #1e7e34, #28a745, #34d058, #48e86e);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4), 
+                0 2px 4px rgba(0, 0, 0, 0.3),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+}
+.btn-success:hover { 
+    background: linear-gradient(135deg, #248f3d, #2ecc71, #3ee085, #5afa8a);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.5), 
+                0 4px 8px rgba(0, 0, 0, 0.4),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+}
 
-        .form-control, .form-select {
-            border-radius: 10px;
-            border: 1px solid #4a4a4a;
-            background: var(--input-bg);
-            color: #fff;
-            box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.4), inset -2px -2px 5px rgba(255, 255, 255, 0.05);
+       .btn-info { 
+    background: linear-gradient(135deg, #0a7c85, #0d8991, #17a2b8, #3bbcc4, #4fb4db);
+    box-shadow: 0 6px 20px rgba(13, 137, 145, 0.4), 
+                0 2px 4px rgba(0, 0, 0, 0.3),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+}
+.btn-info:hover { 
+    background: linear-gradient(135deg, #0c8a93, #0e9aa3, #1ab5ce, #42cbd5, #5ac5ec);
+    box-shadow: 0 8px 25px rgba(13, 137, 145, 0.5), 
+                0 4px 8px rgba(0, 0, 0, 0.4),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary { 
+    background: linear-gradient(135deg, #5a6268, #6c757d, #868e96, #adb5bd);
+    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4), 
+                0 2px 4px rgba(0, 0, 0, 0.3),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+    color: #fff;
+}
+.btn-secondary:hover { 
+    background: linear-gradient(135deg, #6c757d, #7d868e, #969ea6, #bac3cb);
+    box-shadow: 0 8px 25px rgba(108, 117, 125, 0.5), 
+                0 4px 8px rgba(0, 0, 0, 0.4),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-danger { 
+    background: linear-gradient(135deg, #c82333, #dc3545, #e74c5c, #ff4050);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4), 
+                0 2px 4px rgba(0, 0, 0, 0.3),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+}
+.btn-danger:hover { 
+    background: linear-gradient(135deg, #d63545, #e84c59, #f35d6d, #ff5060);
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.5), 
+                0 4px 8px rgba(0, 0, 0, 0.4),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-warning { 
+    background: linear-gradient(135deg, #e0a800, #ffc107, #ffd333, #ffdb4a, #ffe066);
+    box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4), 
+                0 2px 4px rgba(0, 0, 0, 0.3),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.15);
+    color: #212529;
+}
+.btn-warning:hover { 
+    background: linear-gradient(135deg, #f0b800, #ffca2c, #ffdc50, #ffe066, #ffea8a);
+    box-shadow: 0 8px 25px rgba(255, 193, 7, 0.5), 
+                0 4px 8px rgba(0, 0, 0, 0.4),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.15);
+}
+
+        /* Enhanced Shine Effect on Buttons */
+.header-controls .btn::before,
+.header-controls .btn.dropdown-toggle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.4), 
+        rgba(255, 255, 255, 0.6), 
+        rgba(255, 255, 255, 0.4), 
+        transparent);
+    transition: all 0.6s ease;
+    z-index: -1;
+}
+
+.header-controls .btn:hover,
+.header-controls .btn.dropdown-toggle:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7) !important;
+}
+
+.header-controls .btn:active,
+.header-controls .btn.dropdown-toggle:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+}
+
+.header-controls .btn:hover::before,
+.header-controls .btn.dropdown-toggle:hover::before {
+    left: 100%;
+}
+
+/* Add text shadow to button text for more depth */
+.header-controls .btn,
+.header-controls .btn.dropdown-toggle {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+        /* Form Section */
+        .form-section {
+            background: #252525;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
             transition: all 0.3s ease;
-            font-size: 1rem;
-            padding: 8px 12px;
+            position: relative;
         }
 
-        .form-control:focus, .form-select:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 8px rgba(0, 183, 255, 0.5), inset 2px 2px 5px rgba(0, 0, 0, 0.3);
-            outline: none;
-            background: var(--input-focus-bg);
-            color: #fff;
+        .form-section:hover {
+            background: #2D2D2D;
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.3), 0 0 15px var(--border-glow);
+            border-color: rgba(0, 196, 255, 0.2);
         }
 
-        .form-control::selection, .form-select::selection {
-            background: var(--accent-color);
-            color: #fff;
+        .form-section h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(0, 196, 255, 0.3);
+            text-shadow: var(--text-shadow);
         }
 
-        .form-control[readonly] {
-            background: #3a3a3a;
-            font-weight: 500;
-            color: #fff;
-            font-size: 1rem;
-            box-shadow: inset 3px 3px 5px rgba(0, 0, 0, 0.3), inset -2px -2px 5px rgba(255, 255, 255, 0.05);
+        /* Three Column Layout */
+        .vertical-layout {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
         }
 
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Form Group - Horizontal Layout */
+        .form-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            position: relative;
+            min-height: 38px;
+        }
+
+        .form-group label {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 0;
+            font-size: 0.85rem;
+            width: 45%;
+            flex-shrink: 0;
+            white-space: normal;
+            line-height: 1.3;
+            word-wrap: break-word;
+            padding-top: 6px;
+        }
+
+        .form-group .form-control,
+        .form-group .form-select {
+            width: 55%;
+            padding: 6px 30px 6px 10px;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .form-group i {
+            position: absolute;
+            right: 8px;
+            top: 12px;
+            color: var(--accent-color);
+            font-size: 0.85rem;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .form-group .form-control:focus ~ i,
+        .form-group .form-select:focus ~ i {
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+
+        /* 3D Engraved/Carved Input Fields */
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #2a2a2a;
+    background: #404040;
+    color: #fff;
+    transition: all 0.3s ease;
+    /* 3D Carved Effect - Inset shadow */
+    box-shadow: 
+        inset 2px 2px 4px rgba(0, 0, 0, 0.6),
+        inset -2px -2px 4px rgba(255, 255, 255, 0.05),
+        0 1px 2px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--accent-color);
+    box-shadow: 
+        inset 2px 2px 5px rgba(0, 0, 0, 0.7),
+        inset -2px -2px 5px rgba(0, 196, 255, 0.1),
+        0 0 8px rgba(0, 183, 255, 0.5),
+        0 1px 2px rgba(0, 0, 0, 0.3);
+    outline: none;
+    background: #454545;
+    color: #fff;
+}
+
+.form-control:hover, .form-select:hover {
+    border-color: var(--accent-color);
+    box-shadow: 
+        inset 2px 2px 4px rgba(0, 0, 0, 0.6),
+        inset -2px -2px 4px rgba(0, 196, 255, 0.08),
+        0 1px 3px rgba(0, 196, 255, 0.3);
+}
+
+        /* Enhanced 3D effect for readonly/result fields */
+.form-control[readonly],
+.result-field {
+    background: var(--result-bg) !important;
+    color: var(--result-text) !important;
+    font-weight: 600;
+    border: 1px solid #1e7e34;
+    /* 3D Raised/Embossed Effect */
+    box-shadow: 
+        inset -1px -1px 3px rgba(0, 0, 0, 0.3),
+        inset 1px 1px 3px rgba(255, 255, 255, 0.3),
+        0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.result-cell {
+    background: #28a745 !important;
+    color: #000000 !important;
+    font-weight: 600;
+    padding: 5px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.85rem;
+    border: 1px solid #1e7e34;
+    /* 3D Raised Effect */
+    box-shadow: 
+        inset -1px -1px 3px rgba(0, 0, 0, 0.3),
+        inset 1px 1px 3px rgba(255, 255, 255, 0.3),
+        0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Scroll to top button animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+#scrollToTopBtn.show {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+/* Responsive adjustments for scroll button */
+@media (max-width: 768px) {
+    #scrollToTopBtn {
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        font-size: 18px;
+        padding: 12px;
+    }
+}
+
+        /* Table Styles */
         .table-responsive {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            overflow-x: auto;
+            overflow-y: visible;
         }
 
         .table {
@@ -251,217 +510,163 @@
             color: var(--text-color);
         }
 
+        /* Table Headers */
         .table thead th {
             background: #3a3a3a;
             color: var(--text-color);
             font-weight: 600;
-            padding: 12px 8px;
-            border: none;
-            text-shadow: var(--text-shadow);
+            padding: 8px 4px;
+            border: 1px solid #4a4a4a;
             text-align: center;
             white-space: normal;
-            font-size: 0.9rem;
-            position: relative;
-        }
-        
-        /* Make specific table columns narrower */
-.table thead th:nth-child(2), .table tbody td:nth-child(2) { /* Ply column */
-    min-width: 60px;
-    max-width: 80px;
-    width: 70px;
-}
-
-.table thead th:nth-child(3), .table tbody td:nth-child(3) { /* Repeat Breakdown column */
-    min-width: 80px;
-    max-width: 100px;
-    width: 90px;
-}
-
-/* Make input fields in these columns smaller */
-.table tbody td:nth-child(2) input,
-.table tbody td:nth-child(3) input {
-    padding: 4px 6px;
-    font-size: 0.85rem;
-}
-
-/* Reduce overall table cell padding for better spacing */
-.table thead th,
-.table tbody td {
-    padding: 6px 4px;
-    font-size: 0.85rem;
-}
-
-/* Make result cells more compact */
-.result-cell {
-    padding: 4px;
-    font-size: 0.8rem;
-    text-align: center;
-}
-
-
-
-/* Reduce margin between form rows */
-.row.mb-2 {
-    margin-bottom: 8px !important;
-}
-
-.col-md-2.mb-2 {
-    margin-bottom: 8px;
-    padding-left: 8px;
-    padding-right: 8px;
-}
-
-/* Make form controls more compact */
-.form-control {
-    padding: 6px 10px;
-    font-size: 0.9rem;
-    height: auto;
-}
-
-/* Make labels more compact */
-label {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--accent-color);
-    margin-bottom: 4px;
-    display: block;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-/* Reduce section header margin */
-.section-header {
-    margin-bottom: 10px;
-}
-        
-        
-        
-
-        .table thead th::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 15%;
-            width: 70%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(0, 196, 255, 0.2), transparent);
+            font-size: 0.75rem;
+            vertical-align: middle;
+            line-height: 1.2;
+            word-wrap: break-word;
+            min-width: 60px;
         }
 
         .table tbody td {
-            padding: 8px 6px;
+            padding: 6px 3px;
             background: #2a2a2a;
-            border: none;
+            border: 1px solid #4a4a4a;
             text-align: center;
             vertical-align: middle;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #fff;
-            transition: all 0.3s ease;
         }
 
         .table tbody tr:hover td {
             background: #353535;
         }
 
-        .table tfoot td {
-            background: #303030;
-            padding: 10px;
-            text-align: center;
-            border: none;
-        }
+        /* Table Input Fields - 3D Carved */
+.pattern-row input {
+    width: 100%;
+    padding: 6px 2px;
+    border-radius: 6px;
+    background: #404040;
+    color: #fff;
+    border: 1px solid #2a2a2a;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 500; /* Added for better visibility */
+    min-height: 40px; /* Added minimum height */
+    transition: all 0.3s ease;
+    /* 3D Carved Effect */
+    box-shadow: 
+        inset 2px 2px 4px rgba(0, 0, 0, 0.6),
+        inset -2px -2px 4px rgba(255, 255, 255, 0.05),
+        0 1px 2px rgba(0, 0, 0, 0.3);
+}
 
-        /* Specific column widths */
-        .table thead th:nth-child(1), .table tbody td:nth-child(1) { min-width: 80px; }
-        .table thead th:nth-child(2), .table tbody td:nth-child(2) { min-width: 100px; }
-        .table thead th:nth-child(3), .table tbody td:nth-child(3) { min-width: 120px; }
+.pattern-row input:focus {
+    border-color: var(--accent-color);
+    box-shadow: 
+        inset 2px 2px 5px rgba(0, 0, 0, 0.7),
+        inset -2px -2px 5px rgba(0, 196, 255, 0.1),
+        0 0 6px rgba(0, 183, 255, 0.5),
+        0 1px 2px rgba(0, 0, 0, 0.3);
+    background: #454545;
+    color: #fff;
+}
 
-        .pattern-row input {
-            width: 100%;
-            padding: 6px 8px;
-            border-radius: 8px;
-            background: var(--input-bg);
-            color: #fff;
-            border: 1px solid #4a4a4a;
-            box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.3), inset -2px -2px 4px rgba(255, 255, 255, 0.05);
-            text-align: center;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-        }
+.pattern-row input:hover {
+    border-color: var(--accent-color);
+    box-shadow: 
+        inset 2px 2px 4px rgba(0, 0, 0, 0.6),
+        inset -2px -2px 4px rgba(0, 196, 255, 0.08),
+        0 1px 3px rgba(0, 196, 255, 0.3);
+}
 
-        .pattern-row input:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 6px rgba(0, 183, 255, 0.5), inset 2px 2px 4px rgba(0, 0, 0, 0.3);
-            background: var(--input-focus-bg);
-            color: #fff;
-        }
-
+        /* Result cells in table - Green (#28a745) */
         .result-cell {
-            background: #3a3a3a;
-            font-weight: 500;
-            padding: 6px;
+            background: #28a745 !important;
+            color: #000000 !important;
+            font-weight: 600;
+            padding: 6px 2px;
+    border-radius: 6px;
             border-radius: 6px;
-            color: #fff;
-            box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.2), inset -2px -2px 4px rgba(255, 255, 255, 0.05);
             text-align: center;
-            font-size: 0.9rem;
+            font-size: 0.92rem;
+            border: 1px solid #1e7e34;
+   
         }
 
-        .btn-primary { background: var(--accent-gradient); }
-        .btn-primary:hover { background: linear-gradient(90deg, #0088ff, #00d2ff); }
-        .btn-success { background: linear-gradient(90deg, #28a745, #34d058); }
-        .btn-success:hover { background: linear-gradient(90deg, #2ecc71, #3ee085); }
-        .btn-info { background: linear-gradient(90deg, #17a2b8, #1de9b6); }
-        .btn-info:hover { background: linear-gradient(90deg, #1ab6cf, #20ffc7); }
-        .btn-secondary { background: linear-gradient(90deg, #6c757d, #8d959d); color: #fff; }
-        .btn-secondary:hover { background: linear-gradient(90deg, #7d868e, #9ba5ae); }
-        .btn-danger { background: linear-gradient(90deg, #dc3545, #ff4050); }
-        .btn-danger:hover { background: linear-gradient(90deg, #e84c59, #ff5060); }
-        .btn-warning { background: linear-gradient(90deg, #ffc107, #ffdb4a); color: #212529; }
-        .btn-warning:hover { background: linear-gradient(90deg, #ffca2c, #ffe066); }
-
-        .btn-sm {
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 0.85rem;
+        /* Total Row - Orange (#d68733) */
+        .total-row td {
+            background: #d68733 !important;
+            color: #000000 !important;
+            font-weight: 600;
+            border: 1px solid #b56a1f !important;
         }
 
-        .row.mb-3 {
-            margin-bottom: 20px !important;
-            position: relative;
-            z-index: 1;
+        /* Small Buttons - Enhanced 3D Shadow */
+.btn-sm {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 
+                0 2px 4px rgba(0, 0, 0, 0.2),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.btn-sm::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.3), 
+        transparent);
+    transition: all 0.5s ease;
+}
+
+.btn-sm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4),
+                0 3px 6px rgba(0, 0, 0, 0.3),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.btn-sm:active {
+    transform: translateY(0px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3),
+                inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-sm:hover::before {
+    left: 100%;
+}
+
+        .d-flex {
+            display: flex;
         }
 
-        .row.mb-3 .col-md-3, .row.mb-3 .col-md-4, .row.mb-3 .col-md-6 {
-            margin-bottom: 15px;
+        .gap-2 {
+            gap: 8px;
         }
+        
+        .form-section .d-flex.gap-2 {
+    margin-top: 15px; /* Adds gap between table and button container */
+}
 
-        label {
-            font-size: 0.95rem;
-            font-weight: 520;
-            color: var(--accent-color);
-            margin-bottom: 8px;
-            display: block;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-        }
-
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        input[type="number"] {
-            -moz-appearance: textfield;
-        }
-
+        /* Modal Styles */
         .modal-content {
             border-radius: 20px;
             background: #252525;
             border: 1px solid #3a3a3a;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-            overflow: hidden;
         }
 
         .modal-header {
-            background: var(--accent-gradient);
+            background: linear-gradient(90deg, #007bff, #00c4ff);
             color: #ffffff;
             border-radius: 20px 20px 0 0;
             border-bottom: none;
@@ -470,8 +675,6 @@ label {
 
         .modal-header .modal-title {
             font-weight: 600;
-            letter-spacing: 0.5px;
-            text-shadow: var(--text-shadow);
         }
 
         .modal-body {
@@ -486,19 +689,7 @@ label {
             padding: 15px;
         }
 
-        .modal-footer .btn {
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            border: none;
-            font-weight: 600;
-        }
-
-        .modal-footer .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-        }
-
-        /* Custom scrollbar */
+        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -517,172 +708,167 @@ label {
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(0, 196, 255, 0.5);
         }
+        
+        /* Auto-scroll and Scroll-to-top button styles */
+html {
+    scroll-behavior: smooth;
+}
 
-        /* Responsive Media Queries */
-        @media (max-width: 1400px) {
-            .calculator-container {
-                padding: 20px;
-            }
-            
-            .header-controls .btn {
-                padding: 6px 10px;
-                font-size: 0.85rem;
-            }
-            
-            .header-controls h1 {
-                font-size: 1.6rem;
-            }
-        }
+/* Scroll to top button */
+#scrollToTopBtn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 99;
+    border: none;
+    outline: none;
+    background: linear-gradient(135deg, #00c4ff, #007bff);
+    color: white;
+    cursor: pointer;
+    padding: 15px;
+    border-radius: 50%;
+    font-size: 20px;
+    width: 55px;
+    height: 55px;
+    box-shadow: 0 8px 20px rgba(0, 123, 255, 0.4),
+                0 4px 8px rgba(0, 0, 0, 0.3),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    display: none;
+    opacity: 0;
+    transform: scale(0.8);
+}
 
+#scrollToTopBtn:hover {
+    background: linear-gradient(135deg, #00d2ff, #0088ff);
+    box-shadow: 0 12px 30px rgba(0, 123, 255, 0.6),
+                0 6px 12px rgba(0, 0, 0, 0.4),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(-3px) scale(0.85);
+}
+
+#scrollToTopBtn:active {
+    transform: translateY(-1px) scale(0.8);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4),
+                inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+#scrollToTopBtn.show {
+    display: block;
+    opacity: 1;
+    transform: scale(1);
+}
+
+        /* Responsive Design */
         @media (max-width: 1200px) {
-            .header-controls h1 {
-                font-size: 1.4rem;
+            .vertical-layout {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .button-row {
+                justify-content: center;
+                gap: 6px;
             }
             
-            label {
-                font-size: 0.9rem;
-            }
-            
-            .form-control, .form-select {
-                font-size: 0.95rem;
+            .header-controls .btn,
+            .header-controls .btn.dropdown-toggle {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+                min-width: 120px;
             }
         }
 
         @media (max-width: 992px) {
-            .calculator-container {
-                padding: 15px;
-            }
-            
-            .header-controls {
+            .button-row {
                 flex-direction: column;
-                align-items: flex-start;
+                align-items: stretch;
+                gap: 8px;
             }
             
-            .header-controls h1 {
-                margin-bottom: 15px;
+            .header-controls .btn,
+            .header-controls .btn.dropdown-toggle {
                 width: 100%;
-                text-align: center;
-            }
-            
-            .header-controls .btn, 
-            .header-controls .form-select {
-                width: 100%;
-                margin-bottom: 8px;
-                font-size: 0.9rem;
-            }
-            
-            .section-header {
-                font-size: 1.1rem;
-                padding: 10px 15px;
+                max-width: 200px;
+                margin: 0 auto;
             }
         }
 
         @media (max-width: 768px) {
-            body {
-                padding: 8px;
+            .vertical-layout {
+                grid-template-columns: 1fr;
             }
             
-            .calculator-container {
-                padding: 12px;
-                margin: 5px;
+            .form-group {
+                flex-direction: column;
+                align-items: stretch;
             }
             
-            .section-header {
-                font-size: 1rem;
-                padding: 8px 12px;
-                margin-bottom: 12px;
+            .form-group label {
+                width: 100%;
             }
             
-            .form-control, .form-select {
-                font-size: 0.9rem;
-                padding: 6px 10px;
+            .form-group .form-control,
+            .form-group .form-select {
+                width: 100%;
             }
-            
-            label {
-                font-size: 0.85rem;
-                margin-bottom: 5px;
-            }
-            
-            .btn-sm {
-                padding: 4px 8px;
-                font-size: 0.8rem;
-            }
-            
-            .table thead th, 
-            .table tbody td {
-                padding: 6px 4px;
-                font-size: 0.8rem;
-            }
-            
-            .pattern-row input {
-                padding: 4px 6px;
-                font-size: 0.8rem;
-            }
-            
-            .result-cell {
-                font-size: 0.8rem;
-                padding: 4px;
-            }
-        }
 
-        @media (max-width: 576px) {
-            .calculator-container {
-                padding: 10px;
+            .form-group i {
+                position: absolute;
+                right: 10px;
+                top: 50%;
+                transform: translateY(-50%);
             }
             
             .header-controls h1 {
-                font-size: 1.2rem;
+                font-size: 1.4rem;
             }
             
-            .header-controls .btn {
-                font-size: 0.8rem;
-                padding: 5px 8px;
+            .table {
+                font-size: 0.7rem;
             }
-            
-            .section-header {
-                font-size: 0.9rem;
-                padding: 8px 10px;
+
+            .table thead th {
+                font-size: 0.65rem;
+                padding: 6px 2px;
             }
-            
-            .table thead th, 
-            .table tbody td {
-                padding: 4px 2px;
+
+            .header-controls .btn,
+            .header-controls .btn.dropdown-toggle {
                 font-size: 0.75rem;
-            }
-            
-            .btn-sm {
-                padding: 3px 6px;
-                font-size: 0.75rem;
-            }
-            
-            .row.mb-3 {
-                margin-bottom: 10px !important;
-            }
-            
-            .row.mb-3 .col-md-3, 
-            .row.mb-3 .col-md-4, 
-            .row.mb-3 .col-md-6 {
-                margin-bottom: 10px;
+                padding: 6px 10px;
+                min-width: 100px;
             }
         }
     </style>
 </head>
 <body>
     <div class="calculator-container">
+        <!-- Header Controls -->
         <div class="header-controls">
-            <h1>Pre-Costing Form</h1>
-            <div class="d-flex flex-wrap gap-2 justify-content-end w-100">
-                <button class="btn btn-primary" id="searchBtn"><i class="fas fa-search"></i> Search Pre-Costing</button>
-                <select class="form-select" style="min-width: 200px; max-width: 350px;" id="preCostingDropdown"> 
-                    <option value="">Select Pre-costing No</option>
-                </select>
-                <button class="btn btn-success" id="saveToPostgreSQLBtn"><i class="fas fa-database"></i> Save to MySQL</button>
-                <button class="btn btn-info" id="exportToCSVBtn"><i class="fas fa-file-csv"></i> Export to CSV</button>
-                <button class="btn btn-secondary" id="exportToSQLBtn"><i class="fas fa-file-code"></i> Export to SQL</button>
-                <button class="btn btn-success" id="saveBtn"><i class="fas fa-save"></i> Save</button>
-                <button class="btn btn-info" id="loadBtn"><i class="fas fa-folder"></i> Load</button>
-                <button class="btn btn-danger" id="clearBtn"><i class="fas fa-trash"></i> Clear</button>
+            <div class="header-title">
+                <h1>Pre-Costing Form</h1>
+            </div>
+            <div class="header-buttons">
+                <div class="button-row">
+                    <div class="dropdown">
+                        <button class="btn btn-info dropdown-toggle" type="button" id="searchPreCostingDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-search"></i> Search Pre-Costing Number
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="searchPreCostingDropdown">
+                            <!-- Dropdown items will be populated dynamically -->
+                        </ul>
+                    </div>
+                    <button class="btn btn-warning" id="clearBtn"><i class="fas fa-eraser"></i> Clear Form</button>
+                </div>
                 
+                <div class="button-row">
+                    <button class="btn btn-success" id="saveToPostgreSQLBtn"><i class="fas fa-database"></i> Save to MySQL</button>
+                    <button class="btn btn-info" id="exportToCSVBtn"><i class="fas fa-file-csv"></i> Export to CSV</button>
+                    <button class="btn btn-secondary" id="exportToSQLBtn"><i class="fas fa-file-code"></i> Export to SQL</button>
+                    <button class="btn btn-success" id="saveBtn"><i class="fas fa-save"></i> Save</button>
+                    <button class="btn btn-info" id="loadBtn"><i class="fas fa-folder"></i> Load</button>
+                    <a href="#" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
+                </div>
             </div>
         </div>
 
@@ -709,321 +895,813 @@ label {
             </div>
         </div>
 
-        <!-- Basic Information -->
-        <div class="section-header">Basic Information</div>
-        <div class="row mb-3">
-            <div class="col-md-2"><label>Pre Costing No:</label><input type="text" class="form-control" id="preCostingNo" name="total_upcharged_pre_cost_tk" maxlength="" pattern="\d{1,8}" placeholder="Enter Pre-Costing No" value=""></div>
-            <div class="col-md-2"><label>Buyer:</label><input type="text" class="form-control" id="buyer" name="total_upcharged_pre_cost_tk" value=""></div>
-            <div class="col-md-2"><label>Construction:</label><input type="text" class="form-control" id="construction" name="total_upcharged_pre_cost_tk" value=""></div>
-            <div class="col-md-2"><label>Warp EPI:</label><input type="number" class="form-control" id="epi" name="epi" value=""></div>
-            <div class="col-md-2"><label>Weft PPI:</label><input type="number" class="form-control" id="ppi" name="ppi" value=""></div>
-            <div class="col-md-2">
-                <label>Weave Type:</label>
-                <select class="form-control" id="weaveType" name="weave_type">
-                    <option value="Plain">Plain</option>
-                    <option value="Oxford">Oxford</option>
-                    <option value="Ottoman">Ottoman</option>
-                    <option value="Matt">Matt</option>
-                    <option value="2/1 Twill">2/1 Twill</option>
-                    <option value="2/2 Twill">2/2 Twill</option>
-                    <option value="3/1 Twill">3/1 Twill</option>
-                    <option value="4/1 Satin">4/1 Satin</option>
-                    <option value="3/2 Twill">3/2 Twill</option>
-                    <option value="3/3 Twill">3/3 Twill</option>
-                    <option value="3/3 Matt">3/3 Matt</option>
-                    <option value="3/2 Matt">3/2 Matt</option>
-                    <option value="4/4 Twill">4/4 Twill</option>
-                    <option value="4/2 Twill">4/2 Twill</option>
-                    <option value="6/2 Twill">6/2 Twill</option>
-                    <option value="2/2 Oxford Twill">2/2 Oxford Twill</option>
-                    <option value="3/1 Oxford Twill">3/1 Oxford Twill</option>
-                    <option value="2/1 Matt Twill">2/1 Matt Twill</option>
-                    <option value="2/2 Matt Twill">2/2 Matt Twill</option>
-                    <option value="3/1 Matt Twill">3/1 Matt Twill</option>
-                    <option value="3/3 Matt Twill">3/3 Matt Twill</option>
-                    <option value="4/4 Matt Twill">4/4 Matt Twill</option>
-                    <option value="Dobby">Dobby</option>
-                </select>
+        <!-- COMBINED: Basic Information & Cost Parameters -->
+        <div class="form-section">
+            <h2>Basic Information & Cost Parameters</h2>
+            
+            <div class="vertical-layout">
+                <div class="column">
+                    <div class="form-group">
+                        <label for="preCostingNo">Pre Costing No</label>
+                        <input type="text" class="form-control" id="preCostingNo" name="pre_costing_no" placeholder="Enter Pre-Costing No" value="">
+                        <i class="fas fa-hashtag"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="buyer">Buyer</label>
+                        <input type="text" class="form-control" id="buyer" name="buyer" value="">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="construction">Construction</label>
+                        <input type="text" class="form-control" id="construction" name="construction" value="">
+                        <i class="fas fa-industry"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="epi">Warp EPI</label>
+                        <input type="number" class="form-control" id="epi" name="epi" value="">
+                        <i class="fas fa-ruler-vertical"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ppi">Weft PPI</label>
+                        <input type="number" class="form-control" id="ppi" name="ppi" value="">
+                        <i class="fas fa-ruler-horizontal"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weaveType">Weave Type</label>
+                        <select class="form-control" id="weaveType" name="weave_type">
+                            <option value="Plain">Plain</option>
+                            <option value="Oxford">Oxford</option>
+                            <option value="Ottoman">Ottoman</option>
+                            <option value="Matt">Matt</option>
+                            <option value="2/1 Twill">2/1 Twill</option>
+                            <option value="2/2 Twill">2/2 Twill</option>
+                            <option value="3/1 Twill">3/1 Twill</option>
+                            <option value="4/1 Satin">4/1 Satin</option>
+                            <option value="3/2 Twill">3/2 Twill</option>
+                            <option value="3/3 Twill">3/3 Twill</option>
+                            <option value="3/3 Matt">3/3 Matt</option>
+                            <option value="3/2 Matt">3/2 Matt</option>
+                            <option value="4/4 Twill">4/4 Twill</option>
+                            <option value="4/2 Twill">4/2 Twill</option>
+                            <option value="6/2 Twill">6/2 Twill</option>
+                            <option value="2/2 Oxford Twill">2/2 Oxford Twill</option>
+                            <option value="3/1 Oxford Twill">3/1 Oxford Twill</option>
+                            <option value="2/1 Matt Twill">2/1 Matt Twill</option>
+                            <option value="2/2 Matt Twill">2/2 Matt Twill</option>
+                            <option value="3/1 Matt Twill">3/1 Matt Twill</option>
+                            <option value="3/3 Matt Twill">3/3 Matt Twill</option>
+                            <option value="4/4 Matt Twill">4/4 Matt Twill</option>
+                            <option value="Dobby">Dobby</option>
+                        </select>
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="warpCount1">Warp Count 1</label>
+                        <input type="number" class="form-control" id="warpCount1" name="warp_count_1" value="">
+                        <i class="fas fa-barcode"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="warpPly1">Warp Ply 1</label>
+                        <input type="number" class="form-control" id="warpPly1" name="warp_ply_1" value="">
+                        <i class="fas fa-random"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="warpCount2">Warp Count 2</label>
+                        <input type="number" class="form-control" id="warpCount2" name="warp_count_2" value="">
+                        <i class="fas fa-barcode"></i>
+                    </div>
+                </div>
+                
+                <div class="column">
+                    <div class="form-group">
+                        <label for="warpPly2">Warp Ply 2</label>
+                        <input type="number" class="form-control" id="warpPly2" name="warp_ply_2" value="">
+                        <i class="fas fa-random"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="warpCount3">Warp Count 3</label>
+                        <input type="number" class="form-control" id="warpCount3" name="warp_count_3" value="">
+                        <i class="fas fa-barcode"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="warpPly3">Warp Ply 3</label>
+                        <input type="number" class="form-control" id="warpPly3" name="warp_ply_3" value="">
+                        <i class="fas fa-random"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weftCount1">Weft Count 1</label>
+                        <input type="number" class="form-control" id="weftCount1" name="weft_count_1" value="">
+                        <i class="fas fa-align-justify"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weftPly1">Weft Ply 1</label>
+                        <input type="number" class="form-control" id="weftPly1" name="weft_ply_1" value="">
+                        <i class="fas fa-random"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weftCount2">Weft Count 2</label>
+                        <input type="number" class="form-control" id="weftCount2" name="weft_count_2" value="">
+                        <i class="fas fa-align-justify"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weftPly2">Weft Ply 2</label>
+                        <input type="number" class="form-control" id="weftPly2" name="weft_ply_2" value="">
+                        <i class="fas fa-random"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weftCount3">Weft Count 3</label>
+                        <input type="number" class="form-control" id="weftCount3" name="weft_count_3" value="">
+                        <i class="fas fa-align-justify"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weftPly3">Weft Ply 3</label>
+                        <input type="number" class="form-control" id="weftPly3" name="weft_ply_3" value="">
+                        <i class="fas fa-random"></i>
+                    </div>
+                </div>
+                
+                <div class="column">
+                    <div class="form-group">
+                        <label for="finishWidth">Finish Width (in)</label>
+                        <input type="number" class="form-control" id="finishWidth" name="finish_width" value="">
+                        <i class="fas fa-ruler"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="greigeWidth">Greige Width (in)</label>
+                        <input type="number" class="form-control" id="greigeWidth" name="greige_width" value="">
+                        <i class="fas fa-ruler"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalEnds">Total Ends</label>
+                        <input type="number" class="form-control" id="totalEnds" name="total_ends" value="">
+                        <i class="fas fa-hashtag"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="warpCrimp">Warp Crimp (%)</label>
+                        <input type="number" class="form-control" id="warpCrimp" name="warp_crimp" value="">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weftCrimp">Weft Crimp (%)</label>
+                        <input type="number" class="form-control" id="weftCrimp" name="weft_crimp" value="">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reedSpace">Reed Space</label>
+                        <input type="number" class="form-control" id="reedSpace" value="">
+                        <i class="fas fa-arrows-alt-h"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ydAllow">Y/D Allow (%)</label>
+                        <input type="number" class="form-control" id="ydAllow" name="yd_allow" value="">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="warpWast">Warp Waste (%)</label>
+                        <input type="number" class="form-control" id="warpWast" name="warp_wast" value="">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weftWast">Weft Waste (%)</label>
+                        <input type="number" class="form-control" id="weftWast" name="weft_wast" value="">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="vertical-layout">
+                <div class="column">
+                    <div class="form-group">
+                        <label for="finishAllow">Finish Allow (%)</label>
+                        <input type="number" class="form-control" id="finishAllow" name="finish_allow" value="">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="orderQuantity">Order Quantity (yds)</label>
+                        <input type="number" class="form-control" id="orderQuantity" name="order_quantity" value="">
+                        <i class="fas fa-ruler"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pickLength">Pick Length (Inch)</label>
+                        <input type="number" class="form-control" id="pickLength" name="pick_length" value="">
+                        <i class="fas fa-arrows-alt-h"></i>
+                    </div>
+                </div>
+                
+                <div class="column">
+                    <div class="form-group">
+                        <label for="weavingPickRate">Pick Rate (tk/yd)</label>
+                        <input type="number" class="form-control" id="weavingPickRate" name="weaving_rate" value="">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dyeingFinishingRate">Dye/Finish Rate (tk/yd)</label>
+                        <input type="number" class="form-control" id="dyeingFinishingRate" name="dye_finish_rate" value="">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="commercialCostInput">Commercial Cost (tk/yd)</label>
+                        <input type="number" class="form-control" id="commercialCostInput" name="commercial_cost" value="">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                </div>
+                
+                <div class="column">
+                    <div class="form-group">
+                        <label for="profit">Profit</label>
+                        <input type="number" class="form-control" id="profit" name="profit" value="">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dollarRateTk">Dollar Rate in TK</label>
+                        <input type="number" class="form-control" id="dollarRateTk" name="dollar_rate_tk" value="">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="preCostingDate">Pre-costing Date</label>
+                        <input type="date" class="form-control" id="preCostingDate" name="pre_costing_date" value="">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="vertical-layout">
+                <div class="column">
+                    <div class="form-group">
+                        <label for="warpRepeatSize">Warp Repeat Size (Inch)</label>
+                        <input type="number" class="form-control result-field" id="warpRepeatSize" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weftRepeatSize">Weft Repeat Size (Inch)</label>
+                        <input type="number" class="form-control result-field" id="weftRepeatSize" readonly>
+                    </div>
+                </div>
+                
+                <div class="column">
+                    <div class="form-group">
+                        <label for="warpRepeatNumber">Warp Repeat Number</label>
+                        <input type="number" class="form-control result-field" id="warpRepeatNumber" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weftRepeatNumber">Weft Repeat Number</label>
+                        <input type="number" class="form-control result-field" id="weftRepeatNumber" readonly>
+                    </div>
+                </div>
+                
+                <div class="column">
+                    <div class="form-group">
+                        <label for="warpRepeatEnds">Warp Repeat Ends</label>
+                        <input type="number" class="form-control result-field" id="warpRepeatEnds" readonly>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <div class="row mb-3">
-            <div class="col-md-2"><label>Warp Count 1:</label><input type="number" class="form-control" id="warpCount1" name="warp_count_1" value=""></div>
-            <div class="col-md-2"><label>Warp Ply 1:</label><input type="number" class="form-control" id="warpPly1" name="warp_ply_1" value=""></div>
-            <div class="col-md-2"><label>Warp Count 2:</label><input type="number" class="form-control" id="warpCount2" name="warp_count_2" value=""></div>
-            <div class="col-md-2"><label>Warp Ply 2:</label><input type="number" class="form-control" id="warpPly2" name="warp_ply_2" value=""></div>
-            <div class="col-md-2"><label>Warp Count 3:</label><input type="number" class="form-control" id="warpCount3" name="warp_count_3" value=""></div>
-            <div class="col-md-2"><label>Warp Ply 3:</label><input type="number" class="form-control" id="warpPly3" name="warp_ply_3" value=""></div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-md-2"><label>Weft Count 1:</label><input type="number" class="form-control" id="weftCount1" name="weft_count_1" value=""></div>
-            <div class="col-md-2"><label>Weft Ply 1:</label><input type="number" class="form-control" id="weftPly1" name="weft_ply_1" value=""></div>
-            <div class="col-md-2"><label>Weft Count 2:</label><input type="number" class="form-control" id="weftCount2" name="weft_count_2" value=""></div>
-            <div class="col-md-2"><label>Weft Ply 2:</label><input type="number" class="form-control" id="weftPly2" name="weft_ply_2" value=""></div>
-            <div class="col-md-2"><label>Weft Count 3:</label><input type="number" class="form-control" id="weftCount3" name="weft_count_3" value=""></div>
-            <div class="col-md-2"><label>Weft Ply 3:</label><input type="number" class="form-control" id="weftPly3" name="weft_ply_3" value=""></div>
-        </div>
 
-        <!-- Dimensions and Specifications - Updated to 6 fields per row -->
-<div class="section-header">Dimensions & Specifications</div>
-<div class="row mb-2">
-    <div class="col-md-2 mb-2"><label>Finish Width (in):</label><input type="number" class="form-control" id="finishWidth" name="finish_width" value=""></div>
-    <div class="col-md-2 mb-2"><label>Greige Width (in):</label><input type="number" class="form-control" id="greigeWidth" name="greige_width" value=""></div>
-    <div class="col-md-2 mb-2"><label>Total Ends:</label><input type="number" class="form-control" id="totalEnds" name="total_ends" value=""></div>
-    <div class="col-md-2 mb-2"><label>Warp Crimp (%):</label><input type="number" class="form-control" id="warpCrimp" name="warp_crimp" value=""></div>
-    <div class="col-md-2 mb-2"><label>Weft Crimp (%):</label><input type="number" class="form-control" id="weftCrimp" name="weft_crimp" value=""></div>
-    <div class="col-md-2 mb-2"><label>Reed Space:</label><input type="number" class="form-control" id="reedSpace" value=""></div>
-</div>
-
-       <!-- Wastage and Allowances - Updated to 6 fields per row -->
-<div class="section-header">Wastage & Allowances</div>
-<div class="row mb-2">
-    <div class="col-md-2 mb-2"><label>Y/D Allow (%):</label><input type="number" class="form-control" id="ydAllow" name="yd_allow" value=""></div>
-    <div class="col-md-2 mb-2"><label>Warp Waste (%):</label><input type="number" class="form-control" id="warpWast" name="warp_wast" value=""></div>
-    <div class="col-md-2 mb-2"><label>Weft Waste (%):</label><input type="number" class="form-control" id="weftWast" name="weft_wast" value=""></div>
-    <div class="col-md-2 mb-2"><label>Finish Allow (%):</label><input type="number" class="form-control" id="finishAllow" name="finish_allow" value=""></div>
-    <div class="col-md-2 mb-2"><label>Order Quantity (yds):</label><input type="number" class="form-control" id="orderQuantity" name="order_quantity" value=""></div>
-    <div class="col-md-2 mb-2"><label>Pick Length (Inch):</label><input type="number" class="form-control" id="pickLength" name="pick_length" value=""></div>
-</div>
-
-        <!-- Cost Parameters - Updated to 6 fields per row -->
-<div class="section-header">Cost Parameters</div>
-<div class="row mb-2">
-    <div class="col-md-2 mb-2"><label>Pick Rate (tk/yd):</label><input type="number" class="form-control" id="weavingPickRate" name="weaving_rate" value=""></div>
-    <div class="col-md-2 mb-2"><label>Dye/Finish Rate (tk/yd):</label><input type="number" class="form-control" id="dyeingFinishingRate" name="dye_finish_rate" value=""></div>
-    <div class="col-md-2 mb-2"><label>Commercial Cost (tk/yd):</label><input type="number" class="form-control" id="commercialCostInput" name="commercial_cost" value=""></div>
-    <div class="col-md-2 mb-2"><label>Profit:</label><input type="number" class="form-control" id="profit" name="profit" value=""></div>
-    <div class="col-md-2 mb-2"><label>Dollar Rate in TK:</label><input type="number" class="form-control" id="dollarRateTk" name="dollar_rate_tk" value=""></div>
-    <div class="col-md-2 mb-2"><label>Pre-costing Date:</label><input type="date" class="form-control" id="preCostingDate" name="pre_costing_date" value=""></div>
-</div>
-
-        <!-- Warp & Weft Pattern Calculation -->
-        <div class="section-header">Warp & Weft Pattern Details</div>
-        <div class="row mb-3">
-            <div class="col-md-2 mb-2"><label>Warp Repeat Size (Inch):</label><input type="number" class="form-control result-field" id="warpRepeatSize" name="" readonly></div>
-            <div class="col-md-2 mb-2"><label>Weft Repeat Size (Inch):</label><input type="number" class="form-control result-field" id="weftRepeatSize" name="" readonly></div>
-            <div class="col-md-2 mb-2"><label>Warp Repeat Number:</label><input type="number" class="form-control result-field" id="warpRepeatNumber" name="" readonly></div>
-            <div class="col-md-2 mb-2"><label>Weft Repeat Number:</label><input type="number" class="form-control result-field" id="weftRepeatNumber" name="" readonly></div>
-            <div class="col-md-2 mb-2"><label>Warp Repeat Ends:</label><input type="number" class="form-control result-field" id="warpRepeatEnds" name="" readonly></div>
+        <!-- Warp Details Table -->
+        <div class="form-section">
+            <h2>Warp Details</h2>
+            <div class="table-responsive">
+                <table class="table table-dark table-bordered" id="warpCalculationTable">
+                    <thead>
+                        <tr>
+                            <th>Warp Count</th>
+                            <th>Ply</th>
+                            <th>Repeat Brkdwn (Inch)</th>
+                            <th>Color_Name(s)</th>
+                            <th>Denting</th>
+                            <th>Rate (tk/lbs)</th>
+                            <th>Y/Dye Cost/kg</th>
+                            <th>Repeat Ends / Color</th>
+                            <th>Pattern Total Ends</th>
+                            <th>Dents in Full Width</th>
+                            <th>Greige Yn Rate/kg</th>
+                            <th>Greige Consump (kg/yd)</th>
+                            <th>Raw Yarn Cost / yd</th>
+                            <th>Y/Dye Cost / yd</th>
+                            <th>Warp total cost / yd</th>
+                            <th>Required Greige Warp (kg)</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows will be added dynamically -->
+                    </tbody>
+                </table>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-success btn-sm add-warp-row">
+                        <i class="fas fa-plus"></i> Add Warp Pattern
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <!-- Warp Details -->
-        <div class="section-header">Warp Details</div>
-        <div class="table-responsive">
-            <table class="table table-bordered" id="warpCalculationTable">
-                <thead>
-                    <tr>
-                        <th>Warp Count</th>
-                        <th>Ply</th>
-                        <th>Repeat Brkdwn (Inch)</th>
-                        <th>Color_Name(s)</th>
-                        <th>Denting</th>
-                        <th>Rate (tk/lbs)</th>
-                        <th>Y/Dye Cost/kg</th>
-                        <th>Repeat Ends / Color</th>
-                        <th>Pattern Total Ends</th>
-                        <th>Dents in Full Width</th>
-                        <th>Greige Yn Rate/kg</th>
-                        <th>Greige Consump (kg/yd)</th>
-                        <th>Raw Yarn Cost / yd</th>
-                        <th>Y/Dye Cost / yd</th>
-                        <th>Warp total cost / yd</th>
-                        <th>Required Greige Warp (kg)</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                      <tr class="pattern-row">
-                        <td><input type="number" class="form-control" name="warp_count" value="20"></td>
-                        <td><input type="number" class="form-control" name="warp_ply" value="1" min="1"></td> <!-- NEW FIELD -->
-                        <td><input type="number" class="form-control" name="repeat_breakdown" value="2"></td>
-                        <td><input type="text" class="form-control" name="color_name" value="White"></td>
-                        <td><input type="number" class="form-control" name="denting" value="2"></td>
-                        <td><input type="number" class="form-control" name="rate_per_lbs" value="142"></td>
-                        <td><input type="number" class="form-control" name="dyeing_cost_per_kg" value="150"></td>
-                        <td class="result-cell" name="repeat_ends_per_color"></td>
-                        <td class="result-cell" name="pattern_total_ends"></td>
-                        <td class="result-cell" name="dent_numbers_in_full_width"></td>
-                        <td class="result-cell" name="greige_yarn_rate"></td>
-                        <td class="result-cell" name="consumption"></td>
-                        <td class="result-cell" name="yarn_cost"></td>
-                        <td class="result-cell" name="color_cost"></td>
-                        <td class="result-cell" name="warp_total_cost"></td>
-                        <td class="result-cell" name="required_greige"></td>
-                        <td><button type="button" class="btn btn-sm btn-danger remove-row"><i class="fas fa-trash"></i></button></td>
-                    </tr>
-                </tbody>
-                <tfoot>
-                    <tr><td colspan="17"><button class="btn btn-sm btn-primary add-warp-row"><i class="fas fa-plus"></i> Add Warp Pattern</button></td></tr>
-                </tfoot>
-            </table>
+        <!-- Weft Details Table -->
+        <div class="form-section">
+            <h2>Weft Details</h2>
+            <div class="table-responsive">
+                <table class="table table-dark table-bordered" id="weftCalculationTable">
+                    <thead>
+                        <tr>
+                            <th>Weft Count</th>
+                            <th>Ply</th>
+                            <th>Repeat Brkdwn (Inch)</th>
+                            <th>Color_Name(s)</th>
+                            <th>Pick Density</th>
+                            <th>Rate (tk/lbs)</th>
+                            <th>Y/Dyeing Cost/kg</th>
+                            <th>Repeat Picks / Color</th>
+                            <th>Pattern Total Picks</th>
+                            <th>Greige Yarn Rate/kg</th>
+                            <th>Greige Consump (kg/yd)</th>
+                            <th>Raw Yarn Cost / yd</th>
+                            <th>Y/Dye Cost / yd</th>
+                            <th>Weft total cost / yd</th>
+                            <th>Required Greige Weft (kg)</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows will be added dynamically -->
+                    </tbody>
+                </table>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-success btn-sm add-weft-row">
+                        <i class="fas fa-plus"></i> Add Weft Pattern
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <!-- Weft Details -->
-        <div class="section-header">Weft Details</div>
-        <div class="table-responsive">
-            <table class="table table-bordered" id="weftCalculationTable">
-                <thead>
-                    <tr>
-                        <th>Weft Count</th>
-                        <th>Ply</th>
-                        <th>Repeat Brkdwn (Inch)</th>
-                        <th>Color_Names</th>
-                        <th>Pick Density</th>
-                        <th>Rate (tk/lbs)</th>
-                        <th>Y/Dyeing Cost/kg</th>
-                        <th>Repeat Picks / Color</th>
-                        <th>Pattern Total Picks</th>
-                        <th>Greige Yarn Rate/kg</th>
-                        <th>Greige Consump (kg/yd)</th>
-                        <th>Raw Yarn Cost / yd</th>
-                        <th>Y/Dye Cost / yd</th>
-                        <th>Weft total cost / yd</th>
-                        <th>Required Greige Weft (kg)</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr class="pattern-row">
-                        <td><input type="number" class="form-control" name="weft_count" value="20"></td>
-                        <td><input type="number" class="form-control" name="weft_ply" value="1" min="1"></td> <!-- NEW FIELD -->
-                        <td><input type="number" class="form-control" name="repeat_breakdown" value="2"></td>
-                        <td><input type="text" class="form-control" name="color_name" value="White"></td>
-                        <td><input type="number" class="form-control" name="pick_density" value="54"></td>
-                        <td><input type="number" class="form-control" name="rate_per_lbs" value="142"></td>
-                        <td><input type="number" class="form-control" name="dyeing_cost_per_kg" value="150"></td>
-                        <td class="result-cell" name="repeat_picks_per_color"></td>
-                        <td class="result-cell" name="pattern_total_picks"></td>
-                        <td class="result-cell" name="greige_yarn_rate"></td>
-                        <td class="result-cell" name="consumption"></td>
-                        <td class="result-cell" name="yarn_cost"></td>
-                        <td class="result-cell" name="color_cost"></td>
-                        <td class="result-cell" name="weft_total_cost"></td>
-                        <td class="result-cell" name="required_greige"></td>
-                        <td><button type="button" class="btn btn-sm btn-danger remove-row"><i class="fas fa-trash"></i></button></td>
-                    </tr>
-                </tbody>
-                <tfoot>
-                    <tr><td colspan="16"><button class="btn btn-sm btn-primary add-weft-row"><i class="fas fa-plus"></i> Add Weft Pattern</button></td></tr>
-                </tfoot>
-            </table>
+        <!-- Total Pre-costing Values -->
+        <div class="form-section">
+            <h2>Total Pre-costing Values</h2>
+            <div class="vertical-layout">
+                <div class="column">
+                    <div class="form-group">
+                        <label for="totalPreCostTk">Total Pre-cost (Taka)</label>
+                        <input type="number" class="form-control result-field" id="totalPreCostTk" name="total_pre_cost_tk" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalPreCostUSD">Total Pre-cost (USD)</label>
+                        <input type="number" class="form-control result-field" id="totalPreCostUSD" name="total_pre_cost_usd" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalUpchargePreCostTk">Total Upcharged (tk)</label>
+                        <input type="number" class="form-control result-field" id="totalUpchargePreCostTk" name="total_upcharged_pre_cost_tk" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalUpchargePreCostUSD">Total Upcharged (USD)</label>
+                        <input type="number" class="form-control result-field" id="totalUpchargePreCostUSD" name="total_upcharged_pre_cost_usd" readonly>
+                    </div>
+                </div>
+                
+                <div class="column">
+                    <div class="form-group">
+                        <label for="totalGreigeYarnCostUSD">Total Greige Cost (USD)</label>
+                        <input type="number" class="form-control result-field" id="totalGreigeYarnCostUSD" name="total_greige_yarn_cost_usd" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="greigeYarnCostPerYdUSD">Greige cost/yd (USD)</label>
+                        <input type="number" class="form-control result-field" id="greigeYarnCostPerYdUSD" name="greige_yarn_cost_per_yd_usd" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weavingCostUSD">Weaving Cost (USD)</label>
+                        <input type="number" class="form-control result-field" id="weavingCostUSD" name="weaving_cost_usd" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="breakEvenCostUSD">Break-Even Cost (USD)</label>
+                        <input type="number" class="form-control result-field" id="breakEvenCostUSD" name="break_even_cost_usd" readonly>
+                    </div>
+                </div>
+                
+                <div class="column">
+                    <div class="form-group">
+                        <label for="pickRateUSD">Pick Rate (USD)</label>
+                        <input type="number" class="form-control result-field" id="pickRateUSD" name="pick_rate_usd" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalGreigeCostUSD">Total Greige Cost (USD)</label>
+                        <input type="number" class="form-control result-field" id="totalGreigeCostUSD" name="total_greige_cost_usd" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalWeavingCostUSD">Total Weaving Cost (USD)</label>
+                        <input type="number" class="form-control result-field" id="totalWeavingCostUSD" name="total_weaving_cost_usd" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="netBreakEvenCostPerYdUSD">Net B/E Cost/yd (USD)</label>
+                        <input type="number" class="form-control result-field" id="netBreakEvenCostPerYdUSD" name="net_break_even_cost_per_yd_usd" readonly>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="vertical-layout">
+                <div class="column">
+                    <div class="form-group">
+                        <label for="upchargedNetProfitPerYdUSD">Upcharged Net Profit/yd (USD)</label>
+                        <input type="number" class="form-control result-field" id="upchargedNetProfitPerYdUSD" name="upcharged_net_profit_per_yd_usd" readonly>
+                    </div>
+                </div>
+                <div class="column"></div>
+                <div class="column"></div>
+            </div>
         </div>
-
-       <!-- Total Pre-costing Values - Updated with new USD fields -->
-<div class="section-header">Total Pre-costing Values</div>
-<div class="row mb-3">
-    <div class="col-md-2 mb-2"><label>Total Pre-cost (Taka):</label><input type="number" class="form-control result-field" id="totalPreCostTk" name="total_pre_cost_tk" readonly></div>
-    <div class="col-md-2 mb-2"><label>Total Pre-cost (USD):</label><input type="number" class="form-control result-field" id="totalPreCostUSD" name="total_pre_cost_usd" readonly></div>
-    <div class="col-md-2 mb-2"><label>Total Upcharged (tk):</label><input type="number" class="form-control result-field" id="totalUpchargePreCostTk" name="total_upcharged_pre_cost_tk" readonly></div>
-    <div class="col-md-2 mb-2"><label>Total Upcharged (USD):</label><input type="number" class="form-control result-field" id="totalUpchargePreCostUSD" name="total_upcharged_pre_cost_usd" readonly></div>
-    <div class="col-md-2 mb-2"><label>Total Greige Cost (USD):</label><input type="number" class="form-control result-field" id="totalGreigeYarnCostUSD" name="total_greige_yarn_cost_usd" readonly></div>
-    <div class="col-md-2 mb-2"><label>Greige cost/yd (USD):</label><input type="number" class="form-control result-field" id="greigeYarnCostPerYdUSD" name="greige_yarn_cost_per_yd_usd" readonly></div>
-</div>
-<div class="row mb-2">
-    <div class="col-md-2 mb-2"><label>Weaving Cost (USD):</label><input type="number" class="form-control result-field" id="weavingCostUSD" name="weaving_cost_usd" readonly></div>
-    <div class="col-md-2 mb-2"><label>Break-Even Cost (USD):</label><input type="number" class="form-control result-field" id="breakEvenCostUSD" name="break_even_cost_usd" readonly></div>
-    <div class="col-md-2 mb-2"><label>Pick Rate (USD):</label><input type="number" class="form-control result-field" id="pickRateUSD" name="pick_rate_usd" readonly></div>
-    <div class="col-md-2 mb-2"><label>Total Greige Cost (USD):</label><input type="number" class="form-control result-field" id="totalGreigeCostUSD" name="total_greige_cost_usd" readonly></div>
-    <div class="col-md-2 mb-2"><label>Total Weaving Cost (USD)</label><input type="number" class="form-control result-field" id="totalWeavingCostUSD" name="total_weaving_cost_usd" readonly></div>
-    <div class="col-md-2 mb-2"><label>Net B/E Cost/yd (USD):</label><input type="number" class="form-control result-field" id="netBreakEvenCostPerYdUSD" name="net_break_even_cost_per_yd_usd" readonly></div>
-</div>
-<div class="row mb-2">
-    <div class="col-md-2 mb-2"><label>Upcharged Net Profit/yd (USD):</label><input type="number" class="form-control result-field" id="upchargedNetProfitPerYdUSD" name="upcharged_net_profit_per_yd_usd" readonly></div>
-</div>
 
         <!-- Calculation Results -->
-        <div class="section-header">Calculation Results</div>
-        <div class="row mb-2">
-            <div class="col-md-2 mb-2"><label>Greige Required Quantity (yds):</label><input type="number" class="form-control result-field" id="greigeReqQuantity" name="greige_req_quantity" readonly></div>
-            <div class="col-md-2 mb-2"><label>Required Warp Yarn Quantity (kg):</label><input type="number" class="form-control result-field" id="requiredWarpKg" name="required_warp_yarn" readonly></div>
-            <div class="col-md-2 mb-2"><label>Required Weft Yarn Quantity (kg):</label><input type="number" class="form-control result-field" id="requiredWeftKg" name="required_weft_yarn" readonly></div>
-            <div class="col-md-2 mb-2"><label>Total Required Yarn Quantity (kg):</label><input type="number" class="form-control result-field" id="totalRequiredKg" name="total_required_yarn" readonly></div>
-        
-            <div class="col-md-2 mb-2"><label>Warp Greige Consumption (kg):</label><input type="number" class="form-control result-field" id="warpGreigeConsump" name="warp_greige_consump" readonly></div>
-            <div class="col-md-2 mb-2"><label>Weft Greige Consumption (kg):</label><input type="number" class="form-control result-field" id="weftGreigeConsump" name="weft_greige_consump" readonly></div>
+        <div class="form-section">
+            <h2>Calculation Results</h2>
+            <div class="vertical-layout">
+                <div class="column">
+                    <div class="form-group">
+                        <label for="greigeReqQuantity">Greige Required Quantity (yds)</label>
+                        <input type="number" class="form-control result-field" id="greigeReqQuantity" name="greige_req_quantity" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="requiredWarpKg">Required Warp Yarn Quantity (kg)</label>
+                        <input type="number" class="form-control result-field" id="requiredWarpKg" name="required_warp_yarn" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="requiredWeftKg">Required Weft Yarn Quantity (kg)</label>
+                        <input type="number" class="form-control result-field" id="requiredWeftKg" name="required_weft_yarn" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalRequiredKg">Total Required Yarn Quantity (kg)</label>
+                        <input type="number" class="form-control result-field" id="totalRequiredKg" name="total_required_yarn" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="warpGreigeConsump">Warp Greige Consumption (kg)</label>
+                        <input type="number" class="form-control result-field" id="warpGreigeConsump" name="warp_greige_consump" readonly>
+                    </div>
+                </div>
+                
+                <div class="column">
+                    <div class="form-group">
+                        <label for="weftGreigeConsump">Weft Greige Consumption (kg)</label>
+                        <input type="number" class="form-control result-field" id="weftGreigeConsump" name="weft_greige_consump" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalGreigeConsump">Total Greige Consumption (kg)</label>
+                        <input type="number" class="form-control result-field" id="totalGreigeConsump" name="total_greige_consump" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="warpFinishConsump">Warp Finish Consumption (kg)</label>
+                        <input type="number" class="form-control result-field" id="warpFinishConsump" name="warp_finish_consump" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weftFinishConsump">Weft Finish Consumption (kg)</label>
+                        <input type="number" class="form-control result-field" id="weftFinishConsump" name="weft_finish_consump" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalFinishConsump">Total Finish Consumption (kg)</label>
+                        <input type="number" class="form-control result-field" id="totalFinishConsump" name="total_finish_consump" readonly>
+                    </div>
+                </div>
+                
+                <div class="column">
+                    <div class="form-group">
+                        <label for="breakEvenCostYd">Break-Even Cost (taka/yd)</label>
+                        <input type="number" class="form-control result-field" id="breakEvenCostYd" name="break_even_cost" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="warpYnCost">Warp Yarn Cost (taka/yard)</label>
+                        <input type="number" class="form-control result-field" id="warpYnCost" name="warp_yarn_cost" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weftYnCost">Weft Yarn Cost (taka/yard)</label>
+                        <input type="number" class="form-control result-field" id="weftYnCost" name="weft_yarn_cost" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalGreigeCost">Total Greige yarn Cost (taka/yd)</label>
+                        <input type="number" class="form-control result-field" id="totalGreigeCost" name="total_greige_yarn_cost_per_yd" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="yarnDyeCost">Yarn Dyeing Cost (taka/yd)</label>
+                        <input type="number" class="form-control result-field" id="yarnDyeCost" name="yarn_dyeing_cost" readonly>
+                    </div>
+                </div>
             </div>
-        <div class="row mb-2">
-            <div class="col-md-2 mb-2"><label>Total Greige Consumption (kg):</label><input type="number" class="form-control result-field" id="totalGreigeConsump" name="total_greige_consump" readonly></div>
-            <div class="col-md-2 mb-2"><label>Warp Finish Consumption (kg):</label><input type="number" class="form-control result-field" id="warpFinishConsump" name="warp_finish_consump" readonly></div>
-      
-            <div class="col-md-2 mb-2"><label>Weft Finish Consumption (kg):</label><input type="number" class="form-control result-field" id="weftFinishConsump" name="weft_finish_consump" readonly></div>
-            <div class="col-md-2 mb-2"><label>Total Finish Consumption (kg):</label><input type="number" class="form-control result-field" id="totalFinishConsump" name="total_finish_consump" readonly></div>
-            <div class="col-md-2 mb-2"><label>Break-Even Cost (taka/yd):</label><input type="number" class="form-control result-field" id="breakEvenCostYd" name="break_even_cost" readonly></div>
-            <div class="col-md-2 mb-2"><label>Warp Yarn Cost (taka/yard):</label><input type="number" class="form-control result-field" id="warpYnCost" name="warp_yarn_cost" readonly></div>
-        </div>
-        <div class="row mb-2">
-            <div class="col-md-2 mb-2"><label> Weft Yarn Cost (taka/yard):</label><input type="number" class="form-control result-field" id="weftYnCost" name="weft_yarn_cost" readonly></div>
-            <div class="col-md-2 mb-2"><label>Total Greige yarn Cost (taka/yd):</label><input type="number" class="form-control result-field" id="totalGreigeCost" name="total_greige_yarn_cost_per_yd" readonly></div>
-            <div class="col-md-2 mb-2"><label>Yarn Dyeing Cost (taka/yd):</label><input type="number" class="form-control result-field" id="yarnDyeCost" name="yarn_dyeing_cost" readonly></div>
-            <div class="col-md-2 mb-2"><label>Total Dyed Yarn Cost (taka/yd):</label><input type="number" class="form-control result-field" id="totalYnCost" name="total_yarn_cost" readonly></div>
-        
-            <div class="col-md-2 mb-2"><label>Greige Yarn Cost Per Yard Fabric (taka/yd):</label><input type="number" class="form-control result-field" id="greigeYarnCostPerYd" name="greige_cost" readonly></div>
-            <div class="col-md-2 mb-2"><label>Weaving Cost of Fabric (taka/yd):</label><input type="number" class="form-control result-field" id="weavingCost" name="weaving_cost" readonly></div>
+            
+            <div class="vertical-layout">
+                <div class="column">
+                    <div class="form-group">
+                        <label for="totalYnCost">Total Dyed Yarn Cost (taka/yd)</label>
+                        <input type="number" class="form-control result-field" id="totalYnCost" name="total_yarn_cost" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="greigeYarnCostPerYd">Greige Yarn Cost Per Yard Fabric (taka/yd)</label>
+                        <input type="number" class="form-control result-field" id="greigeYarnCostPerYd" name="greige_cost" readonly>
+                    </div>
+                </div>
+                
+                <div class="column">
+                    <div class="form-group">
+                        <label for="weavingCost">Weaving Cost of Fabric (taka/yd)</label>
+                        <input type="number" class="form-control result-field" id="weavingCost" name="weaving_cost" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="salesPrice">Sales Price of Fabric (taka/yd)</label>
+                        <input type="number" class="form-control result-field" id="salesPrice" name="sales_price" readonly>
+                    </div>
+                </div>
+                
+                <div class="column">
+                    <div class="form-group">
+                        <label for="upchargeSalesPrice">Upcharged Sales Price (tk/yd)</label>
+                        <input type="number" class="form-control result-field" id="upchargeSalesPrice" name="upcharged_sales_price" readonly>
+                    </div>
+                </div>
             </div>
-        <div class="row mb-2">
-            <div class="col-md-2 mb-2"><label>Sales Price of Fabric (taka/yd):</label><input type="number" class="form-control result-field" id="salesPrice" name="sales_price" readonly></div>
-            <div class="col-md-2 mb-2"><label>Upcharged Sales Price (tk/yd):</label><input type="number" class="form-control result-field" id="upchargeSalesPrice" name="upcharged_sales_price" readonly></div>
         </div>
 
         <!-- Budget Costs -->
-        <div class="section-header">Budget Costs</div>
-        <div class="row mb-2">
-            <div class="col-md-2 mb-2"><label>Total Warp Cost (tk):</label><input type="number" class="form-control result-field" id="totalGrWarpCost" name="total_warp_cost" readonly></div>
-            <div class="col-md-2 mb-2"><label>Total Warp Cost %:</label><input type="number" class="form-control result-field" id="totalGrWarpCostPercent" readonly></div>
-            <div class="col-md-2 mb-2"><label>Total Weft Cost (tk):</label><input type="number" class="form-control result-field" id="totalGrWeftCost" name="total_weft_cost" readonly></div>
-            <div class="col-md-2 mb-2"><label>Total Weft Cost %:</label><input type="number" class="form-control result-field" id="totalGrWeftCostPercent" readonly></div>
-      
-            <div class="col-md-2 mb-2"><label>Total Greige Cost (tk):</label><input type="number" class="form-control result-field" id="graTotalGregCost" name="total_greige_cost" readonly></div>
-            <div class="col-md-2 mb-2"><label>Total Greige Cost %:</label><input type="number" class="form-control result-field" id="graTotalGregCostPercent" readonly></div>
-              </div>
-        <div class="row mb-2">
-            <div class="col-md-2 mb-2"><label>Total Dyeing Cost (tk):</label><input type="number" class="form-control result-field" id="totalYDyeingCost" name="total_dyeing_cost" readonly></div>
-            <div class="col-md-2 mb-2"><label>Total Dyeing Cost %:</label><input type="number" class="form-control result-field" id="totalYDyeingCostPercent" readonly></div>
-        
-            <div class="col-md-2 mb-2"><label>Total Weaving Cost (tk):</label><input type="number" class="form-control result-field" id="totalWeavingCost" name="total_weaving_cost" readonly></div>
-            <div class="col-md-2 mb-2"><label>Total Weaving cost %:</label><input type="number" class="form-control result-field" id="totalWeavingCostPercent" readonly></div>
-            <div class="col-md-2 mb-2"><label>Total Dye/Finish Cost (tk):</label><input type="number" class="form-control result-field" id="totalDyeFinCost" name="total_dye_finish_cost" readonly></div>
-            <div class="col-md-2 mb-2"><label>Total Dye/Finish Cost %:</label><input type="number" class="form-control result-field" id="totalDyeFinCostPercent" readonly></div>
-        </div>
-        <div class="row mb-2">
-            <div class="col-md-2 mb-2"><label>Total Commercial Cost (taka):</label><input type="number" class="form-control result-field" id="totalCommercialCost" name="total_commercial_cost" readonly></div>
-            <div class="col-md-2 mb-2"><label>Total Commercial Cost Percentage:</label><input type="number" class="form-control result-field" id="commercialCostPercent" readonly></div>
-            <div class="col-md-2 mb-2"><label>Grand Total Break-Even Cost (taka):</label><input type="number" class="form-control result-field" id="grandTotalBECost" name="grand_total_break_even_cost" readonly></div>
-            <div class="col-md-2 mb-2"><label>Net Break-Even Cost/yd (taka):</label><input type="number" class="form-control result-field" id="netBreakEvenCostPerYd" name="net_break_even_cost_per_yd" readonly></div>
-        
-            <div class="col-md-2 mb-2"><label>Net Profit per yard fabric (taka):</label><input type="number" class="form-control result-field" id="netProfitPerYd" name="net_profit_per_yd" readonly></div>
-            <div class="col-md-2 mb-2"><label>Grand Total Profit per yard fabric (tk):</label><input type="number" class="form-control result-field" id="grandTotalProfit" name="grand_total_profit" readonly></div>
+        <div class="form-section">
+            <h2>Budget Costs</h2>
+            <div class="vertical-layout">
+                <div class="column">
+                    <div class="form-group">
+                        <label for="totalGrWarpCost">Total Warp Cost (tk)</label>
+                        <input type="number" class="form-control result-field" id="totalGrWarpCost" name="total_warp_cost" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalGrWarpCostPercent">Total Warp Cost %</label>
+                        <input type="number" class="form-control result-field" id="totalGrWarpCostPercent" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalGrWeftCost">Total Weft Cost (tk)</label>
+                        <input type="number" class="form-control result-field" id="totalGrWeftCost" name="total_weft_cost" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalGrWeftCostPercent">Total Weft Cost %</label>
+                        <input type="number" class="form-control result-field" id="totalGrWeftCostPercent" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="graTotalGregCost">Total Greige Cost (tk)</label>
+                        <input type="number" class="form-control result-field" id="graTotalGregCost" name="total_greige_cost" readonly>
+                    </div>
+                </div>
+                
+                <div class="column">
+                    <div class="form-group">
+                        <label for="graTotalGregCostPercent">Total Greige Cost %</label>
+                        <input type="number" class="form-control result-field" id="graTotalGregCostPercent" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalYDyeingCost">Total Dyeing Cost (tk)</label>
+                        <input type="number" class="form-control result-field" id="totalYDyeingCost" name="total_dyeing_cost" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalYDyeingCostPercent">Total Dyeing Cost %</label>
+                        <input type="number" class="form-control result-field" id="totalYDyeingCostPercent" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalWeavingCost">Total Weaving Cost (tk)</label>
+                        <input type="number" class="form-control result-field" id="totalWeavingCost" name="total_weaving_cost" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalWeavingCostPercent">Total Weaving cost %</label>
+                        <input type="number" class="form-control result-field" id="totalWeavingCostPercent" readonly>
+                    </div>
+                </div>
+                
+                <div class="column">
+                    <div class="form-group">
+                        <label for="totalDyeFinCost">Total Dye/Finish Cost (tk)</label>
+                        <input type="number" class="form-control result-field" id="totalDyeFinCost" name="total_dye_finish_cost" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalDyeFinCostPercent">Total Dye/Finish Cost %</label>
+                        <input type="number" class="form-control result-field" id="totalDyeFinCostPercent" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalCommercialCost">Total Commercial Cost (taka)</label>
+                        <input type="number" class="form-control result-field" id="totalCommercialCost" name="total_commercial_cost" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="commercialCostPercent">Total Commercial Cost Percentage</label>
+                        <input type="number" class="form-control result-field" id="commercialCostPercent" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="grandTotalBECost">Grand Total Break-Even Cost (taka)</label>
+                        <input type="number" class="form-control result-field" id="grandTotalBECost" name="grand_total_break_even_cost" readonly>
+                    </div>
+                </div>
             </div>
-        <div class="row mb-2">
-            <div class="col-md-2 mb-2"><label>Grand Total Profit Percentage:</label><input type="number" class="form-control result-field" id="grandTotalProfitPercent" readonly></div>
-            <div class="col-md-2 mb-2"><label>Total Sales Value as Pre-costing (taka):</label><input type="number" class="form-control result-field" id="totalSalesValue" name="total_sales_value" readonly></div>
-      
-            <div class="col-md-2 mb-2"><label>Upcharged Net Profit/yd (taka):</label><input type="number" class="form-control result-field" id="upchargeNetProfit" name="upcharged_net_profit_per_yd" readonly></div>
-            <div class="col-md-2 mb-2"><label>Upcharged Grand Total Profit (taka):</label><input type="number" class="form-control result-field" id="upchargeGrandTotalProfit" name="upcharged_grand_total_profit" readonly></div>
-            <div class="col-md-2 mb-2"><label>Upcharged Grand Total Profit %:</label><input type="number" class="form-control result-field" id="upGrandTotalProfitPercent" readonly></div>
-            <div class="col-md-2 mb-2"><label>Upcharged Total Sales Value (taka):</label><input type="number" class="form-control result-field" id="upchargeTotalSalesValue" name="upcharged_total_sales_value" readonly></div>
+            
+            <div class="vertical-layout">
+                <div class="column">
+                    <div class="form-group">
+                        <label for="netBreakEvenCostPerYd">Net Break-Even Cost/yd (taka)</label>
+                        <input type="number" class="form-control result-field" id="netBreakEvenCostPerYd" name="net_break_even_cost_per_yd" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="netProfitPerYd">Net Profit per yard fabric (taka)</label>
+                        <input type="number" class="form-control result-field" id="netProfitPerYd" name="net_profit_per_yd" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="grandTotalProfit">Grand Total Profit per yard fabric (tk)</label>
+                        <input type="number" class="form-control result-field" id="grandTotalProfit" name="grand_total_profit" readonly>
+                    </div>
+                </div>
+                
+                <div class="column">
+                    <div class="form-group">
+                        <label for="grandTotalProfitPercent">Grand Total Profit Percentage</label>
+                        <input type="number" class="form-control result-field" id="grandTotalProfitPercent" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="totalSalesValue">Total Sales Value as Pre-costing (taka)</label>
+                        <input type="number" class="form-control result-field" id="totalSalesValue" name="total_sales_value" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="upchargeNetProfit">Upcharged Net Profit/yd (taka)</label>
+                        <input type="number" class="form-control result-field" id="upchargeNetProfit" name="upcharged_net_profit_per_yd" readonly>
+                    </div>
+                </div>
+                
+                <div class="column">
+                    <div class="form-group">
+                        <label for="upchargeGrandTotalProfit">Upcharged Grand Total Profit (taka)</label>
+                        <input type="number" class="form-control result-field" id="upchargeGrandTotalProfit" name="upcharged_grand_total_profit" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="upGrandTotalProfitPercent">Upcharged Grand Total Profit %</label>
+                        <input type="number" class="form-control result-field" id="upGrandTotalProfitPercent" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="upchargeTotalSalesValue">Upcharged Total Sales Value (taka)</label>
+                        <input type="number" class="form-control result-field" id="upchargeTotalSalesValue" name="upcharged_total_sales_value" readonly>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Technical Specifications -->
-        <div class="section-header">Technical Specifications</div>
-        <div class="row mb-2">
-            <div class="col-md-2 mb-2"><label>Warp GSM:</label><input type="number" class="form-control result-field" id="warpTotalGSM" readonly></div>
-            <div class="col-md-2 mb-2"><label>Weft GSM:</label><input type="number" class="form-control result-field" id="weftTotalGSM" readonly></div>
-            <div class="col-md-2 mb-2"><label>Total GSM:</label><input type="number" class="form-control result-field" id="totalGSM" readonly></div>
-            <div class="col-md-2 mb-2"><label>Wt of Finish Fabric (kg):</label><input type="number" class="form-control result-field" id="weightFinishFabric" readonly></div>
-        
-            <div class="col-md-2 mb-2"><label>Warp Cover Factor:</label><input type="number" class="form-control result-field" id="warpCoverFactor" readonly></div>
-            <div class="col-md-2 mb-2"><label>Weft Cover Factor:</label><input type="number" class="form-control result-field" id="weftCoverFactor" readonly></div>
+        <div class="form-section">
+            <h2>Technical Specifications</h2>
+            <div class="vertical-layout">
+                <div class="column">
+                    <div class="form-group">
+                        <label for="warpTotalGSM">Warp GSM</label>
+                        <input type="number" class="form-control result-field" id="warpTotalGSM" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weftTotalGSM">Weft GSM</label>
+                        <input type="number" class="form-control result-field" id="weftTotalGSM" readonly>
+                    </div>
+                </div>
+                
+                <div class="column">
+                    <div class="form-group">
+                        <label for="totalGSM">Total GSM</label>
+                        <input type="number" class="form-control result-field" id="totalGSM" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weightFinishFabric">Wt of Finish Fabric (kg)</label>
+                        <input type="number" class="form-control result-field" id="weightFinishFabric" readonly>
+                    </div>
+                </div>
+                
+                <div class="column">
+                    <div class="form-group">
+                        <label for="warpCoverFactor">Warp Cover Factor</label>
+                        <input type="number" class="form-control result-field" id="warpCoverFactor" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="weftCoverFactor">Weft Cover Factor</label>
+                        <input type="number" class="form-control result-field" id="weftCoverFactor" readonly>
+                    </div>
+                </div>
             </div>
-        <div class="row mb-2">
-            <div class="col-md-2 mb-2"><label>Total Cover Factor:</label><input type="number" class="form-control result-field" id="totalCoverFactor" readonly></div>
+            
+            <div class="vertical-layout">
+                <div class="column">
+                    <div class="form-group">
+                        <label for="totalCoverFactor">Total Cover Factor</label>
+                        <input type="number" class="form-control result-field" id="totalCoverFactor" readonly>
+                    </div>
+                </div>
+                <div class="column"></div>
+                <div class="column"></div>
+            </div>
         </div>
     </div>
+    <!-- Scroll to Top Button -->
+<button id="scrollToTopBtn" title="Go to top">
+    <i class="fas fa-arrow-up"></i>
+</button>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/main/public/js/erp-smart-dropdown.js"></script>
+<script src="/main/public/js/erp-async-search-dropdown.js"></script>
 
-    
-    <script>
+<script>
+// 1. Auto-scroll to top on page load/refresh
+window.addEventListener('load', function() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'instant' // Use 'instant' for immediate scroll, 'smooth' for animated
+    });
+});
+
+// Alternative: Force scroll to top before page loads
+window.onbeforeunload = function() {
+    window.scrollTo(0, 0);
+};
+
+// 2. Scroll to Top Button functionality
+const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+
+// Show button when user scrolls down 300px from top
+window.addEventListener('scroll', function() {
+    if (document.body.scrollTop > 1500 || document.documentElement.scrollTop > 300) {
+        scrollToTopBtn.classList.add('show');
+    } else {
+        scrollToTopBtn.classList.remove('show');
+    }
+});
+
+// Scroll to top when button is clicked
+scrollToTopBtn.addEventListener('click', function() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'instant'
+    });
+});
 
 function roundTo(number, decimals) {
     return Number(Math.round(number + 'e' + decimals) + 'e-' + decimals);
@@ -1039,46 +1717,47 @@ const hashedPassword = '32250170a0dca92d53ec9624f336ca24';
 
 let isSetupDone = false;
 
-// FIXED: generateNextPreCostingNo function
+// FIXED: generateNextPreCostingNo function - simplified
 async function generateNextPreCostingNo() {
     try {
         const response = await fetch('/main/api/precosting/next-pre-costing-no', { credentials: 'include' });
         const data = await response.json();
+        
         if (!response.ok) {
             throw new Error(data.error || 'Failed to generate pre-costing number');
         }
 
-        // FIXED: Handle the response properly
         const preCostingNo = data.pre_costing_no || data.preCostingNo;
+        
         if (!preCostingNo) {
             console.warn('No pre-costing number received from server, using default');
             return 'Pre/costing/No:01';
         }
 
-        // Check if it's already in the correct format
+        // Server now returns the correct format directly
         if (preCostingNo.includes('Pre/costing/No:')) {
             return preCostingNo;
         }
 
-        // If it's in year/number format, convert it
+        // Fallback: If server returns year/number format (for backward compatibility)
         const match = preCostingNo.match(/(\d{4})\/(\d+)/);
         if (match) {
-            const year = match[1];
             const number = parseInt(match[2], 10);
             if (number > 100000000) {
                 throw new Error('Maximum pre-costing number (100,000,000) reached.');
             }
-            const formattedNumber = number < 10 ? `0${number}` : number;
+            const formattedNumber = number < 10 ? `0${number}` : number.toString();
             return `Pre/costing/No:${formattedNumber}`;
         }
 
-        // Fallback
+        // Final fallback
         return 'Pre/costing/No:01';
     } catch (error) {
         console.error('Error generating pre-costing number:', error);
         return 'Pre/costing/No:01';
     }
 }
+
 
 async function setInitialPreCostingNo() {
     const preCostingNoInput = document.getElementById('preCostingNo');
@@ -1232,16 +1911,7 @@ function setupEventListeners() {
     populatePreCostingDropdown();
     calculateForm();
 
-    // REMOVED: inputField check since it doesn't exist
-    const preCostingDropdown = document.getElementById('preCostingDropdown');
-    if (preCostingDropdown) {
-        preCostingDropdown.addEventListener('change', () => {
-            console.log('Dropdown changed, triggering debounced calculation');
-            debouncedCalculateForm();
-        });
-    } else {
-        console.warn('preCostingDropdown element not found');
-    }
+    
 
     console.log('Event listeners set up, performing initial calculation');
     debouncedCalculateForm();
@@ -2109,15 +2779,15 @@ function updatePreCostResults(results) {
     safeSetValue('totalUpchargePreCostTk', results.totalPreCostingValues.totalUpchargePreCostTk);
     safeSetValue('totalUpchargePreCostUSD', results.totalPreCostingValues.totalUpchargePreCostUSD);
     // NEW: Add USD field updates
-    safeSetValue('totalGreigeYarnCostUSD', results.totalPreCostingValues.totalGreigeYarnCostUSD, 4);
-    safeSetValue('greigeYarnCostPerYdUSD', results.totalPreCostingValues.greigeYarnCostPerYdUSD, 4);
-    safeSetValue('weavingCostUSD', results.totalPreCostingValues.weavingCostUSD, 4);
-    safeSetValue('breakEvenCostUSD', results.totalPreCostingValues.breakEvenCostUSD, 4);
+    safeSetValue('totalGreigeYarnCostUSD', results.totalPreCostingValues.totalGreigeYarnCostUSD, 2);
+    safeSetValue('greigeYarnCostPerYdUSD', results.totalPreCostingValues.greigeYarnCostPerYdUSD, 2);
+    safeSetValue('weavingCostUSD', results.totalPreCostingValues.weavingCostUSD, 2);
+    safeSetValue('breakEvenCostUSD', results.totalPreCostingValues.breakEvenCostUSD, 2);
     safeSetValue('pickRateUSD', results.totalPreCostingValues.pickRateUSD, 4);
-    safeSetValue('totalGreigeCostUSD', results.totalPreCostingValues.totalGreigeCostUSD, 4);
-    safeSetValue('totalWeavingCostUSD', results.totalPreCostingValues.totalWeavingCostUSD, 4);
-    safeSetValue('netBreakEvenCostPerYdUSD', results.totalPreCostingValues.netBreakEvenCostPerYdUSD, 4);
-    safeSetValue('upchargedNetProfitPerYdUSD', results.totalPreCostingValues.upchargedNetProfitPerYdUSD, 4);
+    safeSetValue('totalGreigeCostUSD', results.totalPreCostingValues.totalGreigeCostUSD, 2);
+    safeSetValue('totalWeavingCostUSD', results.totalPreCostingValues.totalWeavingCostUSD, 2);
+    safeSetValue('netBreakEvenCostPerYdUSD', results.totalPreCostingValues.netBreakEvenCostPerYdUSD, 2);
+    safeSetValue('upchargedNetProfitPerYdUSD', results.totalPreCostingValues.upchargedNetProfitPerYdUSD, 2);
 
     safeSetValue('warpTotalGSM', results.technicalSpecs.warpTotalGSM);
     safeSetValue('weftTotalGSM', results.technicalSpecs.weftTotalGSM);
@@ -2267,44 +2937,79 @@ async function populatePreCostingDropdown() {
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'Failed to fetch pre-costing numbers');
 
-        const dropdown = document.getElementById('preCostingDropdown');
-        dropdown.innerHTML = '<option value="">Select Pre-costing No</option>';
+        // Get the dropdown menu element (the <ul> element after the button)
+        const dropdownMenu = document.querySelector('#searchPreCostingDropdown').nextElementSibling;
+        
+        if (!dropdownMenu) {
+            console.error('Dropdown menu not found');
+            return;
+        }
+
+        dropdownMenu.innerHTML = ''; // Clear existing items
+
         if (data && data.length > 0) {
             data.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item.pre_costing_no;
-                option.textContent = item.pre_costing_no;
-                dropdown.appendChild(option);
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.className = 'dropdown-item';
+                a.href = '#';
+                a.textContent = item.pre_costing_no;
+                a.dataset.preCostingNo = item.pre_costing_no; // Store the pre_costing_no
+                
+                // Fetch data immediately when item is clicked
+                a.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Update button text to show selected item
+                    document.getElementById('searchPreCostingDropdown').innerHTML = 
+                        `<i class="fas fa-search"></i> ${this.textContent}`;
+                    
+                    // Fetch and populate data automatically
+                    fetchPreCostingData(this.dataset.preCostingNo);
+                });
+                
+                li.appendChild(a);
+                dropdownMenu.appendChild(li);
             });
             console.log('Dropdown populated with', data.length, 'options:', data);
         } else {
+            // Add a "No data" message
+            const li = document.createElement('li');
+            const span = document.createElement('span');
+            span.className = 'dropdown-item disabled';
+            span.textContent = 'No pre-costing numbers found';
+            li.appendChild(span);
+            dropdownMenu.appendChild(li);
             console.log('No pre-costing numbers found in database');
         }
     } catch (error) {
         console.error('Error populating dropdown:', error);
         alert('Failed to load pre-costing numbers: ' + error.message);
-        const dropdown = document.getElementById('preCostingDropdown');
-        dropdown.innerHTML = '<option value="">Select Pre-costing No (Offline)</option>';
+        
+        const dropdownMenu = document.querySelector('#searchPreCostingDropdown').nextElementSibling;
+        if (dropdownMenu) {
+            dropdownMenu.innerHTML = '<li><span class="dropdown-item disabled">Error loading data</span></li>';
+        }
     }
 }
 
-// FIXED: searchPreCosting function to populate ply fields
-async function searchPreCosting() {
+// Function to fetch pre-costing data when dropdown item is selected
+async function fetchPreCostingData(preCostingNo) {
     if (!isLoggedIn) {
         alert('Please log in to perform this action.');
         return;
     }
-    const selectedPreCostingNo = document.getElementById('preCostingDropdown').value;
-    if (!selectedPreCostingNo) {
-        alert('Please select a Pre-costing No to search.');
+    
+    if (!preCostingNo) {
+        alert('Invalid pre-costing number.');
         return;
     }
 
     try {
-        console.log('Searching for pre-costing No:', selectedPreCostingNo);
-        const encodedPreCostingNo = selectedPreCostingNo.replace(/\//g, '%2F');
-        const url = `/main/api/precosting/search/${encodeURIComponent(selectedPreCostingNo)}`;
+        console.log('Fetching pre-costing No:', preCostingNo);
+        const url = `/main/api/precosting/search/${encodeURIComponent(preCostingNo)}`;
         console.log('Fetching URL:', url);
+        
         const response = await fetch(url);
         console.log('Response status:', response.status);
 
@@ -2321,223 +3026,242 @@ async function searchPreCosting() {
         }
 
         const result = await response.json();
-        console.log('Search API response:', result);
+        console.log('Fetch API response:', result);
 
         const { preCostingData: data, warpDetails: warpData, weftDetails: weftData } = result;
 
-        // Parse warp data with ply
-        const parsedWarpData = warpData.map(detail => ({
-            ...detail,
-            warp_count: parseFloat(detail.warp_count) || 0,
-            warp_ply: parseFloat(detail.warp_ply) || 1, // NEW: Handle ply
-            repeat_breakdown: parseFloat(detail.repeat_breakdown) || 0,
-            denting: parseFloat(detail.denting) || 0,
-            rate_per_lbs: parseFloat(detail.rate_per_lbs) || 0,
-            dyeing_cost_per_kg: parseFloat(detail.dyeing_cost_per_kg) || 0,
-            repeat_ends_per_color: parseFloat(detail.repeat_ends_per_color) || 0,
-            pattern_total_ends: parseFloat(detail.pattern_total_ends) || 0,
-            dent_numbers_in_full_width: parseFloat(detail.dent_numbers_in_full_width) || 0,
-            greige_yarn_rate: parseFloat(detail.greige_yarn_rate) || 0,
-            consumption: parseFloat(detail.consumption) || 0,
-            yarn_cost: parseFloat(detail.yarn_cost) || 0,
-            color_cost: parseFloat(detail.color_cost) || 0,
-            warp_total_cost: parseFloat(detail.warp_total_cost) || 0,
-            required_greige: parseFloat(detail.required_greige) || 0
-        }));
-
-        // Parse weft data with ply
-        const parsedWeftData = weftData.map(detail => ({
-            ...detail,
-            weft_count: parseFloat(detail.weft_count) || 0,
-            weft_ply: parseFloat(detail.weft_ply) || 1, // NEW: Handle ply
-            repeat_breakdown: parseFloat(detail.repeat_breakdown) || 0,
-            pick_density: parseFloat(detail.pick_density) || 0,
-            rate_per_lbs: parseFloat(detail.rate_per_lbs) || 0,
-            dyeing_cost_per_kg: parseFloat(detail.dyeing_cost_per_kg) || 0,
-            repeat_picks_per_color: parseFloat(detail.repeat_picks_per_color) || 0,
-            pattern_total_picks: parseFloat(detail.pattern_total_picks) || 0,
-            greige_yarn_rate: parseFloat(detail.greige_yarn_rate) || 0,
-            consumption: parseFloat(detail.consumption) || 0,
-            yarn_cost: parseFloat(detail.yarn_cost) || 0,
-            color_cost: parseFloat(detail.color_cost) || 0,
-            weft_total_cost: parseFloat(detail.weft_total_cost) || 0,
-            required_greige: parseFloat(detail.required_greige) || 0
-        }));
-
-        currentPreCostingData = {
-            preCostingData: data,
-            warpDetails: parsedWarpData,
-            weftDetails: parsedWeftData
-        };
-
-        // Populate basic form fields
-        document.getElementById('preCostingNo').value = data.pre_costing_no || '';
-        document.getElementById('buyer').value = data.buyer || '';
-        document.getElementById('construction').value = data.construction || '';
-        document.getElementById('finishWidth').value = data.finish_width || '';
-        document.getElementById('totalEnds').value = data.total_ends || '';
-        document.getElementById('warpCrimp').value = data.warp_crimp || '';
-        document.getElementById('ydAllow').value = data.yd_allow || '';
-        document.getElementById('warpWast').value = data.warp_wast || '';
-        document.getElementById('weftWast').value = data.weft_wast || '';
-        document.getElementById('finishAllow').value = data.finish_allow || '';
-        document.getElementById('weavingPickRate').value = data.weaving_rate || '';
-        document.getElementById('dyeingFinishingRate').value = data.dye_finish_rate || '';
-        document.getElementById('commercialCostInput').value = data.commercial_cost || '';
-        document.getElementById('profit').value = data.profit || '';
-        document.getElementById('epi').value = data.epi || '';
-        document.getElementById('ppi').value = data.ppi || '';
-        document.getElementById('weaveType').value = data.weave_type || '';
-        document.getElementById('greigeWidth').value = data.greige_width || '';
-        document.getElementById('weftCrimp').value = data.weft_crimp || '';
-        document.getElementById('orderQuantity').value = data.order_quantity || '';
-        document.getElementById('pickLength').value = data.pick_length || '';
-        document.getElementById('dollarRateTk').value = data.dollar_rate_tk || '';
-
-        // NEW: Populate Basic Information ply fields
-        document.getElementById('warpCount1').value = data.warp_count_1 || '';
-        document.getElementById('warpPly1').value = data.warp_ply_1 || '';
-        document.getElementById('warpCount2').value = data.warp_count_2 || '';
-        document.getElementById('warpPly2').value = data.warp_ply_2 || '';
-        document.getElementById('warpCount3').value = data.warp_count_3 || '';
-        document.getElementById('warpPly3').value = data.warp_ply_3 || '';
-        document.getElementById('weftCount1').value = data.weft_count_1 || '';
-        document.getElementById('weftPly1').value = data.weft_ply_1 || '';
-        document.getElementById('weftCount2').value = data.weft_count_2 || '';
-        document.getElementById('weftPly2').value = data.weft_ply_2 || '';
-        document.getElementById('weftCount3').value = data.weft_count_3 || '';
-        document.getElementById('weftPly3').value = data.weft_ply_3 || '';
+        // Use the existing searchPreCosting logic to populate the form
+        populateFormWithData(data, warpData, weftData);
         
-        
-        if (data.pre_costing_date) {
-            const date = new Date(data.pre_costing_date);
-            const formattedDate = date.toISOString().split('T')[0];
-            document.getElementById('preCostingDate').value = formattedDate;
-        } else {
-            document.getElementById('preCostingDate').value = '';
-        }
-
-        // Populate all calculated result fields
-        document.getElementById('greigeReqQuantity').value = data.greige_req_quantity || '';
-        document.getElementById('requiredWarpKg').value = data.required_warp_yarn || '';
-        document.getElementById('requiredWeftKg').value = data.required_weft_yarn || '';
-        document.getElementById('totalRequiredKg').value = data.total_required_yarn || '';
-        document.getElementById('warpGreigeConsump').value = data.warp_greige_consump || '';
-        document.getElementById('weftGreigeConsump').value = data.weft_greige_consump || '';
-        document.getElementById('totalGreigeConsump').value = data.total_greige_consump || '';
-        document.getElementById('warpFinishConsump').value = data.warp_finish_consump || '';
-        document.getElementById('weftFinishConsump').value = data.weft_finish_consump || '';
-        document.getElementById('totalFinishConsump').value = data.total_finish_consump || '';
-        document.getElementById('greigeYarnCostPerYd').value = data.total_greige_yarn_cost_per_yd || '';
-        document.getElementById('warpYnCost').value = data.warp_yarn_cost || '';
-        document.getElementById('weftYnCost').value = data.weft_yarn_cost || '';
-        document.getElementById('totalGreigeCost').value = data.greige_cost || '';
-        document.getElementById('yarnDyeCost').value = data.yarn_dyeing_cost || '';
-        document.getElementById('totalYnCost').value = data.total_yarn_cost || '';
-        document.getElementById('weavingCost').value = data.weaving_cost || '';
-        document.getElementById('breakEvenCostYd').value = data.break_even_cost || '';
-        document.getElementById('salesPrice').value = data.sales_price || '';
-        document.getElementById('upchargeSalesPrice').value = data.upcharged_sales_price || '';
-        document.getElementById('totalGrWarpCost').value = data.total_warp_cost || '';
-        document.getElementById('totalGrWeftCost').value = data.total_weft_cost || '';
-        document.getElementById('graTotalGregCost').value = data.total_greige_cost || '';
-        document.getElementById('totalYDyeingCost').value = data.total_dyeing_cost || '';
-        document.getElementById('totalWeavingCost').value = data.total_weaving_cost || '';
-        document.getElementById('totalDyeFinCost').value = data.total_dye_finish_cost || '';
-        document.getElementById('totalCommercialCost').value = data.total_commercial_cost || '';
-        document.getElementById('grandTotalBECost').value = data.grand_total_break_even_cost || '';
-        document.getElementById('netBreakEvenCostPerYd').value = data.net_break_even_cost_per_yd || '';
-        document.getElementById('netProfitPerYd').value = data.net_profit_per_yd || '';
-        document.getElementById('grandTotalProfit').value = data.grand_total_profit || '';
-        document.getElementById('totalSalesValue').value = data.total_sales_value || '';
-        document.getElementById('upchargeNetProfit').value = data.upcharged_net_profit_per_yd || '';
-        document.getElementById('upchargeGrandTotalProfit').value = data.upcharged_grand_total_profit || '';
-        document.getElementById('upchargeTotalSalesValue').value = data.upcharged_total_sales_value || '';
-        document.getElementById('totalPreCostTk').value = data.total_pre_cost_tk || '';
-        document.getElementById('totalPreCostUSD').value = data.total_pre_cost_usd || '';
-        document.getElementById('totalUpchargePreCostTk').value = data.total_upcharged_pre_cost_tk || '';
-        document.getElementById('totalUpchargePreCostUSD').value = data.total_upcharged_pre_cost_usd || '';
-
-       // NEW: Populate USD fields
-        document.getElementById('totalGreigeYarnCostUSD').value = data.total_greige_yarn_cost_usd || '';
-        document.getElementById('greigeYarnCostPerYdUSD').value = data.greige_yarn_cost_per_yd_usd || '';
-        document.getElementById('weavingCostUSD').value = data.weaving_cost_usd || '';
-        document.getElementById('breakEvenCostUSD').value = data.break_even_cost_usd || '';
-        document.getElementById('pickRateUSD').value = data.pick_rate_usd || '';
-        document.getElementById('totalGreigeCostUSD').value = data.total_greige_cost_usd || '';
-        document.getElementById('totalWeavingCostUSD').value = data.total_weaving_cost_usd || '';
-        document.getElementById('netBreakEvenCostPerYdUSD').value = data.net_break_even_cost_per_yd_usd || '';
-        document.getElementById('upchargedNetProfitPerYdUSD').value = data.upcharged_net_profit_per_yd_usd || '';
-
-        // Clear and repopulate tables
-        const warpTbody = document.getElementById('warpCalculationTable').querySelector('tbody');
-        const weftTbody = document.getElementById('weftCalculationTable').querySelector('tbody');
-        warpTbody.innerHTML = '';
-        weftTbody.innerHTML = '';
-
-        // Populate warp table with ply data
-        if (parsedWarpData && parsedWarpData.length > 0) {
-            parsedWarpData.forEach(warpDetail => {
-                const newRow = document.createElement('tr');
-                newRow.className = 'pattern-row';
-                newRow.innerHTML = `
-                    <td><input type="number" class="form-control" name="warp_count" value="${warpDetail.warp_count || ''}" step="0.01" min="0"></td>
-                    <td><input type="number" class="form-control" name="warp_ply" value="${warpDetail.warp_ply || 1}" step="1" min="1"></td>
-                    <td><input type="number" class="form-control" name="repeat_breakdown" value="${warpDetail.repeat_breakdown || ''}" step="0.01" min="0"></td>
-                    <td><input type="text" class="form-control" name="color_name" value="${warpDetail.color_name || ''}"></td>
-                    <td><input type="number" class="form-control" name="denting" value="${warpDetail.denting || ''}" step="0.01" min="0"></td>
-                    <td><input type="number" class="form-control" name="rate_per_lbs" value="${warpDetail.rate_per_lbs || ''}" step="0.01" min="0"></td>
-                    <td><input type="number" class="form-control" name="dyeing_cost_per_kg" value="${warpDetail.dyeing_cost_per_kg || ''}" step="0.01" min="0"></td>
-                    <td class="result-cell">${warpDetail.repeat_ends_per_color.toFixed(2) || '0.00'}</td>
-                    <td class="result-cell">${warpDetail.pattern_total_ends.toFixed(2) || '0.00'}</td>
-                    <td class="result-cell">${warpDetail.dent_numbers_in_full_width.toFixed(2) || '0.00'}</td>
-                    <td class="result-cell">${warpDetail.greige_yarn_rate.toFixed(1) || '0.0'}</td>
-                    <td class="result-cell">${warpDetail.consumption.toFixed(4) || '0.0000'}</td>
-                    <td class="result-cell">${warpDetail.yarn_cost.toFixed(2) || '0.00'}</td>
-                    <td class="result-cell">${warpDetail.color_cost.toFixed(2) || '0.00'}</td>
-                    <td class="result-cell">${warpDetail.warp_total_cost.toFixed(2) || '0.00'}</td>
-                    <td class="result-cell">${warpDetail.required_greige.toFixed(2) || '0.00'}</td>
-                    <td><button class="btn btn-sm btn-danger remove-row"><i class="fas fa-trash"></i></button></td>
-                `;
-                warpTbody.appendChild(newRow);
-            });
-        } else {
-            addEmptyWarpRow(warpTbody);
-        }
-
-        // Populate weft table with ply data
-        if (parsedWeftData && parsedWeftData.length > 0) {
-            parsedWeftData.forEach(weftDetail => {
-                const newRow = document.createElement('tr');
-                newRow.className = 'pattern-row';
-                newRow.innerHTML = `
-                    <td><input type="number" class="form-control" name="weft_count" value="${weftDetail.weft_count || ''}" step="0.01" min="0"></td>
-                    <td><input type="number" class="form-control" name="weft_ply" value="${weftDetail.weft_ply || 1}" step="1" min="1"></td>
-                    <td><input type="number" class="form-control" name="repeat_breakdown" value="${weftDetail.repeat_breakdown || ''}" step="0.01" min="0"></td>
-                    <td><input type="text" class="form-control" name="color_name" value="${weftDetail.color_name || ''}"></td>
-                    <td><input type="number" class="form-control" name="pick_density" value="${weftDetail.pick_density || ''}" step="0.01" min="0"></td>
-                    <td><input type="number" class="form-control" name="rate_per_lbs" value="${weftDetail.rate_per_lbs || ''}" step="0.01" min="0"></td>
-                    <td><input type="number" class="form-control" name="dyeing_cost_per_kg" value="${weftDetail.dyeing_cost_per_kg || ''}" step="0.01" min="0"></td>
-                    <td class="result-cell">${weftDetail.repeat_picks_per_color.toFixed(2) || '0.00'}</td>
-                    <td class="result-cell">${weftDetail.pattern_total_picks.toFixed(2) || '0.00'}</td>
-                    <td class="result-cell">${weftDetail.greige_yarn_rate.toFixed(1) || '0.0'}</td>
-                    <td class="result-cell">${weftDetail.consumption.toFixed(4) || '0.0000'}</td>
-                    <td class="result-cell">${weftDetail.yarn_cost.toFixed(2) || '0.00'}</td>
-                    <td class="result-cell">${weftDetail.color_cost.toFixed(2) || '0.00'}</td>
-                    <td class="result-cell">${weftDetail.weft_total_cost.toFixed(2) || '0.00'}</td>
-                    <td class="result-cell">${weftDetail.required_greige.toFixed(2) || '0.00'}</td>
-                    <td><button class="btn btn-sm btn-danger remove-row"><i class="fas fa-trash"></i></button></td>
-                `;
-                weftTbody.appendChild(newRow);
-            });
-        } else {
-            addEmptyWeftRow(weftTbody);
-        }
-
-        calculateForm();
     } catch (error) {
-        console.error('Error searching pre-costing:', error);
+        console.error('Error fetching pre-costing data:', error);
         alert(`Failed to load pre-costing data: ${error.message}`);
+    }
+}
+
+// Populate form fields with fetched data
+function populateFormWithData(data, warpData, weftData) {
+    // Parse warp data with ply
+    const parsedWarpData = warpData.map(detail => ({
+        ...detail,
+        warp_count: parseFloat(detail.warp_count) || 0,
+        warp_ply: parseFloat(detail.warp_ply) || 1,
+        repeat_breakdown: parseFloat(detail.repeat_breakdown) || 0,
+        denting: parseFloat(detail.denting) || 0,
+        rate_per_lbs: parseFloat(detail.rate_per_lbs) || 0,
+        dyeing_cost_per_kg: parseFloat(detail.dyeing_cost_per_kg) || 0,
+        repeat_ends_per_color: parseFloat(detail.repeat_ends_per_color) || 0,
+        pattern_total_ends: parseFloat(detail.pattern_total_ends) || 0,
+        dent_numbers_in_full_width: parseFloat(detail.dent_numbers_in_full_width) || 0,
+        greige_yarn_rate: parseFloat(detail.greige_yarn_rate) || 0,
+        consumption: parseFloat(detail.consumption) || 0,
+        yarn_cost: parseFloat(detail.yarn_cost) || 0,
+        color_cost: parseFloat(detail.color_cost) || 0,
+        warp_total_cost: parseFloat(detail.warp_total_cost) || 0,
+        required_greige: parseFloat(detail.required_greige) || 0
+    }));
+
+    // Parse weft data with ply
+    const parsedWeftData = weftData.map(detail => ({
+        ...detail,
+        weft_count: parseFloat(detail.weft_count) || 0,
+        weft_ply: parseFloat(detail.weft_ply) || 1,
+        repeat_breakdown: parseFloat(detail.repeat_breakdown) || 0,
+        pick_density: parseFloat(detail.pick_density) || 0,
+        rate_per_lbs: parseFloat(detail.rate_per_lbs) || 0,
+        dyeing_cost_per_kg: parseFloat(detail.dyeing_cost_per_kg) || 0,
+        repeat_picks_per_color: parseFloat(detail.repeat_picks_per_color) || 0,
+        pattern_total_picks: parseFloat(detail.pattern_total_picks) || 0,
+        greige_yarn_rate: parseFloat(detail.greige_yarn_rate) || 0,
+        consumption: parseFloat(detail.consumption) || 0,
+        yarn_cost: parseFloat(detail.yarn_cost) || 0,
+        color_cost: parseFloat(detail.color_cost) || 0,
+        weft_total_cost: parseFloat(detail.weft_total_cost) || 0,
+        required_greige: parseFloat(detail.required_greige) || 0
+    }));
+
+    currentPreCostingData = {
+        preCostingData: data,
+        warpDetails: parsedWarpData,
+        weftDetails: parsedWeftData
+    };
+
+    // Populate basic form fields
+    document.getElementById('preCostingNo').value = data.pre_costing_no || '';
+    document.getElementById('buyer').value = data.buyer || '';
+    document.getElementById('construction').value = data.construction || '';
+    document.getElementById('finishWidth').value = data.finish_width || '';
+    document.getElementById('totalEnds').value = data.total_ends || '';
+    document.getElementById('warpCrimp').value = data.warp_crimp || '';
+    document.getElementById('ydAllow').value = data.yd_allow || '';
+    document.getElementById('warpWast').value = data.warp_wast || '';
+    document.getElementById('weftWast').value = data.weft_wast || '';
+    document.getElementById('finishAllow').value = data.finish_allow || '';
+    document.getElementById('weavingPickRate').value = data.weaving_rate || '';
+    document.getElementById('dyeingFinishingRate').value = data.dye_finish_rate || '';
+    document.getElementById('commercialCostInput').value = data.commercial_cost || '';
+    document.getElementById('profit').value = data.profit || '';
+    document.getElementById('epi').value = data.epi || '';
+    document.getElementById('ppi').value = data.ppi || '';
+    document.getElementById('weaveType').value = data.weave_type || '';
+    document.getElementById('greigeWidth').value = data.greige_width || '';
+    document.getElementById('weftCrimp').value = data.weft_crimp || '';
+    document.getElementById('orderQuantity').value = data.order_quantity || '';
+    document.getElementById('pickLength').value = data.pick_length || '';
+    document.getElementById('dollarRateTk').value = data.dollar_rate_tk || '';
+
+    // Populate Basic Information ply fields
+    document.getElementById('warpCount1').value = data.warp_count_1 || '';
+    document.getElementById('warpPly1').value = data.warp_ply_1 || '';
+    document.getElementById('warpCount2').value = data.warp_count_2 || '';
+    document.getElementById('warpPly2').value = data.warp_ply_2 || '';
+    document.getElementById('warpCount3').value = data.warp_count_3 || '';
+    document.getElementById('warpPly3').value = data.warp_ply_3 || '';
+    document.getElementById('weftCount1').value = data.weft_count_1 || '';
+    document.getElementById('weftPly1').value = data.weft_ply_1 || '';
+    document.getElementById('weftCount2').value = data.weft_count_2 || '';
+    document.getElementById('weftPly2').value = data.weft_ply_2 || '';
+    document.getElementById('weftCount3').value = data.weft_count_3 || '';
+    document.getElementById('weftPly3').value = data.weft_ply_3 || '';
+    
+    if (data.pre_costing_date) {
+        const date = new Date(data.pre_costing_date);
+        const formattedDate = date.toISOString().split('T')[0];
+        document.getElementById('preCostingDate').value = formattedDate;
+    } else {
+        document.getElementById('preCostingDate').value = '';
+    }
+
+    // Populate all calculated result fields
+    document.getElementById('greigeReqQuantity').value = data.greige_req_quantity || '';
+    document.getElementById('requiredWarpKg').value = data.required_warp_yarn || '';
+    document.getElementById('requiredWeftKg').value = data.required_weft_yarn || '';
+    document.getElementById('totalRequiredKg').value = data.total_required_yarn || '';
+    document.getElementById('warpGreigeConsump').value = data.warp_greige_consump || '';
+    document.getElementById('weftGreigeConsump').value = data.weft_greige_consump || '';
+    document.getElementById('totalGreigeConsump').value = data.total_greige_consump || '';
+    document.getElementById('warpFinishConsump').value = data.warp_finish_consump || '';
+    document.getElementById('weftFinishConsump').value = data.weft_finish_consump || '';
+    document.getElementById('totalFinishConsump').value = data.total_finish_consump || '';
+    document.getElementById('greigeYarnCostPerYd').value = data.total_greige_yarn_cost_per_yd || '';
+    document.getElementById('warpYnCost').value = data.warp_yarn_cost || '';
+    document.getElementById('weftYnCost').value = data.weft_yarn_cost || '';
+    document.getElementById('totalGreigeCost').value = data.greige_cost || '';
+    document.getElementById('yarnDyeCost').value = data.yarn_dyeing_cost || '';
+    document.getElementById('totalYnCost').value = data.total_yarn_cost || '';
+    document.getElementById('weavingCost').value = data.weaving_cost || '';
+    document.getElementById('breakEvenCostYd').value = data.break_even_cost || '';
+    document.getElementById('salesPrice').value = data.sales_price || '';
+    document.getElementById('upchargeSalesPrice').value = data.upcharged_sales_price || '';
+    document.getElementById('totalGrWarpCost').value = data.total_warp_cost || '';
+    document.getElementById('totalGrWeftCost').value = data.total_weft_cost || '';
+    document.getElementById('graTotalGregCost').value = data.total_greige_cost || '';
+    document.getElementById('totalYDyeingCost').value = data.total_dyeing_cost || '';
+    document.getElementById('totalWeavingCost').value = data.total_weaving_cost || '';
+    document.getElementById('totalDyeFinCost').value = data.total_dye_finish_cost || '';
+    document.getElementById('totalCommercialCost').value = data.total_commercial_cost || '';
+    document.getElementById('grandTotalBECost').value = data.grand_total_break_even_cost || '';
+    document.getElementById('netBreakEvenCostPerYd').value = data.net_break_even_cost_per_yd || '';
+    document.getElementById('netProfitPerYd').value = data.net_profit_per_yd || '';
+    document.getElementById('grandTotalProfit').value = data.grand_total_profit || '';
+    document.getElementById('totalSalesValue').value = data.total_sales_value || '';
+    document.getElementById('upchargeNetProfit').value = data.upcharged_net_profit_per_yd || '';
+    document.getElementById('upchargeGrandTotalProfit').value = data.upcharged_grand_total_profit || '';
+    document.getElementById('upchargeTotalSalesValue').value = data.upcharged_total_sales_value || '';
+    document.getElementById('totalPreCostTk').value = data.total_pre_cost_tk || '';
+    document.getElementById('totalPreCostUSD').value = data.total_pre_cost_usd || '';
+    document.getElementById('totalUpchargePreCostTk').value = data.total_upcharged_pre_cost_tk || '';
+    document.getElementById('totalUpchargePreCostUSD').value = data.total_upcharged_pre_cost_usd || '';
+
+    // Populate USD fields
+    document.getElementById('totalGreigeYarnCostUSD').value = data.total_greige_yarn_cost_usd || '';
+    document.getElementById('greigeYarnCostPerYdUSD').value = data.greige_yarn_cost_per_yd_usd || '';
+    document.getElementById('weavingCostUSD').value = data.weaving_cost_usd || '';
+    document.getElementById('breakEvenCostUSD').value = data.break_even_cost_usd || '';
+    document.getElementById('pickRateUSD').value = data.pick_rate_usd || '';
+    document.getElementById('totalGreigeCostUSD').value = data.total_greige_cost_usd || '';
+    document.getElementById('totalWeavingCostUSD').value = data.total_weaving_cost_usd || '';
+    document.getElementById('netBreakEvenCostPerYdUSD').value = data.net_break_even_cost_per_yd_usd || '';
+    document.getElementById('upchargedNetProfitPerYdUSD').value = data.upcharged_net_profit_per_yd_usd || '';
+
+    // Clear and repopulate tables
+    const warpTbody = document.getElementById('warpCalculationTable').querySelector('tbody');
+    const weftTbody = document.getElementById('weftCalculationTable').querySelector('tbody');
+    warpTbody.innerHTML = '';
+    weftTbody.innerHTML = '';
+
+    // Populate warp table with ply data
+    if (parsedWarpData && parsedWarpData.length > 0) {
+        parsedWarpData.forEach(warpDetail => {
+            const newRow = document.createElement('tr');
+            newRow.className = 'pattern-row';
+            newRow.innerHTML = `
+                <td><input type="number" class="form-control" name="warp_count" value="${warpDetail.warp_count || ''}" step="0.01" min="0"></td>
+                <td><input type="number" class="form-control" name="warp_ply" value="${warpDetail.warp_ply || 1}" step="1" min="1"></td>
+                <td><input type="number" class="form-control" name="repeat_breakdown" value="${warpDetail.repeat_breakdown || ''}" step="0.01" min="0"></td>
+                <td><input type="text" class="form-control" name="color_name" value="${warpDetail.color_name || ''}"></td>
+                <td><input type="number" class="form-control" name="denting" value="${warpDetail.denting || ''}" step="0.01" min="0"></td>
+                <td><input type="number" class="form-control" name="rate_per_lbs" value="${warpDetail.rate_per_lbs || ''}" step="0.01" min="0"></td>
+                <td><input type="number" class="form-control" name="dyeing_cost_per_kg" value="${warpDetail.dyeing_cost_per_kg || ''}" step="0.01" min="0"></td>
+                <td class="result-cell">${warpDetail.repeat_ends_per_color.toFixed(2) || '0.00'}</td>
+                <td class="result-cell">${warpDetail.pattern_total_ends.toFixed(2) || '0.00'}</td>
+                <td class="result-cell">${warpDetail.dent_numbers_in_full_width.toFixed(2) || '0.00'}</td>
+                <td class="result-cell">${warpDetail.greige_yarn_rate.toFixed(1) || '0.0'}</td>
+                <td class="result-cell">${warpDetail.consumption.toFixed(4) || '0.0000'}</td>
+                <td class="result-cell">${warpDetail.yarn_cost.toFixed(2) || '0.00'}</td>
+                <td class="result-cell">${warpDetail.color_cost.toFixed(2) || '0.00'}</td>
+                <td class="result-cell">${warpDetail.warp_total_cost.toFixed(2) || '0.00'}</td>
+                <td class="result-cell">${warpDetail.required_greige.toFixed(2) || '0.00'}</td>
+                <td><button class="btn btn-sm btn-danger remove-row"><i class="fas fa-trash"></i></button></td>
+            `;
+            warpTbody.appendChild(newRow);
+        });
+    } else {
+        addEmptyWarpRow(warpTbody);
+    }
+
+    // Populate weft table with ply data
+    if (parsedWeftData && parsedWeftData.length > 0) {
+        parsedWeftData.forEach(weftDetail => {
+            const newRow = document.createElement('tr');
+            newRow.className = 'pattern-row';
+            newRow.innerHTML = `
+                <td><input type="number" class="form-control" name="weft_count" value="${weftDetail.weft_count || ''}" step="0.01" min="0"></td>
+                <td><input type="number" class="form-control" name="weft_ply" value="${weftDetail.weft_ply || 1}" step="1" min="1"></td>
+                <td><input type="number" class="form-control" name="repeat_breakdown" value="${weftDetail.repeat_breakdown || ''}" step="0.01" min="0"></td>
+                <td><input type="text" class="form-control" name="color_name" value="${weftDetail.color_name || ''}"></td>
+                <td><input type="number" class="form-control" name="pick_density" value="${weftDetail.pick_density || ''}" step="0.01" min="0"></td>
+                <td><input type="number" class="form-control" name="rate_per_lbs" value="${weftDetail.rate_per_lbs || ''}" step="0.01" min="0"></td>
+                <td><input type="number" class="form-control" name="dyeing_cost_per_kg" value="${weftDetail.dyeing_cost_per_kg || ''}" step="0.01" min="0"></td>
+                <td class="result-cell">${weftDetail.repeat_picks_per_color.toFixed(2) || '0.00'}</td>
+                <td class="result-cell">${weftDetail.pattern_total_picks.toFixed(2) || '0.00'}</td>
+                <td class="result-cell">${weftDetail.greige_yarn_rate.toFixed(1) || '0.0'}</td>
+                <td class="result-cell">${weftDetail.consumption.toFixed(4) || '0.0000'}</td>
+                <td class="result-cell">${weftDetail.yarn_cost.toFixed(2) || '0.00'}</td>
+                <td class="result-cell">${weftDetail.color_cost.toFixed(2) || '0.00'}</td>
+                <td class="result-cell">${weftDetail.weft_total_cost.toFixed(2) || '0.00'}</td>
+                <td class="result-cell">${weftDetail.required_greige.toFixed(2) || '0.00'}</td>
+                <td><button class="btn btn-sm btn-danger remove-row"><i class="fas fa-trash"></i></button></td>
+            `;
+            weftTbody.appendChild(newRow);
+        });
+    } else {
+        addEmptyWeftRow(weftTbody);
+    }
+
+    calculateForm();
+}
+
+
+async function searchPreCosting() {
+    // This function is now just a wrapper that calls fetchPreCostingData
+    // It's kept for backward compatibility with the old "Search" button if you still have it
+    const selectedPreCostingNo = document.getElementById('preCostingDropdown')?.value;
+    
+    if (selectedPreCostingNo) {
+        await fetchPreCostingData(selectedPreCostingNo);
+    } else {
+        alert('Please select a Pre-costing No to search.');
     }
 }
 

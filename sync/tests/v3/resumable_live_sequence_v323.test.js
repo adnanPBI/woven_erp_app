@@ -1,0 +1,11 @@
+'use strict';
+const fs=require('fs'),path=require('path'),assert=require('assert');
+const root=path.resolve(__dirname,'../..');
+for(const f of ['scripts/v3/run_production_sequence_resumable_v323.sh','scripts/v3/live_resume_state_v323.js','scripts/v3/verify_live_checkpoint_v323.js','scripts/v3/finalize_live_sequence_v323.js','scripts/v3/scan_live_profile_chunks_v323.js','scripts/v3/verify_live_heavy_index_v323.js']) assert.ok(fs.existsSync(path.join(root,f)),`missing ${f}`);
+const sh=fs.readFileSync(path.join(root,'scripts/v3/run_production_sequence_resumable_v323.sh'),'utf8');
+assert.ok(sh.includes('V323_LIVE_CHUNKS_PER_INVOCATION'));
+assert.ok(sh.includes('LIVE_SEQUENCE_CHECKPOINT_PENDING'));
+assert.ok(sh.includes('exit 75'));
+assert.ok(sh.includes('--output-dir="$profile_dir"'));
+assert.ok(sh.includes('aggregate_live_profile_chunks_v323.js'));
+console.log('resumable_live_sequence_v323.test.js PASS');

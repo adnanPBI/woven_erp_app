@@ -1,0 +1,9 @@
+{
+  "table": "weft_yarn_details",
+  "description": "Strict production contract for Weft N yarn rows.",
+  "requiredPositive": [
+    "yarn_per_repeat",
+    "dyed_qty_kg",
+    "grey_qty_kg"
+  ]
+}

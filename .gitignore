@@ -36,4 +36,28 @@ temp/
 
 # Database
 *.sql
-!sql_database/*.sql
+!sync/schema/*.sql
+!sync/sql/**/*.sql
+
+# Private hosting and sync artifacts
+.env.*
+!.env.example
+!**/.env.example
+!**/*.env.example
+**/local_data/
+**/local_input/
+**/local_secrets/
+**/sync_data/
+**/output/
+**/csv_files/
+**/baseline/
+**/baseline*.json
+**/baseline*.gz
+**/reviewed-reassignments.json
+**/*service-account*.json
+*.pem
+*.key
+*.sql.gz
+stderr.log
+error_log
+echo
