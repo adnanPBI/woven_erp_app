@@ -1,5 +1,6 @@
 'use strict';
 const {fingerprint,hash}=require('./sheets_sync_plan');
+const {yarnIdentity}=require('./yarn_sync_identity');
 class SheetsSyncRuntime {
  constructor(plan,protectedMasters,manifestHash){
   if(!plan.ok)throw Error('Conflicted sync plan cannot run');
@@ -15,7 +16,8 @@ class SheetsSyncRuntime {
  async begin(ctx,profile,fileInfo,values){
   const operation=this.selected.get(profile.id)?.get(ctx.currentSourceRowNumber);
   if(!operation||fingerprint(fileInfo.headers,values)!==operation.digest)throw Error('Sync source row differs from planned row');
-  ctx.syncOperation=operation;
+  // Recompute from the fingerprint-checked row, including resumed older plans.
+  ctx.syncOperation={...operation,yarnIdentity:yarnIdentity(profile.id,fileInfo.headers,values)};
   const [rows]=await (ctx.conn||ctx.pool).query('SELECT digest FROM sheets_sync_events WHERE profile=? AND source_uid=?'+(ctx.dryRun?'':' FOR UPDATE'),[profile.id,operation.uid]);
   const actual=rows[0]?.digest||null;
   if(actual===operation.digest&&operation.action!=='refresh')return false; // Previous attempt committed before interruption.
@@ -26,6 +28,7 @@ class SheetsSyncRuntime {
   if(ctx.dryRun)return;
   const r=ctx.syncOperation;
   await ctx.conn.query('INSERT INTO sheets_sync_events (profile,source_uid,group_key,digest,dispo,match_hash) VALUES (?,?,?,?,?,?) ON DUPLICATE KEY UPDATE group_key=VALUES(group_key),digest=VALUES(digest),dispo=VALUES(dispo),match_hash=VALUES(match_hash),updated_at=CURRENT_TIMESTAMP',[profile.id,r.uid,r.group,r.digest,r.dispo||'',r.matchHash||null]);
+  if(r.yarnIdentity)await ctx.conn.query('UPDATE sheets_sync_events SET yarn_identity=? WHERE profile=? AND source_uid=? AND digest=?',[JSON.stringify(r.yarnIdentity),profile.id,r.uid,r.digest]);
  }
 }
 module.exports={SheetsSyncRuntime};

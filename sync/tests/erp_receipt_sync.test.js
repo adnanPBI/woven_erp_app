@@ -11,6 +11,7 @@ const {SheetsSyncRuntime}=require('../lib/sheets_sync_runtime');
  const proof=JSON.parse(fs.readFileSync(path.join(DIR,'report.json')));assert.equal(proof.database,'weavonpq_erp_sync_test');assert(proof.ok);
  const pool=mysql.createPool({...cfg(),database:proof.database,dateStrings:true});
  try{
+  await require('../lib/yarn_sync_identity').ensureIdentityColumn(pool);
   const contract=require('../mappings/mapping-contract-v2.json'),schema=require('../schema/weavonpq_weaving.schema.json');
   const profile=contract.profiles.find(p=>p.id==='yarn-receive'),sourceDir=path.join(DIR,'receipt-fixture');fs.mkdirSync(sourceDir,{recursive:true});
   const file=path.join(sourceDir,profile.source_file);let headers,rows=[];
@@ -33,12 +34,12 @@ const {SheetsSyncRuntime}=require('../lib/sheets_sync_runtime');
   let ctx=await apply(plan,'receipt-update');assert.equal(ctx.rejectedRowCount,0,JSON.stringify(ctx.rejectedRows));
   const [received]=await pool.query("SELECT last_received_date,receipt_qty_kgs FROM yarn_receive_form WHERE challan_no='41742440' AND received_start_date='2026-08-27' AND received_against_dispo_nos='SW/NDSD/GD/26/12532'");
   assert.equal(received.length,2);assert(received.every(r=>r.last_received_date==='2026-09-22'));
-  const [events]=await pool.query('SELECT source_uid uid,group_key `group`,digest,dispo,match_hash matchHash FROM sheets_sync_events WHERE profile=?',[profile.id]);
+  const [events]=await pool.query('SELECT source_uid uid,group_key `group`,digest,dispo,match_hash matchHash,yarn_identity yarnIdentity FROM sheets_sync_events WHERE profile=?',[profile.id]);
   before={[profile.id]:{headersHash:current[profile.id].headersHash,records:events}};
   rows[0][headers.indexOf('Receipt Qty (Kgs)')]='633';save();current=await inventory(sourceDir,[profile]);plan=planEdits(before,current);assert(plan.ok);assert.equal(plan.updated,1);
   ctx=await apply(plan,'receipt-rollback',true);assert.equal(ctx.rejectedRowCount,1);
   const [after]=await pool.query("SELECT last_received_date,receipt_qty_kgs FROM yarn_receive_form WHERE challan_no='41742440' AND received_start_date='2026-08-27' AND received_against_dispo_nos='SW/NDSD/GD/26/12532'");assert.deepEqual(after,received);
-  const [afterEvents]=await pool.query('SELECT source_uid uid,group_key `group`,digest,dispo,match_hash matchHash FROM sheets_sync_events WHERE profile=?',[profile.id]);assert.deepEqual(afterEvents,events);
+  const [afterEvents]=await pool.query('SELECT source_uid uid,group_key `group`,digest,dispo,match_hash matchHash,yarn_identity yarnIdentity FROM sheets_sync_events WHERE profile=?',[profile.id]);assert.deepEqual(afterEvents,events);
   // Aggregated daily totals must replace, never add to, the prior normalized total.
   const merged=m.exports._test.mergeDuplicateData({sync:{},duplicateAggregation:{profiles:{loom:{tables:{loom_production_form:{sum:['total_production']}}}}}},{id:'loom'},'loom_production_form',{total_production:100},{total_production:120});assert.equal(merged.total_production,120);
   const report={ok:true,receiptDateEdits:true,duplicateNaturalKeysResolved:true,businessAndLedgerRollbackAtomic:true,aggregateReplacement:true,database:proof.database,verifiedAt:new Date().toISOString()};writeJson(path.join(DIR,'receipt-report.json'),report);console.log(JSON.stringify(report));

@@ -94,17 +94,25 @@ Confirm `private_sync_data/status.json` says completed or unchanged. Check cycle
 In cPanel Cron Jobs, set minute `*/10` and all other fields to `*`. Use the actual absolute Node executable path:
 
 ```sh
-/ABSOLUTE/PATH/TO/node /home/ACCOUNT/woven_erp_app/sync/scripts/sync/run.js --env=/home/ACCOUNT/private_sync.env >> /home/ACCOUNT/private_sync_cron.log 2>&1
+/ABSOLUTE/PATH/TO/node /home/ACCOUNT/woven_erp_app/sync/scripts/sync/run.js --env=/home/ACCOUNT/private_sync.env
 ```
 
 SYNC_INTERVAL_MINUTES documents the intended interval; it does not install cron. A MySQL advisory lock prevents overlap. Large catch-ups can exceed ten minutes and overlapping starts skip. Verify a scheduled completion and a later unchanged poll.
 
 Source removals retain ERP history. Ambiguous identities stop for review; exact reviewed fingerprints handle confirmed corrections. Sheet edits replace mapped fields of tracked records, so coordinate manual ERP edits to those fields.
 
-Disable the cron entry or set SYNC_ENABLED=false to pause future writes; let an active transaction finish. If pending.json exists, the next run resumes that exact snapshot. Do not delete pending evidence to bypass an error. The latest six backups are retained independently from the latest six source cycles; use hosting backups for longer retention.
+Disable the cron entry or set SYNC_ENABLED=false to pause future writes; let an active transaction finish. If pending.json exists, the next run resumes that exact snapshot. Do not delete pending evidence to bypass an error. The latest two complete backups and two source cycles are retained independently by default, including after failed cycles; current/pending recovery evidence is protected. Logs rotate at 5 MiB with three archived segments. Do not append cron output to an unbounded file; managed logs are in private_sync_data/logs/sync.log. Keep cron startup/failure notifications enabled.
 
 ## Updating
 
 Back up, pull the new commit, install dependencies if lockfiles changed and restart the app through cPanel. Keep credentials and sync state outside the clone. Do not reinitialize after ordinary code updates. Check the next cron result and ERP login/dropdowns.
 
 Official references: [Node application setup](https://docs.cpanel.net/knowledge-base/web-services/how-to-install-a-node.js-application/), [Cron Jobs](https://docs.cpanel.net/cpanel/advanced/cron-jobs/), [Git deployment](https://docs.cpanel.net/knowledge-base/web-services/guide-to-git-deployment/).
+
+## Required storage check before cron
+
+Do not upload local_data/sync_preview. Read [SYNC_STORAGE.md](SYNC_STORAGE.md). Defaults allocate a 4 GiB runtime budget with 1 GiB start headroom and a 2 GiB filesystem free reserve. Check the hosting account quota in cPanel Disk Usage separately. check_cpanel.js reports database allocation and filesystem space but cannot certify account quota. Confirm a hosted dry run and manual apply fit before enabling cron.
+
+## Yarn corrections and partial sync
+
+See [Yarn identity and partial sync](SYNC_YARN.md) for prefix-preserving yarn matching, legacy identity backfill, and the opt-in policy for skipping unresolved Dispos while syncing independent changes. Keep fingerprint-bound exclusion files outside the public web directory and out of Git.

@@ -53,6 +53,7 @@ function run(cmd, args, opts = {}) {
       stdio: opts.stdio || ['ignore', 'pipe', 'pipe'],
       windowsHide: true,
     });
+    require('../../lib/sync_process_tracking').track(child);
     let stdout = '', stderr = '';
     if (child.stdout) child.stdout.on('data', (d) => { const s = d.toString(); stdout += s; if (!opts.quiet) process.stdout.write(s); });
     if (child.stderr) child.stderr.on('data', (d) => { const s = d.toString(); stderr += s; if (!opts.quiet) process.stderr.write(s); });

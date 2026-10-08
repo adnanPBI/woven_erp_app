@@ -70,7 +70,26 @@ const {planEdits}=require('../lib/sheets_sync_plan');
   assert.equal(issuePlan.operations['yarn-issue'].find(r=>r.rowNumber===2).uid,'weft');
   assert.equal(issuePlan.operations['yarn-issue'].find(r=>r.rowNumber===3).uid,'warp');
   fs.writeFileSync(file,issueHeader+'30,167,2026-09-21,D,137267,,3100,Momtex,new1\n30,167,2026-09-21,D,137267,3600,,Momtex,new2\n');
-  assert.equal(planEdits(issueBefore,await inventory(dir,issueProfiles)).ok,false,'Do not guess when both duplicate-key issue quantities changed');
+  const quantityPlan=planEdits(issueBefore,await inventory(dir,issueProfiles));
+  assert(quantityPlan.ok,'Warp/weft identity distinguishes simultaneous quantity changes');
+  assert.equal(quantityPlan.updated,2);assert.equal(quantityPlan.added,0);
+  assert.equal(quantityPlan.operations['yarn-issue'].find(r=>r.rowNumber===2).uid,'weft');
   console.log('Streamed CSV inventory test passed: changed source UIDs do not replay old events; duplicate occurrence preserved.');
  }finally{fs.unlinkSync(file);fs.rmdirSync(dir);}
 })().catch(e=>{console.error(e);process.exitCode=1;});
+{
+ const {applyReviewedReassignments}=require('../lib/sheets_sync_plan');
+ const previous={headersHash:'h',records:[{uid:'original',group:'same',digest:'443'}]};
+ const current={headersHash:'h',records:[{key:'part1',group:'same',digest:'131.86',rowNumber:2},{key:'part2',group:'same',digest:'311.14',rowNumber:3}]};
+ const review={profile:'yarn-issue',sourceUid:'original',oldGroup:'same',newGroup:'same',oldDigest:'443',newDigest:'131.86'};
+ assert.equal(planEdits({'yarn-issue':previous},{'yarn-issue':current}).ok,false);
+ const reviewed=applyReviewedReassignments('yarn-issue',structuredClone(previous),current,[review]);
+ const split=planEdits({'yarn-issue':reviewed},{'yarn-issue':current});
+ assert(split.ok);assert.equal(split.updated,1);assert.equal(split.added,1);
+ assert.equal(split.operations['yarn-issue'].find(x=>x.action==='update').uid,'original');
+ const committed={headersHash:'h',records:split.operations['yarn-issue']};
+ const replay=planEdits({'yarn-issue':applyReviewedReassignments('yarn-issue',committed,current,[review])},{'yarn-issue':current});
+ assert(replay.ok);assert.equal(replay.added+replay.updated,0);
+ assert.throws(()=>applyReviewedReassignments('yarn-issue',structuredClone(previous),{...current,records:[current.records[1]]},[review]),/stale|ambiguous/);
+ console.log('Reviewed same-key split and no-op replay passed.');
+}

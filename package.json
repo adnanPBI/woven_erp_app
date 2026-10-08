@@ -6,8 +6,8 @@
     "start": "node app.js",
     "dev": "NODE_ENV=development node server.js",
     "prod": "NODE_ENV=production node server.js",
-    "test": "node --test tests/http-boundaries.test.js && node sync/tests/sheets_sync_plan.test.js && node sync/tests/v3/full_dry_run_gate_v323.test.js",
-    "check": "node --check server.js && node --check sync/scripts/sync/run.js"
+    "test": "node --test tests/http-boundaries.test.js && node sync/tests/sheets_sync_plan.test.js && node sync/tests/yarn_sync_identity.test.js && node sync/tests/sync_exclusions.test.js && node sync/tests/v3/full_dry_run_gate_v323.test.js && node sync/tests/sync_storage.test.js",
+    "check": "node --check server.js && node --check sync/scripts/sync/run.js && node --check sync/scripts/sync/worker.js && node --check sync/lib/sync_storage.js && node --check sync/lib/yarn_sync_identity.js && node --check sync/lib/yarn_sync_match.js && node --check sync/lib/sync_exclusions.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

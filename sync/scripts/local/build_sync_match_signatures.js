@@ -5,7 +5,7 @@ const {readState,writeJson,sha256File}=require('./common');
 (async()=>{
  const profiles=require('../../mappings/mapping-contract-v2.json').profiles.filter(p=>['yarn-receive','yarn-issue'].includes(p.id));
  const rows=[];
- for(const p of profiles)for(const r of (await inventory(readState().latestCertifiedDir,[p]))[p.id].records)rows.push([p.id,r.uid,r.digest,r.matchHash]);
+ for(const p of profiles)for(const r of (await inventory(readState().latestCertifiedDir,[p]))[p.id].records)rows.push([p.id,r.uid,r.digest,r.matchHash,r.yarnIdentity]);
  const dir=path.resolve('local_data/sync_package'),file=path.join(dir,'baseline.match-signatures.jsonl.gz');
  fs.writeFileSync(file,zlib.gzipSync(rows.map(r=>JSON.stringify(r)).join('\n')+'\n'));
  const metaPath=path.join(dir,'baseline.meta.json'),meta=JSON.parse(fs.readFileSync(metaPath));

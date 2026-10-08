@@ -56,7 +56,10 @@
     "local:dry-run": "node scripts/local/run_migration.js --mode=dry-run",
     "local:live": "node scripts/local/run_migration.js --mode=live",
     "local:verify": "node scripts/local/verify_local_migration.js",
-    "local:dashboard": "node scripts/local/dashboard_server.js"
+    "local:dashboard": "node scripts/local/dashboard_server.js",
+    "test:sync-storage": "node tests/sync_storage.test.js",
+    "test:sync-yarn": "node tests/sheets_sync_plan.test.js && node tests/yarn_sync_identity.test.js && node tests/sync_exclusions.test.js",
+    "test:sync-yarn:mysql": "node tests/yarn_sync_mysql.test.js"
   },
   "dependencies": {
     "csv-parse": "^5.5.6",
@@ -64,7 +67,7 @@
     "mysql2": "^3.12.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=18.15"
   },
   "release_patch_revision": "20260812b"
 }

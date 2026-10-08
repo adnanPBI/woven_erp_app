@@ -2,6 +2,8 @@
 const crypto = require('crypto');
 const path = require('path');
 const {iterateCsvRows, dedupeHeaders, isNonEmptyRow} = require('./csv_stream');
+const {YARN_PROFILES, yarnIdentity} = require('./yarn_sync_identity');
+const {matchYarn} = require('./yarn_sync_match');
 const hash = value => crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 // Run/file/row-position metadata changes on every export and is not an event ID.
 const metadata = new Set(['__MIG_SOURCE_UID', '__MIG_SOURCE_ROW', '__MIG_SOURCE_ROW_COUNT', '__MIG_ACTION', '__MIG_BRIDGE_SOURCE']);
@@ -35,7 +37,7 @@ async function inventory(csvDir, profiles) {
       const mutableMatchField={'yarn-receive':'Last Received Date','yarn-issue':'Delivery Place'}[profile.id];
       const matchHash=mutableMatchField?hash(headers.map((h,i)=>[h,String(row.values[i]??'')]).filter(([h])=>!metadata.has(h)&&h!==mutableMatchField)):null;
       const dispoHeader=['Dispo No.','Dispo No','Received GD NO','DISPO NUMBER'].find(h=>headers.includes(h));
-      records.push({key:hash([profile.id,digest,n]),digest,group,uid,matchHash,rowNumber:row.logicalRowNumber,dispo:dispoHeader?String(row.values[headers.indexOf(dispoHeader)]||'').trim().toLowerCase():''});
+      records.push({key:hash([profile.id,digest,n]),digest,group,uid,matchHash,yarnIdentity:yarnIdentity(profile.id,headers,row.values),rowNumber:row.logicalRowNumber,dispo:dispoHeader?String(row.values[headers.indexOf(dispoHeader)]||'').trim().toLowerCase():''});
     }
     if(!headers)throw Error('Missing certified headers: '+profile.id);
     result[profile.id]={headersHash:hash(headers.filter(h=>!metadata.has(h))),records};
@@ -62,6 +64,17 @@ function planEdits(previous,current, upstreamChanges = []) {
  for(const [profile,next]of Object.entries(current)){
   const prior=previous[profile];operations[profile]=[];matched[profile]=[];
   if(!prior||prior.headersHash!==next.headersHash){conflicts.push({profile,reason:'schema_changed'});continue;}
+  if(YARN_PROFILES.has(profile)&&next.records.some(r=>r.yarnIdentity)){
+   const yarn=matchYarn(prior,next);
+   conflicts.push(...yarn.conflicts.map(c=>({profile,...c})));
+   for(const [before,after]of yarn.pairs){
+    const row={...after,uid:before.uid,previousDigest:before.digest,previousDispo:before.dispo};
+    if(before.digest===after.digest)matched[profile].push(row);
+    else{operations[profile].push({...row,action:'update'});updated++;}
+   }
+   for(const row of yarn.inserts){operations[profile].push({...row,uid:hash(['sync',profile,row.key]),previousDigest:null,action:'insert'});added++;}
+   continue;
+  }
   const oldGroups=new Map(),newGroups=new Map();
   for(const [records,map]of [[prior.records,oldGroups],[next.records,newGroups]])for(const row of records){if(!map.has(row.group))map.set(row.group,[]);map.get(row.group).push(row);}
   for(const group of new Set([...oldGroups.keys(),...newGroups.keys()])){
@@ -108,7 +121,9 @@ function applyReviewedReassignments(profile,previous,current,reviews){
    previous.records=previous.records.filter(r=>r.uid!==review.sourceUid);
    continue;
   }
-  if(old.group===review.newGroup)continue; // Already committed; future edits use the tracked identity.
+  // A reviewed split can keep the same natural key. Bind its exact destination
+  // fingerprint once, then let subsequent edits use normal tracked matching.
+  if(old.group===review.newGroup&&(review.oldGroup!==review.newGroup||!approvedDigests.includes(old.digest)))continue;
   const candidate=current.records.filter(r=>r.group===review.newGroup&&r.digest===review.newDigest);
   if(old.group!==review.oldGroup||!approvedDigests.includes(old.digest)||candidate.length!==1)throw Error('Reviewed reassignment is stale or ambiguous: '+profile);
   if(current.records.some(r=>r.group===review.oldGroup&&r.digest===review.oldDigest))throw Error('Original receipt still exists; refusing reassignment');

@@ -1054,13 +1054,22 @@ async function upsertProvenanceParent(ctx, profile, table, data) {
     return { action: 'rejected', id: null };
   }
 
+  let syncBinding;
+  if (ctx.sync && ['yarn-issue', 'yarn-receive'].includes(profile.id) && ['update', 'refresh'].includes(ctx.syncOperation?.action) && ctx.pool) {
+    syncBinding = await provenance.findBinding(ctx, profile.id, sourceUid, table);
+    if (!syncBinding) {
+      const error = new Error(`Missing tracked yarn binding for ${profile.id}/${table}/${sourceUid}; refusing to insert a replacement row.`);
+      error.code = 'MISSING_YARN_SYNC_BINDING';
+      throw error;
+    }
+  }
   if (ctx.dryRun || !ctx.pool) {
     const syntheticId = `DRY-${table}-${sourceUid.slice(0, 32)}`;
     ctx.preview({ profile: profile.id, table, action: 'preview_provenance_upsert', source_uid: sourceUid, data: JSON.stringify(data) });
     return { action: 'previewed', id: syntheticId };
   }
 
-  const binding = await provenance.findBinding(ctx, profile.id, sourceUid, table);
+  const binding = syncBinding || await provenance.findBinding(ctx, profile.id, sourceUid, table);
   if (binding) {
     const existingTarget = await provenance.verifyTargetExists(ctx, table, binding.target_primary_key);
     if (!existingTarget) {

@@ -61,3 +61,6 @@ temp/
 stderr.log
 error_log
 echo
+
+**/excluded-records.json
+**/excluded-records-report.json

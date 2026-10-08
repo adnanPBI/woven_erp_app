@@ -25,7 +25,7 @@ async function main(){
   await Promise.all([pipeline(fs.createReadStream(manifest.file),p.stdin),new Promise((resolve,reject)=>{p.on('error',reject);p.on('close',code=>code===0?resolve():reject(Error(errors)));})]);
   console.log('Isolated export restored.');
   pool=mysql.createPool({...local,database:TARGET,dateStrings:true});
-  await pool.query("CREATE TABLE sheets_sync_events(profile varchar(40),source_uid char(64),group_key char(64),digest char(64),dispo varchar(255),match_hash char(64),updated_at timestamp DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY(profile,source_uid)) ENGINE=InnoDB");
+  await pool.query("CREATE TABLE sheets_sync_events(profile varchar(40),source_uid char(64),group_key char(64),digest char(64),dispo varchar(255),match_hash char(64),yarn_identity longtext,updated_at timestamp DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY(profile,source_uid)) ENGINE=InnoDB");
   const [[latest]]=await pool.query("SELECT dispo_number FROM dispo_form_data WHERE dispo_creating_date>='2024-01-01' ORDER BY dispo_creating_date DESC LIMIT 1");
   const contract=require('../mappings/mapping-contract-v2.json'),profile=contract.profiles.find(p=>p.id==='dispo');
   let headers,values;
