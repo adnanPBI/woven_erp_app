@@ -141,7 +141,9 @@ async function main(){
  const pendingFile=path.join(dataDir,'pending.json');
  const pending=fs.existsSync(pendingFile)?JSON.parse(fs.readFileSync(pendingFile)):null;
  if(args['prepared-cycle']&&!local)throw Error('Prepared fixture reuse is local-only');
- const cycle=pending?.cycle||(args['prepared-cycle']?path.resolve(args['prepared-cycle']):path.join(dataDir,'cycles',stamp()));
+ const resume=args['resume-host-cycle']?path.resolve(args['resume-host-cycle']):null;
+ if(resume&&(!resume.startsWith(path.resolve(dataDir,'cycles')+path.sep)||!fs.existsSync(path.join(resume,'local_state.json'))))throw Error('Only an existing certified hosted cycle can resume');
+ const cycle=pending?.cycle||resume||(args['prepared-cycle']?path.resolve(args['prepared-cycle']):path.join(dataDir,'cycles',stamp()));
  if(!path.resolve(cycle).startsWith(path.resolve(dataDir,'cycles')+path.sep))throw Error('Cycle must be within sync data directory');
  activeCycle=cycle;
  fs.mkdirSync(cycle,{recursive:true});
@@ -149,7 +151,7 @@ async function main(){
  // Explicit child environment prevents production reuse of local rehearsal paths/settings.
  const childEnv={...process.env,...env,LOCAL_DATA_ROOT:cycle,LOCAL_CUTOFF_START:'2024-01-01',LOCAL_CUTOFF_END:date,GOOGLE_AUTH_MODE:'service-account',GOOGLE_SERVICE_ACCOUNT_JSON:env.GOOGLE_SERVICE_ACCOUNT_JSON_PATH||'',GOOGLE_SNAPSHOT_DIR:'',PREPARE_REVIEWER:'AUTHORIZED_SCHEDULED_SHEETS_SYNC',CSV_DATE_ORDER:'dmy',IMPORT_VALIDATION_MODE:'strict',LOCAL_PRESERVE_RETAINED:'false',DB_NAME:expected,IMPORT_EXPECTED_DB:expected,REQUIRE_DB_GUARD:'true',PRODUCTION_DB_NAME:expected,ALLOW_PRODUCTION_DB:'true',PRODUCTION_APPROVAL_TOKEN:crypto.randomBytes(24).toString('hex')};
  json(path.join(dataDir,'status.json'),{status:'fetching',database:expected,cycle,at:new Date().toISOString()});
- if(!pending&&!args['prepared-cycle']){
+ if(!pending&&!args['prepared-cycle']&&!resume){
  if(args.snapshot){if(!local)throw Error('Snapshot fixture mode is only permitted locally');childEnv.GOOGLE_SNAPSHOT_DIR=path.resolve(args.snapshot);}
  else if(env.SYNC_GOOGLE_MODE==='public-csv'){
   await command('scripts/local/download_public_sources.js',[],childEnv,log);
@@ -168,9 +170,15 @@ async function main(){
  const exclusionEntries=env.SYNC_EXCLUSIONS_FILE?JSON.parse(fs.readFileSync(path.resolve(env.SYNC_EXCLUSIONS_FILE))):[];
  const exclusionPolicy=env.SYNC_CONFLICT_POLICY||'block';
  const exclusions=(exclusionEntries.length||exclusionPolicy!=='block')?new (require('../../lib/sync_exclusions').SyncExclusions)(exclusionEntries,exclusionPolicy):null;
+ const protection=JSON.parse(fs.readFileSync(path.join(ROOT,'protection-policy.json')));
+ if(protection.heldCases.length!==42||protection.originalExclusions.length!==14||!exclusions)throw Error('Required protections missing');
+ for(const dispo of protection.seedDispos)exclusions.dispos.add(dispo);
+ for(const e of protection.originalExclusions)exclusions.edge(e.dispo,e.lot);
  const plan=pending?JSON.parse(fs.readFileSync(path.join(cycle,'plan.json'))):{ok:true,added:0,updated:0,refreshed:0,operations:{},conflicts:[]};
  if(!pending){
  for(const profile of contract.profiles){
+  if(global.gc)global.gc();
+  console.log(JSON.stringify({stage:'planning-profile',profile:profile.id,heapMiB:Math.round(process.memoryUsage().heapUsed/1048576),rssMiB:Math.round(process.memoryUsage().rss/1048576)}));
   const current=await inventory(prepared.latestCertifiedDir,[profile]);
   const [events]=await connection.query('SELECT source_uid uid,group_key `group`,digest,dispo,match_hash matchHash,yarn_identity yarnIdentity FROM sheets_sync_events WHERE profile=?',[profile.id]);
   await saveHydratedIdentities(connection,profile.id,hydrateIdentities({records:events},current[profile.id]));
@@ -186,6 +194,8 @@ async function main(){
   const order=contract.import_order||contract.profiles.map(p=>p.id),affected=new Map();
   for(const [profile,rows]of Object.entries(plan.operations))for(const r of rows)for(const dispo of [r.dispo,r.previousDispo])if(dispo)affected.set(dispo,Math.min(affected.get(dispo)??99,order.indexOf(profile)));
   for(const profile of contract.profiles){
+  if(global.gc)global.gc();
+  console.log(JSON.stringify({stage:'planning-profile',profile:profile.id,heapMiB:Math.round(process.memoryUsage().heapUsed/1048576),rssMiB:Math.round(process.memoryUsage().rss/1048576)}));
    if(![...affected.values()].some(index=>index<order.indexOf(profile.id)))continue;
    const current=await inventory(prepared.latestCertifiedDir,[profile]);
    const [events]=await connection.query('SELECT source_uid uid,group_key `group`,digest,dispo,match_hash matchHash,yarn_identity yarnIdentity FROM sheets_sync_events WHERE profile=?',[profile.id]);
@@ -198,11 +208,12 @@ async function main(){
  json(path.join(cycle,'plan.json'),plan);
  if(plan.exclusions)json(path.join(dataDir,'excluded-records-report.json'),{at:new Date().toISOString(),cycle,...plan.exclusions});
  }
+ require('../../lib/hosted_protection_guard').assertProtected(plan,protection);
  if(!plan.ok){
   json(path.join(dataDir,'conflict-review.json'),{at:new Date().toISOString(),cycle,conflicts:plan.conflicts});
   throw Error('Ambiguous edits/deletions or changed keys require review: '+path.join(cycle,'plan.json'));
  }
- if(args.plan||plan.added+plan.updated===0){json(path.join(dataDir,'status.json'),{status:args.plan?'planned':'unchanged',database:expected,cycle,at:new Date().toISOString(),added:plan.added,updated:plan.updated});console.log(JSON.stringify({readOnly:!!args.plan,added:plan.added,updated:plan.updated,cycle}));return;}
+ if(args.plan||(!args['dry-run']&&plan.added+plan.updated===0)){json(path.join(dataDir,'status.json'),{status:args.plan?'planned':'unchanged',database:expected,cycle,at:new Date().toISOString(),added:plan.added,updated:plan.updated});console.log(JSON.stringify({readOnly:!!args.plan,added:plan.added,updated:plan.updated,cycle}));return;}
  storage.assertCapacity(dataDir,storageConfig);
  const {sha256File}=require('../local/common');
  const {SheetsSyncRuntime}=require('../../lib/sheets_sync_runtime');

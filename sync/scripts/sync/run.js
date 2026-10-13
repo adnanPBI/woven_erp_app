@@ -9,7 +9,7 @@ async function supervise(argv = process.argv.slice(2), options = {}) {
   const env = require('dotenv').parse(fs.readFileSync(path.resolve(envArg.slice(6))));
   const config = storage.settings(env);
   const root = path.resolve(env.SYNC_DATA_DIR || path.join(__dirname, '../../sync_data'));
-  const child = spawn(process.execPath, [options.workerFile || path.join(__dirname, 'worker.js'), ...argv], {
+  const child = spawn(process.execPath, ['--expose-gc', options.workerFile || path.join(__dirname, 'worker.js'), ...argv], {
     cwd: path.resolve(__dirname, '../..'), windowsHide: true,
     detached: process.platform !== 'win32', stdio: ['ignore', 'pipe', 'pipe', 'ipc']
   });

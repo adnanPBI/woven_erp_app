@@ -1,5 +1,7 @@
 # Woven ERP and Google Sheets sync
 
+> **CRITICAL — deployed cPanel baseline:** Read [the preservation note](docs/CRITICAL_CPANEL_BASELINE.md) before modifying or deploying this repository. The owner requires the database/history features, right-aligned two-row header and sync protections to remain intact during security fixes. Git publication does not authorize overwriting the live installation.
+
 Node.js/MySQL weaving ERP, including the updated search dropdowns and a separate scheduled Google Sheets importer. The ERP is served under `/main`. The importer adds records and applies edits to tracked records from 2024 onward while preserving retained historical data.
 
 **Start with [the cPanel deployment guide](docs/CPANEL_DEPLOYMENT.md).** Cloning this repository does not import a database, supply credentials or enable cron.

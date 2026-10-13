@@ -1,4 +1,5 @@
 'use strict';
+const syncRowHistory = require('./sync_row_history');
 
 const fs = require('fs');
 const path = require('path');
@@ -1004,6 +1005,7 @@ async function insertRow(ctx, table, data) {
   if (!columns.length) return { insertId: null, action: 'skipped_empty' };
   const sql = `INSERT INTO \`${table}\` (${columns.map(k => `\`${k}\``).join(', ')}) VALUES (${columns.map(() => '?').join(', ')})`;
   const [result] = await dbHandle(ctx).query(sql, columns.map(k => data[k]));
+  await syncRowHistory.inserted(ctx, table, Object.fromEntries(columns.map(k => [k, data[k]])), result.insertId);
   return { insertId: result.insertId || null, action: 'inserted' };
 }
 async function updateRow(ctx, table, data, where) {
@@ -1012,14 +1014,18 @@ async function updateRow(ctx, table, data, where) {
   const whereKeys = Object.keys(where).filter(k => where[k] !== null && where[k] !== undefined);
   if (!cols.length || !whereKeys.length) return { action: 'skipped_empty' };
   const sql = `UPDATE \`${table}\` SET ${cols.map(k => `\`${k}\` = ?`).join(', ')} WHERE ${whereKeys.map(k => `\`${k}\` = ?`).join(' AND ')}`;
+  const historyBefore = await syncRowHistory.before(ctx, table, Object.fromEntries(whereKeys.map(k => [k, where[k]])));
   await dbHandle(ctx).query(sql, [...cols.map(k => data[k]), ...whereKeys.map(k => where[k])]);
+  await syncRowHistory.updated(ctx, table, historyBefore);
   return { action: 'updated' };
 }
 async function deleteChildren(ctx, table, where) {
   if (ctx.dryRun) return;
   const keys = Object.keys(where).filter(k => where[k] !== null && where[k] !== undefined);
   if (!keys.length) return;
+  const historyBefore = await syncRowHistory.before(ctx, table, Object.fromEntries(keys.map(k => [k, where[k]])));
   await dbHandle(ctx).query(`DELETE FROM \`${table}\` WHERE ${keys.map(k => `\`${k}\` = ?`).join(' AND ')}`, keys.map(k => where[k]));
+  await syncRowHistory.deleted(ctx, table, historyBefore);
 }
 async function deleteChildrenOnce(ctx, table, where) {
   const key = `${table}|${JSON.stringify(where)}`;

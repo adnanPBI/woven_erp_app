@@ -231,6 +231,7 @@ function updateActiveUsers() {
     // Show Main UI and apply RBAC
    // Replace the showMainUI function in main.js with this version
 function showMainUI() {
+    window.initializeDatabaseTools?.();
     document.getElementById('mainContainer').style.display = 'block';
     updateActiveUsers();
     updateLoggedInUserDisplay(); // New function to display current user
@@ -829,4 +830,116 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+});
+
+// Database and synchronization panels. All permissions are also checked by the server.
+document.addEventListener('DOMContentLoaded', () => {
+    const $ = id => document.getElementById(id);
+    let info, page=0, currentRow, currentTable, loadVersion=0,scrollTarget,scrollObserver;
+    const modal = new bootstrap.Modal($('databaseToolsModal'));
+    const el=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
+    const date=value=>value?new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'medium',timeZone:'Asia/Dhaka'}).format(new Date(value)):'—';
+    async function api(route,body) {
+        const response=await fetch('/main/api/database-console'+route,{credentials:'same-origin',cache:'no-store',method:body===undefined?'GET':'POST',headers:body===undefined?{}:{'Content-Type':'application/json','X-Console-CSRF':info?.csrf||''},body:body===undefined?undefined:JSON.stringify(body)});
+        const data=await response.json();if(!response.ok)throw Error(data.error||'Unable to complete the request.');return data;
+    }
+    const showError=e=>{$('databaseToolsMessage').textContent=e.message;$('databaseToolsMessage').className='alert alert-danger';};
+    async function action(fn) { $('databaseToolsMessage').textContent='';$('databaseToolsMessage').className='';try{await fn();}catch(e){showError(e);} }
+    window.initializeDatabaseTools=async()=>{
+        $('openDatabaseBtn').hidden=true;$('openSyncHistoryBtn').hidden=true;
+        try{info=await api('/info');$('openDatabaseBtn').hidden=false;$('openSyncHistoryBtn').hidden=false;}catch(_){info=null;}
+    };
+    async function open(mode) {
+        $('databaseToolsBody').replaceChildren();$('databaseToolsMessage').textContent='';modal.show();
+        info=await api('/info');$('databaseToolsTitle').textContent=mode==='database'?'Database':'Sync history';
+        $('databaseToolsIdentity').textContent=info.database+' • '+info.role;
+        if(mode==='database')await database();else await history();
+    }
+    $('openDatabaseBtn').addEventListener('click',()=>action(()=>open('database')));
+    $('openSyncHistoryBtn').addEventListener('click',()=>action(()=>open('history')));
+    $('databaseToolsModal').addEventListener('hidden.bs.modal',()=>{loadVersion++;$('databaseToolsBody').replaceChildren();currentRow=null;scrollObserver?.disconnect();scrollTarget=null;$('databaseHorizontalScroll').hidden=true;});
+    const slider=$('databaseColumnSlider');
+    slider.addEventListener('input',()=>{if(scrollTarget)scrollTarget.scrollLeft=Number(slider.value);});
+    function floatingScroll(target){
+        scrollObserver?.disconnect();scrollTarget=target;
+        const refresh=()=>{if(!target.isConnected)return;const max=Math.max(0,target.scrollWidth-target.clientWidth);slider.max=String(max);slider.value=String(target.scrollLeft);$('databaseHorizontalScroll').hidden=max<1;};
+        target.addEventListener('scroll',refresh,{passive:true});scrollObserver=new ResizeObserver(refresh);scrollObserver.observe(target);if(target.firstElementChild)scrollObserver.observe(target.firstElementChild);requestAnimationFrame(refresh);
+    }
+    function button(text,fn,kind='outline-primary'){const b=el('button',text,'btn btn-'+kind+' btn-sm');b.type='button';b.addEventListener('click',()=>action(fn));return b;}
+    function grid(headers,rows) {const scroll=el('div',undefined,'table-responsive console-grid');const table=el('table',undefined,'table table-sm table-hover align-middle');const head=el('thead'),tr=el('tr');headers.forEach(h=>tr.append(el('th',h)));head.append(tr);table.append(head);const body=el('tbody');for(const cells of rows){const row=el('tr');for(const value of cells){const td=el('td');if(value instanceof Node)td.append(value);else{td.textContent=value===null?'NULL':String(value??'');td.style.maxWidth='320px';td.style.overflowWrap='anywhere';}row.append(td);}body.append(row);}table.append(body);scroll.append(table);return scroll;}
+    async function database(){
+        const body=$('databaseToolsBody');body.replaceChildren();
+        body.append(el('p','Browse business records without cPanel. Rows start locked. Admin or Owner can grant viewing access and editing of eligible notes.','mb-2'));
+        body.append(el('p',info.editingScope,'small text-muted'));
+        const controls=el('div',undefined,'d-flex flex-wrap gap-2 mb-3');const select=el('select',undefined,'form-select w-auto');select.id='consoleTable';select.setAttribute('aria-label','Business table');
+        info.tables.forEach(t=>{const option=el('option',t.label);option.value=t.name;select.append(option);});
+        const search=el('input',undefined,'form-control w-auto');search.id='consoleSearch';search.placeholder='Search text / Dispo';search.maxLength=100;search.setAttribute('aria-label','Search records');
+        controls.append(select,search,button('Search / refresh',async()=>{page=0;await rows();}));
+        if(info.manager)controls.append(button('Manage access',access),button('Edit & access audit',audit));
+        select.addEventListener('change',()=>action(async()=>{page=0;await rows();}));search.addEventListener('keydown',e=>{if(e.key==='Enter')action(async()=>{page=0;await rows();});});
+        body.append(controls);const results=el('div');results.id='consoleRows';const details=el('div');details.id='consoleDetails';body.append(results,details);page=0;await rows();
+    }
+    async function rows(){
+        const version=++loadVersion;currentTable=$('consoleTable').value;const name=currentTable;
+        const target=$('consoleRows');target.textContent='Loading records…';$('consoleDetails').replaceChildren();
+        const data=await api('/rows/'+encodeURIComponent(name)+'?offset='+page*50+'&q='+encodeURIComponent($('consoleSearch').value));if(version!==loadVersion)return;
+        target.replaceChildren();const nav=el('div',undefined,'d-flex gap-2 align-items-center mb-2');const prev=button('Previous',async()=>{page--;await rows();});prev.disabled=page===0;const next=button('Next',async()=>{page++;await rows();});next.disabled=!data.hasMore;nav.append(prev,el('span',data.rows.length?`Rows ${page*50+1}–${page*50+data.rows.length}`:'No matching rows'),next);target.append(nav);
+        const columns=data.columns;
+        const table=grid(['Row access',...columns],data.rows.map(r=>[button(r.canEdit?'Open • editing granted':'Open • locked',()=>detail(name,r,data.editable)),...columns.map(k=>r.values[k])]));
+        table.classList.add('console-record-grid');target.append(table);floatingScroll(table);
+        target.append(el('p',`All ${columns.length} MySQL columns are shown. Use the fixed Columns slider below to move horizontally. Search checks the first 25 text columns.`,'small text-muted'));
+    }
+    async function detail(table,row,editable){
+        currentRow=row;const target=$('consoleDetails');target.replaceChildren();target.append(el('hr'),el('h5','Row details'),el('p',row.canEdit?'Editing granted for note fields.':row.lockReason,'small'));
+        const record=grid(['Column','Value'],Object.entries(row.values));record.style.maxHeight='350px';record.style.overflow='auto';target.append(record);
+        if(info.manager && Object.keys(row.key).length){
+            const users=await api('/access');if(currentRow!==row)return;
+            const controls=el('div',undefined,'d-flex flex-wrap gap-2 my-3');const select=el('select',undefined,'form-select w-auto');select.setAttribute('aria-label','Person to grant row editing');
+            users.users.filter(u=>u.can_view||u.manager).forEach(u=>{const o=el('option',u.username+(u.manager?' (manager)':''));o.value=u.id;select.append(o);});
+            const grant=button('Grant note editing',async()=>{await api('/row-access/'+encodeURIComponent(table),{key:row.key,userId:Number(select.value)});await rows();});grant.disabled=!row.eligible;
+            controls.append(select,grant,button('Lock row for everyone',async()=>{await api('/row-access/'+encodeURIComponent(table),{key:row.key,lock:true});await rows();},'secondary'));target.append(controls);
+        }
+        if(row.canEdit){
+            const fields={};for(const key of editable){const label=el('label',key,'form-label mt-2');const input=el('textarea',undefined,'form-control');input.rows=3;input.value=row.values[key]??'';input.maxLength=10000;input.id='consoleEdit_'+key;label.htmlFor=input.id;target.append(label,input);fields[key]=input;}
+            target.append(el('p','A later Google Sheets edit may replace a mapped note. Your edit and its previous value are recorded.','small text-muted mt-2'),button('Review & save notes',async()=>{
+                const changes=Object.fromEntries(Object.entries(fields).filter(([k,n])=>n.value!==(row.values[k]??'')).map(([k,n])=>[k,n.value]));
+                if(!Object.keys(changes).length)throw Error('No changes to save.');
+                const preview=Object.entries(changes).map(([k,v])=>k+'\nBefore: '+(row.values[k]??'NULL')+'\nAfter: '+v).join('\n\n');
+                if(!window.confirm('Save these note changes?\n\n'+preview))return;
+                await api('/edit/'+encodeURIComponent(table),{key:row.key,fingerprint:row.fingerprint,changes});await rows();
+            },'primary'));
+        }
+    }
+    async function access(){
+        const data=await api('/access'),target=$('consoleDetails');target.replaceChildren(el('h5','Database & history access'));
+        target.append(grid(['User','Role','Access'],data.users.map(u=>[u.username,u.manager?'Admin / Owner':u.role,u.manager?'Management access':button(u.can_view?'Revoke access':'Grant view access',async()=>{await api('/access',{userId:u.id,canView:!u.can_view});await access();},u.can_view?'outline-danger':'outline-primary')])));
+        target.append(el('p','Viewing access does not allow editing. Open an eligible row to grant note editing; locking a row revokes all its grants.','small'));
+    }
+    async function audit(){
+        const data=await api('/audit');$('consoleDetails').replaceChildren(el('h5','Recent edit & access audit'),grid(['Time (Bangladesh)','User','Action','Table','Details'],data.rows.map(r=>[date(r.createdAt),r.username||String(r.actor_id),r.action,r.table_name,typeof r.details_json==='string'?r.details_json:JSON.stringify(r.details_json)])));
+    }
+    async function history(){
+        const data=await api('/history');const body=$('databaseToolsBody');body.replaceChildren();
+        body.append(el('p','Google Sheets → '+info.database+' • Scheduled every 10 minutes • Times shown in Bangladesh time.'));
+        if(data.stale)body.append(el('div','No recent start is visible. Check synchronization before relying on fresh data.','alert alert-warning'));
+        const controls=el('div',undefined,'d-flex flex-wrap gap-2 mb-3');controls.append(button('Refresh history',history));
+        if(info.manager){const select=el('select',undefined,'form-select w-auto');select.setAttribute('aria-label','History time range');[['1h','Last hour'],['3h','Last 3 hours'],['7h','Last 7 hours'],['24h','Last 24 hours'],['3d','Last 3 days']].forEach(([v,t])=>{const o=el('option',t);o.value=v;select.append(o);});
+            const clear=button('Clear my displayed history',async()=>{if(!confirm('Clear this time range from your history view? Database records, source logs and the audit trail will remain.'))return;await api('/history/clear',{period:select.value,confirm:'CLEAR_HISTORY_ONLY'});await history();},'outline-danger');clear.disabled=!info.historyClearEnabled;controls.append(select,clear);
+        }
+        body.append(controls,el('p',data.retention,'small text-muted'));
+        const labels={success:'Completed',unchanged:'Completed • no changes',failed:'Failed',running:'Running / awaiting completion',unconfirmed:'Completion not confirmed'};
+        body.append(el('p',data.captureStartedAt?'Detailed database-row capture began '+date(data.captureStartedAt)+'. Earlier row-level details are unavailable. Child-detail replacement deletes are labeled separately.':'Detailed database-row capture is not available yet.','small text-muted'));
+        const table=grid(['Started','Completed','Result','Source rows new','Source rows changed','MySQL rows added','MySQL rows updated','MySQL rows deleted','Row details','Gap (minutes)'],data.runs.map(r=>[date(r.startedAt),date(r.endedAt),labels[r.status]+(r.workerReported&&r.status==='unconfirmed'?' • worker reported results':''),r.added??'—',r.updated??'—',r.rowCounts?.added??'—',r.rowCounts?.updated??'—',r.rowCounts?.deleted??'—',r.detailsAvailable?button('View changed rows',()=>changedRows(r,0)): 'Not captured',r.gapMinutes??'—']));body.append(table);floatingScroll(table);
+        const details=el('div');details.id='syncChangedRows';body.append(details);
+        if(!data.runs.length)body.append(el('p','No retained runs in this view.'));
+    }
+    async function changedRows(run,offset){
+        const data=await api('/history/changes?run='+encodeURIComponent(run.id)+'&offset='+offset),target=$('syncChangedRows');
+        target.replaceChildren(el('hr'),el('h5','Database changes for '+date(run.startedAt)),el('p','Only committed changes are shown. A detail replacement can produce both Deleted and Added child rows.','small'));
+        const nav=el('div',undefined,'d-flex gap-2 my-2'),prev=button('Previous changes',()=>changedRows(run,offset-50)),next=button('Next changes',()=>changedRows(run,offset+50));prev.disabled=offset===0;next.disabled=!data.hasMore;nav.append(prev,el('span',`History entries ${data.rows.length?offset+1:0}–${offset+data.rows.length}`),next);target.append(nav);
+        const value=v=>el('pre',v===null?'—':JSON.stringify(v,null,2),'console-value');
+        const table=grid(['Time','Action','MySQL table','Database row key','Dispo','Changed columns','Before','After','Source file','Source row','Source action','Rows affected','Evidence / reason'],data.rows.map(r=>[date(r.at),r.action,r.table,r.key?JSON.stringify(r.key):'—',r.dispo,r.changedColumns.join(', ')||'See before / after',value(r.before),value(r.after),r.sourceFile,r.sourceRow,r.sourceAction,r.affectedRows,r.note||r.identityScope]));
+        target.append(table);floatingScroll(table);if(!data.rows.length)target.append(el('p','No committed database row changes were captured for this run.'));
+        target.scrollIntoView({behavior:'smooth',block:'nearest'});
+    }
 });

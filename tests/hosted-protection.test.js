@@ -1,0 +1,7 @@
+'use strict';
+const {test}=require('node:test'),assert=require('node:assert/strict');
+const {assertProtected}=require('../sync/lib/hosted_protection_guard');
+function fixture(){const heldCases=Array.from({length:42},(_,i)=>({caseId:'fixture-'+i,dispo:'held/'+i,profile:'yarn-issue',sourceUid:'uid-'+i,group:'group-'+i}));const policy={heldCases,seedDispos:heldCases.map(c=>c.dispo),originalExclusions:Array.from({length:14},()=>({})),businessCorrectionsApproved:0};return {policy,plan:{operations:{'yarn-issue':[{dispo:'allowed',uid:'new',group:'new'}]},exclusions:{policy:'skip-dispos',dispos:[...policy.seedDispos]}}};}
+test('hosted protection accepts independent changes with all holds intact',()=>{const {plan,policy}=fixture();assert.equal(assertProtected(plan,policy),true);});
+test('hosted protection refuses missing holds, approvals and exclusion bypass',()=>{for(const mutate of [p=>p.heldCases.pop(),p=>p.originalExclusions.pop(),p=>p.businessCorrectionsApproved=1]){const {plan,policy}=fixture();mutate(policy);assert.throws(()=>assertProtected(plan,policy));}const {plan,policy}=fixture();plan.exclusions.dispos.pop();assert.throws(()=>assertProtected(plan,policy));});
+test('hosted protection matches previous Dispo, source identity and group',()=>{for(const op of [{dispo:'held/0'},{previousDispo:'held/1'},{uid:'uid-2'},{sourceUid:'uid-3'},{group:'group-4'}]){const {plan,policy}=fixture();plan.operations['yarn-issue']=[op];assert.throws(()=>assertProtected(plan,policy));}});

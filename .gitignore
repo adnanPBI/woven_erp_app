@@ -64,3 +64,8 @@ echo
 
 **/excluded-records.json
 **/excluded-records-report.json
+**/protection-policy.json
+**/protection.sha256
+**/hosted-protected-records.json
+**/protected_42_cases.json
+**/original_14_exclusions.json

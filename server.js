@@ -66,6 +66,17 @@ app.use(session({
 
 require('./lib/http-boundaries').installApiGuard(app);
 
+// New tools reuse ERP sessions. Owners are an explicit server configuration.
+const consoleConfig = require('./lib/database-console-config.json');
+app.use('/main/api/database-console', require('./lib/database-console').createRouter({
+    express, pool,
+    syncRoot: '/home/weavonpq/sheets_live_sync_20261011',
+    expectedDatabase: 'weavonpq_weaving_main',
+    owners: consoleConfig.owners,
+    historyClearEnabled: consoleConfig.historyClearEnabled === true
+}));
+
+
 // FIXED: Enhanced session validation middleware
 app.use((req, res, next) => {
     // Skip session check for login/register routes
