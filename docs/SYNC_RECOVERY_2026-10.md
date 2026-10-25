@@ -36,6 +36,8 @@ Follow [the protected hosted baseline](CRITICAL_CPANEL_BASELINE.md). Keep its ex
 
 ## Verification
 
+The follow-up adds two actual MySQL cases (21 total) for distinguishable equal-amount peers and an intervening unbound collision. The peer fixture deliberately mixes legacy table collations. Source identity and exact provenance/ledger evidence govern coexistence; an unknown duplicate remains a blocker.
+
 `npm run check` and `npm test` cover the ERP boundaries, console and mandatory hosted protections plus the planner, yarn identities, exclusions, full dry-run gate and storage supervision. Additional recovery checks run with `npm run test:sync-recovery`.
 
 The optional actual-importer MySQL fixture accepts `SYNC_TEST_ENV=/external/private/test.env`; run `node sync/tests/sync_repair_runtime.mysql.test.js` only on the approved local disposable-fixture server. It creates and removes a uniquely named fixture database, not business rows. Nineteen cases passed during publication, including separate same-direction yarn amounts, separate delivery entries, replay, concurrent edits, drift detection and unchanged-refresh verification. No hosted database or quota verification was performed for this publication.

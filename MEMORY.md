@@ -10,6 +10,8 @@ The publication defaults to preserving separate source entries. The former lates
 
 ## October 25 source publication
 
+Follow-up: distinguishable equal-amount entries sharing references now retain individual source bindings. Absence evidence may exclude another entry only through its exact provenance plus current/previous ledger fingerprint; unknown or unbound identical targets still block writes. Separate parameterized provenance/ledger reads support legacy mixed collations. Planner/resume/yarn regressions and21 actual disposable MySQL runtime cases passed, including equal-amount peers, an intervening unbound collision and mixed-collation tables. npm run check/npm test passed. This follow-up does not clear hosted holds or establish cPanel deployment.
+
 Integrated the local verified-sync recovery source with the fetched October 13 hosted baseline. Preserved the ERP header/console/history, transactional capture, mandatory hosted guard (42 holds/14 exclusions), quota/flock wrapper, download retries, GC support and hosted-cycle resume. No production files, database, scheduler, private policies or credentials were changed.
 
 Included exact source/ledger/business evidence, nondeleting reconciliation, mapped post-verification, decimal rounding, distinct shared-reference entries, direction clearing, unchanged-refresh verification, cross-Dispo lot refresh, costing preservation, PO free-text status preservation, folding helper projection and live-column capacity qualification. Local recovery and an actual Windows scheduled cycle succeeded; those results do not certify the hosted database.

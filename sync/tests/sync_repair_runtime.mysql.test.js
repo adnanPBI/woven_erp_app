@@ -140,6 +140,28 @@ async function capture(verifyOnly=false){const ctx=context(true,{verifyOnly});aw
  const siblingLive=new BusinessEvidence('p','m','apply',siblingDry.export());
  for(let i=0;i<siblings.length;i++){siblingLive.begin('yarn-issue','amount'+i);await siblingLive.beforeMutation(issueCtx,'insert','yarn_issue_form',siblings[i]);siblingLive.finish();await db.query('INSERT INTO yarn_issue_form(id,code,total_warp_issue_kgs,total_weft_issue_kgs) VALUES (?,?,?,?)',[10+i,...Object.values(siblings[i])]);}
  assert.equal((await db.query("SELECT COUNT(*) n FROM yarn_issue_form WHERE code='audit-warp'"))[0][0].n,2);cases++;
- const [[ledgerCount]]=await db.query('SELECT COUNT(*) n FROM sheets_sync_events');assert.equal(ledgerCount.n,2);
+ // Equal payloads with distinguishable source rows can coexist, but only
+ // source/ledger/provenance-bound peers may be excluded from absence checks.
+ await db.query('CREATE TABLE migration_import_provenance(profile VARCHAR(40),source_uid CHAR(64),target_table VARCHAR(64),target_primary_key VARCHAR(64),PRIMARY KEY(profile,source_uid,target_table)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+ const peers=['first','second'].map(x=>({uid:hash('equal-'+x),digest:hash('equal-digest-'+x),previousDigest:null}));
+ const equalData={challan_no:'equal-audit',total_no_of_than_roll:1,delivery_quantity_a_grade:10};
+ const scopeFor=(peer,list=peers)=>({profile:'greige-delivery',uid:peer.uid,peers:list});
+ const equalDry=new BusinessEvidence('p','m');
+ for(const peer of peers){equalDry.begin('greige-delivery',peer.uid);assert.equal(await equalDry.capture(deliveryCtx,'greige_delivery_form',equalData,Object.keys(equalData),undefined,scopeFor(peer)),null);}
+ const equalLive=new BusinessEvidence('p','m','apply',equalDry.export());
+ for(const peer of peers){
+  equalLive.begin('greige-delivery',peer.uid);await equalLive.beforeMutation(deliveryCtx,'insert','greige_delivery_form',equalData);equalLive.finish();
+  const [insert]=await db.query('INSERT INTO greige_delivery_form(challan_no,total_no_of_than_roll,delivery_quantity_a_grade) VALUES (?,?,?)',Object.values(equalData));
+  await db.query('INSERT INTO migration_import_provenance VALUES (?,?,?,?)',['greige-delivery',peer.uid,'greige_delivery_form',String(insert.insertId)]);
+  await db.query('INSERT INTO sheets_sync_events(profile,source_uid,digest) VALUES (?,?,?)',['greige-delivery',peer.uid,peer.digest]);
+ }
+ assert.equal((await db.query("SELECT COUNT(*) n FROM greige_delivery_form WHERE challan_no='equal-audit'"))[0][0].n,2);cases++;
+ const third={uid:hash('equal-third'),digest:hash('equal-digest-third'),previousDigest:null};
+ const unknownDry=new BusinessEvidence('p','m');unknownDry.begin('greige-delivery',third.uid);
+ assert.equal(await unknownDry.capture(deliveryCtx,'greige_delivery_form',equalData,Object.keys(equalData),undefined,scopeFor(third,[...peers,third])),null);
+ await db.query('INSERT INTO greige_delivery_form(challan_no,total_no_of_than_roll,delivery_quantity_a_grade) VALUES (?,?,?)',Object.values(equalData));
+ const unknownLive=new BusinessEvidence('p','m','apply',unknownDry.export());unknownLive.begin('greige-delivery',third.uid);
+ await assert.rejects(unknownLive.beforeMutation(deliveryCtx,'insert','greige_delivery_form',equalData),{code:'SYNC_BUSINESS_PREIMAGE_CHANGED'});cases++;
+ const [[ledgerCount]]=await db.query('SELECT COUNT(*) n FROM sheets_sync_events');assert.equal(ledgerCount.n,4);
  console.log(JSON.stringify({test:'actual importer SQL plus source/ledger/business evidence',passed:cases,parentAndChildTargets:4,auditedBusinessMutations:journal.total,deletedBusinessRows:0,replayCreatedDuplicates:0,concurrentEditProtected:true,independentDriftDetection:true,productionConnections:0}));
 })().catch(e=>{console.error(e.stack||e.message);process.exitCode=1;}).finally(async()=>{if(db){if(created){try{await db.query('DROP DATABASE `'+dbName+'`');console.log('DISPOSABLE_RUNTIME_FIXTURE_REMOVED');}catch(e){console.error('LOCAL_TEST_CLEANUP_FAILED '+e.message);process.exitCode=1}}await db.end();}});

@@ -15,7 +15,7 @@ function stable(value){
 }
 const digest=value=>crypto.createHash('sha256').update(JSON.stringify(stable(value))).digest('hex');
 const rowHash=rows=>digest(rows.map(stable).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b))));
-async function select(ctx,table,where,lock,directionScope){
+async function select(ctx,table,where,lock,directionScope,sourceScope){
  const fields=Object.keys(where);
  if(!fields.length)throw fail('SYNC_EVIDENCE_UNBOUNDED','Empty target selector');
  let directionSql='';const params=fields.map(k=>where[k]);
@@ -24,7 +24,31 @@ async function select(ctx,table,where,lock,directionScope){
   directionSql=" AND (CASE WHEN COALESCE(total_warp_issue_kgs,0)<>0 AND COALESCE(total_weft_issue_kgs,0)<>0 THEN 'warp+weft' WHEN COALESCE(total_warp_issue_kgs,0)<>0 THEN 'warp' WHEN COALESCE(total_weft_issue_kgs,0)<>0 THEN 'weft' WHEN total_warp_issue_kgs IS NOT NULL AND total_weft_issue_kgs IS NOT NULL THEN 'warp+weft' WHEN total_warp_issue_kgs IS NOT NULL THEN 'warp' WHEN total_weft_issue_kgs IS NOT NULL THEN 'weft' ELSE '' END)=?";
   params.push(directionScope);
  }
- const [rows]=await (ctx.conn||ctx.pool).query('SELECT * FROM '+quote(table)+' WHERE '+fields.map(k=>quote(k)+' <=> ?').join(' AND ')+directionSql+' LIMIT 3'+(lock?' FOR UPDATE':''),params);
+ if(sourceScope){
+  const tables={'yarn-issue':'yarn_issue_form','yarn-receive':'yarn_receive_form','greige-delivery':'greige_delivery_form',warping:'warping_form',sizing:'sizing_form'};
+  const peers=sourceScope.peers;
+  if(tables[sourceScope.profile]!==table||!Array.isArray(peers)||peers.length<2||peers.length>500||
+     new Set(peers.map(p=>p.uid)).size!==peers.length||!peers.some(p=>p.uid===sourceScope.uid)||
+     peers.some(p=>!(/^[a-f0-9]{64}$/.test(p.uid)&&/^[a-f0-9]{64}$/.test(p.digest))||p.previousDigest!=null&&!/^[a-f0-9]{64}$/.test(p.previousDigest)))
+   throw fail('SYNC_INVALID_SOURCE_SCOPE','Invalid source-bound peer evidence');
+ }
+ const handle=ctx.conn||ctx.pool,limit=sourceScope?sourceScope.peers.length+2:3;
+ let [rows]=await handle.query('SELECT * FROM '+quote(table)+' WHERE '+fields.map(k=>quote(k)+' <=> ?').join(' AND ')+directionSql+' LIMIT '+limit+(lock?' FOR UPDATE':''),params);
+ if(sourceScope&&rows.length){
+  if(rows.length===limit||rows.some(r=>!r.id))throw fail('SYNC_EVIDENCE_AMBIGUOUS','Unbounded shared source target set');
+  // Separate parameterized lookups also support older ledgers/provenance
+  // tables whose profile/UID columns have different database collations.
+  const [links]=await handle.query('SELECT source_uid,target_primary_key FROM migration_import_provenance WHERE profile=? AND target_table=? AND target_primary_key IN ('+rows.map(()=>'?').join(',')+')'+(lock?' FOR UPDATE':''),[sourceScope.profile,table,...rows.map(r=>String(r.id))]);
+  const uids=[...new Set(links.map(link=>link.source_uid))];
+  const ledger=uids.length?(await handle.query('SELECT source_uid,digest FROM sheets_sync_events WHERE profile=? AND source_uid IN ('+uids.map(()=>'?').join(',')+')'+(lock?' FOR UPDATE':''),[sourceScope.profile,...uids]))[0]:[];
+  const digests=new Map(ledger.map(event=>[event.source_uid,event.digest]));
+  rows=rows.filter(row=>{
+   const bound=links.filter(link=>String(link.target_primary_key)===String(row.id));
+   if(bound.length!==1)return true;
+   const link=bound[0],peer=sourceScope.peers.find(p=>p.uid===link.source_uid&&p.uid!==sourceScope.uid);
+   return !peer||![peer.digest,peer.previousDigest].filter(Boolean).includes(digests.get(link.source_uid));
+  });
+ }
  if(rows.length>1)throw fail('SYNC_EVIDENCE_AMBIGUOUS','Target selector is not unique: '+table);
  return rows;
 }
@@ -82,7 +106,7 @@ class BusinessEvidence{
   }
  }
  begin(profile,uid){this.active=profile+'|'+uid;this.cursors.set(this.active,0);this.visited.add(this.active);if(this.mode!=='apply')this.records[this.active]=[];}
- async capture(ctx,table,data,keyFields,directionScope){
+ async capture(ctx,table,data,keyFields,directionScope,sourceScope){
   if(!this.active||!Array.isArray(keyFields)||!keyFields.length||keyFields.some(k=>data[k]===undefined||
     (data[k]===null&&/NOT NULL/i.test(ctx.schema?.[table]?.[k]||'')))||keyFields.every(k=>data[k]===null))
    throw fail('SYNC_EVIDENCE_KEY_MISSING','Complete target identity is required');
@@ -94,7 +118,7 @@ class BusinessEvidence{
   }
   const dynamic=Object.keys(data).filter(k=>/^(tinyint|smallint|mediumint|int|bigint)/i.test(ctx.schema?.[table]?.[k]||'')&&typeof data[k]==='string'&&data[k].startsWith('DRY-'));
   const where=Object.fromEntries(keyFields.map(k=>[k,data[k]]));
-  const rows=dynamic.some(k=>keyFields.includes(k))?[]:await select(ctx,table,where,false,directionScope);
+  const rows=dynamic.some(k=>keyFields.includes(k))?[]:await select(ctx,table,where,false,directionScope,sourceScope);
   if(rows[0])assertExistingDate(ctx,table,rows[0]);
   if(rows[0]&&this.mode!=='verify')await assertNotOriginal(ctx,table,rows[0]);
   if(this.mode==='verify'||ctx.syncOperation?.alreadyApplied){
@@ -106,7 +130,7 @@ class BusinessEvidence{
   // Report that conflict before backup/live writes, retaining both source rows
   // for an explicit identity or revision resolution.
   if(this.mode==='capture'&&!rows.length){
-   const reservation=digest({table,selector:where,directionScope:directionScope??null});
+   const reservation=digest({table,selector:where,directionScope:directionScope??null,sourceUid:sourceScope?.uid??null});
    const prior=this.absentTargets.get(reservation);
    if(prior&&prior!==this.active)
     throw fail('SYNC_PLANNED_TARGET_COLLISION','Multiple source operations qualify the same absent target in '+table+': '+prior+' and '+this.active);
@@ -117,7 +141,7 @@ class BusinessEvidence{
    try{assertData(ctx,table,rows[0],data);mappedMatches=true;}
    catch(error){if(error.code!=='SYNC_BUSINESS_VALUE_MISMATCH')throw error;}
   }
-  const item={table,keyFields:[...keyFields],selector:where,...(directionScope===undefined?{}:{directionScope}),beforeHash:rowHash(rows),beforeCount:rows.length,mappedMatches,
+  const item={table,keyFields:[...keyFields],selector:where,...(directionScope===undefined?{}:{directionScope}),...(sourceScope?{sourceScope}:{}),beforeHash:rowHash(rows),beforeCount:rows.length,mappedMatches,
    mappedData:Object.fromEntries(Object.entries(data).filter(([,v])=>v!==undefined)),dynamicFields:dynamic};
   this.records[this.active].push(item);
   return rows[0]||null;
@@ -139,7 +163,7 @@ class BusinessEvidence{
   const key=where||Object.fromEntries(item.keyFields.map(k=>[k,data[k]]));
   if(Object.values(key).some(v=>v===undefined)||Object.values(key).every(v=>v===null))
    throw fail('SYNC_EVIDENCE_KEY_MISSING','Live selector is incomplete');
-  const rows=await select(ctx,table,key,true,item.directionScope);
+  const rows=await select(ctx,table,key,true,item.directionScope,item.sourceScope);
   if(rows[0])assertExistingDate(ctx,table,rows[0]);
   if(rows[0])await assertNotOriginal(ctx,table,rows[0]);
   if(rowHash(rows)!==item.beforeHash||rows.length!==item.beforeCount)
@@ -162,7 +186,7 @@ class BusinessEvidence{
   if(!Array.isArray(items))throw fail('SYNC_REPLAY_EVIDENCE_MISSING','Cannot verify a prior commit without business evidence');
   for(const item of items){
    if(item.dynamicFields.length)throw fail('SYNC_REPLAY_REQUALIFY','Committed parent IDs must be requalified before resuming');
-   const rows=await select(ctx,item.table,item.selector,true,item.directionScope);
+   const rows=await select(ctx,item.table,item.selector,true,item.directionScope,item.sourceScope);
    if(rows.length!==1)throw fail('SYNC_REPLAY_TARGET_MISSING','Committed target is missing');
    assertData(ctx,item.table,rows[0],item.mappedData);this.targetsVerified++;
   }

@@ -94,7 +94,7 @@ function matchYarn(previous, current) {
     // Multiple supplied amounts are separate audit entries, even when the
     // complete challan/Dispo/date and yarn identity are the same. Exact copies,
     // missing references and unresolved edits still fail for review.
-    const separateAmounts=eventKey(row.yarnIdentity)&&!/^(?:n\/?a|none|null|unknown|-)$/i.test(row.yarnIdentity.challan)&&siblings.length>1&&siblings.every(r=>r.entryAmounts)&&new Set(siblings.map(r=>r.entryAmounts)).size===siblings.length;
+    const separateAmounts=eventKey(row.yarnIdentity)&&!/^(?:n\/?a|none|null|unknown|-)$/i.test(row.yarnIdentity.challan)&&siblings.length>1&&siblings.every(r=>r.entryAmounts)&&new Set(siblings.map(r=>r.digest)).size===siblings.length;
     if (digestCounts.get(row.digest) > 1 || (!separateAmounts&&!reviewedGroups.has(row.group) && key && (priorEvents.has(key) || eventCounts.get(key) > 1))) {
       conflicts.push({reason: 'duplicate_or_ambiguous_yarn_event', rowNumber: row.rowNumber, group: row.group});
     } else inserts.push(row);

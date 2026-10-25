@@ -1117,7 +1117,9 @@ async function upsertProvenanceParent(ctx, profile, table, data) {
       // Both physical quantity columns default to zero. A new zero-amount
       // event must check that whole zero-valued scope conservatively.
       if(directionScope!==undefined && Number(data.total_warp_issue_kgs||0)===0 && Number(data.total_weft_issue_kgs||0)===0)directionScope='warp+weft';
-      verifiedExisting = await ctx.sync.captureTarget(ctx, table, evidenceData, evidenceKeys,directionScope);
+      const sourceScope=!syncBinding&&ctx.syncOperation.peerSources?.length>1?
+        {profile:profile.id,uid:sourceUid,peers:ctx.syncOperation.peerSources}:undefined;
+      verifiedExisting = await ctx.sync.captureTarget(ctx, table, evidenceData, evidenceKeys,directionScope,sourceScope);
       if (ctx.syncOperation.action === 'insert' && verifiedExisting && !ctx.syncOperation.alreadyApplied)
         throw Object.assign(new Error('Insert would overwrite an existing unbound provenance target'), {code:'SYNC_EXISTING_TARGET_UNBOUND'});
     }

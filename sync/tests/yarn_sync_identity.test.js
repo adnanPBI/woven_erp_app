@@ -85,6 +85,14 @@ const {hydrateIdentities, yarnKey} = require('../lib/yarn_sync_identity');
     result=planEdits(receiveBefore,await receiveInv([received]));assert(result.ok);assert.equal(result.updated,1);assert.equal(result.added,0);
     assert.equal(result.operations[receipt.id][0].uid,'receipt-original');
     received[4]='SWML/26/123';result=planEdits(receiveBefore,await receiveInv([received]));assert(!result.ok);
+    const withTime=[...headers,'Last Modified'];
+    const timed=[...base,'01/10/2026 12:00:00'],later=[...base,'01/10/2026 12:00:26'];
+    const timeInv=async rows=>{fs.writeFileSync(path.join(dir,profile.source_file),[withTime,...rows].map(r=>r.join(',')).join('\n')+'\n');return inventory(dir,[profile]);};
+    const timeBefore=await timeInv([timed]);
+    result=planEdits(timeBefore,await timeInv([timed,later]));
+    assert(result.ok);assert.equal(result.added,1);assert.equal(result.updated,0);
+    assert.equal(result.operations[profile.id][0].peerSources.length,2);
+    assert(result.operations[profile.id][0].peerSources.some(p=>p.uid==='original'));
     console.log('Yarn identity regressions passed: quantities, direction, full prefixes, count/lot corrections, event separation, duplicate rejection, legacy upgrade, reviewed splits and replay.');
   } finally {
     fs.unlinkSync(path.join(dir, profile.source_file)); fs.rmdirSync(dir);

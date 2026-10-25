@@ -125,6 +125,14 @@ function planEdits(previous,current, upstreamChanges = [], options = {}) {
   const lot=profile==='yarn-issue'?require('./source_index').normalizeYarnLotIdentity(r.yarnIdentity?.lot):'';
   if(options.refreshAll||(lot&&refreshLots.has(lot))||(r.dispo&&affected.has(r.dispo)&&order.indexOf(profile)>affected.get(r.dispo))){operations[profile].push({...r,action:'refresh'});refreshed++;}
  }
+ // Freeze the source cohort for shared references. This permits a new audit
+ // entry to coexist with a peer's proven provenance target, even when the
+ // physical payload is identical. Unknown/unbound targets remain collisions.
+ for(const [profile,rows]of Object.entries(operations)){
+  const grouped=new Map();
+  for(const r of [...(matched[profile]||[]),...rows]){if(!grouped.has(r.group))grouped.set(r.group,new Map());grouped.get(r.group).set(r.uid,{uid:r.uid,digest:r.digest,previousDigest:r.previousDigest??null});}
+  for(const r of rows){const peers=[...(grouped.get(r.group)?.values()||[])];if(peers.length>1)r.peerSources=peers;}
+ }
  return {ok:conflicts.length===0,added,updated,refreshed,operations,conflicts};
 }
 function applyReviewedReassignments(profile,previous,current,reviews){

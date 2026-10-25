@@ -70,7 +70,7 @@ class SheetsSyncRuntime{
   }
   return true;
  }
- captureTarget(ctx,table,data,keys,directionScope){return this.business.capture(ctx,table,data,keys,directionScope);}
+ captureTarget(ctx,table,data,keys,directionScope,sourceScope){return this.business.capture(ctx,table,data,keys,directionScope,sourceScope);}
  beforeMutation(ctx,action,table,data,where){return this.business.beforeMutation(ctx,action,table,data,where);}
  async verifyInserted(ctx,table,data,id){
   const safety=require('./sync_write_safety');
