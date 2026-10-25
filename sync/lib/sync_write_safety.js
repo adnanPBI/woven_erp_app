@@ -188,7 +188,9 @@ async function assertNoUnreviewedTriggers(ctx){
   const sql=String(Object.values(row)[0]||'');
   const match=/^GRANT (.+?) ON (.+?) TO /i.exec(sql);
   if(!match||!/(^|,\s*)(TRIGGER|ALL PRIVILEGES)(,|$)/i.test(match[1]))continue;
-  const scope=match[2].replace(/`/g,'').split('.');
+  // SHOW GRANTS escapes literal database underscores/percent signs. Decode
+  // those literals without treating a wider grant pattern as an exact scope.
+  const scope=match[2].replace(/`/g,'').split('.').map(s=>s.replace(/\\([_%\\])/g,'$1'));
   if(scope[0]==='*'&&scope[1]==='*'||scope[0]===identity.db&&scope[1]==='*')for(const t of tables)visible.add(t);
   else if(scope[0]===identity.db&&tables.includes(scope[1]))visible.add(scope[1]);
  }
