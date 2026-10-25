@@ -1,0 +1,17 @@
+'use strict';
+const assert=require('assert/strict');
+const {applyReviewedReassignments}=require('../lib/sheets_sync_plan');
+const {eventKey}=require('../lib/yarn_sync_identity');
+const y={version:1,dispo:'nh/a/26/01',count:'20',lot:'10',direction:'receipt',date:'2026-09-23',challan:'0001'};
+const a={uid:'a',digest:'old',group:'g',yarnIdentity:y},b={...a,uid:'b',digest:'selected'};
+const review={profile:'yarn-receive',sourceUid:'a',oldDigest:'old',oldGroup:'g',action:'superseded-revision',eventKey:eventKey(y),survivorUid:'b',businessNeutralized:true,evidenceFile:'private-proof.json'};
+const apply=(r=review,next=[b],prior=[a,b])=>applyReviewedReassignments('yarn-receive',{records:structuredClone(prior)},{records:next},[r]);
+assert.deepEqual(apply().records.map(r=>r.uid),['b']);
+assert.equal(apply(review,[{...b,digest:'later'}]).records.length,1);
+assert.throws(()=>apply({...review,businessNeutralized:false}));
+assert.throws(()=>apply({...review,oldDigest:'wrong'}));
+assert.throws(()=>apply(review,[]));
+assert.throws(()=>apply(review,[b,b]));
+assert.throws(()=>apply(review,[b],[a]));
+assert.throws(()=>apply(review,[{...b,yarnIdentity:{...y,challan:'1'}}]));
+console.log('Superseded revision review tests passed');

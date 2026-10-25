@@ -15,7 +15,7 @@ class SheetsSyncRuntime {
  }
  async begin(ctx,profile,fileInfo,values){
   const operation=this.selected.get(profile.id)?.get(ctx.currentSourceRowNumber);
-  if(!operation||fingerprint(fileInfo.headers,values)!==operation.digest)throw Error('Sync source row differs from planned row');
+  if(!operation||fingerprint(fileInfo.headers,values,profile.id)!==operation.digest)throw Error('Sync source row differs from planned row');
   // Recompute from the fingerprint-checked row, including resumed older plans.
   ctx.syncOperation={...operation,yarnIdentity:yarnIdentity(profile.id,fileInfo.headers,values)};
   const [rows]=await (ctx.conn||ctx.pool).query('SELECT digest FROM sheets_sync_events WHERE profile=? AND source_uid=?'+(ctx.dryRun?'':' FOR UPDATE'),[profile.id,operation.uid]);

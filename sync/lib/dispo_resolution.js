@@ -210,6 +210,10 @@ class DispoResolutionService {
   }
 
   async createApprovedPlaceholder(resolution, sample) {
+    if (this.ctx.sync) {
+      const e=new Error('Synchronization cannot create unqualified placeholder masters outside its source/target evidence plan.');
+      e.code='SYNC_UNPLANNED_PLACEHOLDER'; throw e;
+    }
     if (!envBool('ALLOW_APPROVED_PLACEHOLDERS', false)) {
       throw new Error('Approved placeholder exists but ALLOW_APPROVED_PLACEHOLDERS is not enabled.');
     }
@@ -349,6 +353,10 @@ class DispoResolutionService {
 
     const resolution = this.findManual(profileId, normalized);
     if (resolution) {
+      if (this.ctx.sync) {
+        const e=new Error('Legacy manual Dispo relinking requires explicit inclusion in the qualified synchronization plan.');
+        e.code='SYNC_UNQUALIFIED_LEGACY_RESOLUTION'; throw e;
+      }
       if (resolution.action_mode === 'relink_to_existing_master') {
         const resolvedKey = normalizeMatchText(resolution.resolved_dispo_number);
         let master = this.masterByNormalized.get(resolvedKey);

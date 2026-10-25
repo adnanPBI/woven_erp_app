@@ -1,5 +1,7 @@
 # Woven ERP and Google Sheets sync
 
+October 25: [verified sync fixes and the separate-entry challan rule](docs/SYNC_RECOVERY_2026-10.md). Existing cPanel installations require the documented schema/ledger review and a verified hosted cycle; pulling this repository is not a deployment or reconciliation approval.
+
 > **CRITICAL — deployed cPanel baseline:** Read [the preservation note](docs/CRITICAL_CPANEL_BASELINE.md) before modifying or deploying this repository. The owner requires the database/history features, right-aligned two-row header and sync protections to remain intact during security fixes. Git publication does not authorize overwriting the live installation.
 
 Node.js/MySQL weaving ERP, including the updated search dropdowns and a separate scheduled Google Sheets importer. The ERP is served under `/main`. The importer adds records and applies edits to tracked records from 2024 onward while preserving retained historical data.

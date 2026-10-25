@@ -1,5 +1,7 @@
 # cPanel deployment
 
+For an existing installation, first read [the October recovery rollout](SYNC_RECOVERY_2026-10.md) and [the protected hosted baseline](CRITICAL_CPANEL_BASELINE.md). The new verified path requires schema/ledger compatibility checks and the separate-entry challan policy; a Git pull alone does not migrate those. Preserve the deployed private wrapper, cron and 42 holds/14 exclusions.
+
 > **Existing live installation:** First read [CRITICAL_CPANEL_BASELINE.md](CRITICAL_CPANEL_BASELINE.md). cPanel is already syncing. Current separate app/sync paths and the `5,15,25,35,45,55` cron are recorded there. Do not replay initial-install instructions over the live database, private state, protection policy or scheduler. Console schema and history already exist.
 
 The ERP and cron worker share `weavonpq_weaving_main`. Replace ACCOUNT and runtime paths below with your hosting values. No credentials or database dumps are published here.

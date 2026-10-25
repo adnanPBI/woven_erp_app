@@ -7,6 +7,12 @@ const {matchYarn} = require('./yarn_sync_match');
 const hash = value => crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 // Run/file/row-position metadata changes on every export and is not an event ID.
 const metadata = new Set(['__MIG_SOURCE_UID', '__MIG_SOURCE_ROW', '__MIG_SOURCE_ROW_COUNT', '__MIG_ACTION', '__MIG_BRIDGE_SOURCE']);
+const businessDateColumns={
+ 'pre-costing-bootstrap':'PO Issue Date',po:'PO Issue Date',dispo:'PO Received Date',
+ 'yarn-receive':'Received Date','yarn-issue':'Issue Date',warping:'Warping Date',
+ sizing:'Sizing Date',loom:'Weaving Dates',folding:'Folding Production Date',
+ 'greige-delivery':'Delivery Date'
+};
 const identityColumns={
  'pre-costing-bootstrap':['PO NO'],po:['PO NO'],dispo:['Dispo No.'],
  'yarn-receive':['Yarn Count','Yarn brand','Yarn Lot','Received Date','Received GD NO','Challan No'],
@@ -15,8 +21,11 @@ const identityColumns={
  loom:['Dispo No','Weaving Dates'],folding:['Dispo No','Folding Production Date'],
  'greige-delivery':['Dispo No','Delivery Date','Challan No']
 };
-function fingerprint(headers, values) {
-  return hash(headers.map((h,i)=>[h,String(values[i]??'')]).filter(([h])=>!metadata.has(h)));
+function fingerprintColumn(profile,header){
+ return !metadata.has(header)&&!(profile==='folding'&&['Search Column','#REF!'].includes(header));
+}
+function fingerprint(headers, values, profile) {
+  return hash(headers.map((h,i)=>[h,String(values[i]??'')]).filter(([h])=>fingerprintColumn(profile,h)));
 }
 async function inventory(csvDir, profiles) {
   const result = {};
@@ -26,7 +35,7 @@ async function inventory(csvDir, profiles) {
       if (row.logicalRowNumber <= Number(profile.header_row||0)) continue;
       if (!headers) { headers=dedupeHeaders(row.values); continue; }
       if (!isNonEmptyRow(row.values)) continue;
-      const digest=fingerprint(headers,row.values), n=(occurrences.get(digest)||0)+1;
+      const digest=fingerprint(headers,row.values,profile.id), n=(occurrences.get(digest)||0)+1;
       occurrences.set(digest,n);
       const columns=identityColumns[profile.id]||[];
       for(const column of columns)if(!headers.includes(column))throw Error('Missing identity column '+column+' for '+profile.id);
@@ -37,10 +46,17 @@ async function inventory(csvDir, profiles) {
       const mutableMatchField={'yarn-receive':'Last Received Date','yarn-issue':'Delivery Place'}[profile.id];
       const matchHash=mutableMatchField?hash(headers.map((h,i)=>[h,String(row.values[i]??'')]).filter(([h])=>!metadata.has(h)&&h!==mutableMatchField)):null;
       const dispoHeader=['Dispo No.','Dispo No','Received GD NO','DISPO NUMBER'].find(h=>headers.includes(h));
-      records.push({key:hash([profile.id,digest,n]),digest,group,uid,matchHash,yarnIdentity:yarnIdentity(profile.id,headers,row.values),rowNumber:row.logicalRowNumber,dispo:dispoHeader?String(row.values[headers.indexOf(dispoHeader)]||'').trim().toLowerCase():''});
+      const dateField=businessDateColumns[profile.id];
+      const dateIndex=dateField?headers.indexOf(dateField):-1;
+      if(dateField&&dateIndex<0)throw Error('Missing business-date column '+dateField+' for '+profile.id);
+      const businessDate=dateIndex<0?'':String(row.values[dateIndex]??'').trim();
+      const amountFields=profile.id==='yarn-receive'?['Receipt Qty (Kgs)','Floor Return in kg']:profile.id==='yarn-issue'?['Out Side','Warp','Weft']:[];
+      const amounts=amountFields.map(h=>{const raw=String(row.values[headers.indexOf(h)]??'').trim().replace(/,/g,'');return raw===''?null:Number(raw);});
+      const entryAmounts=amounts.some(v=>v!==null)&&amounts.every(v=>v===null||Number.isFinite(v))?JSON.stringify(amounts):null;
+      records.push({key:hash([profile.id,digest,n]),digest,group,uid,matchHash,entryAmounts,yarnIdentity:yarnIdentity(profile.id,headers,row.values),rowNumber:row.logicalRowNumber,businessDate,dispo:dispoHeader?String(row.values[headers.indexOf(dispoHeader)]||'').trim().toLowerCase():''});
     }
     if(!headers)throw Error('Missing certified headers: '+profile.id);
-    result[profile.id]={headersHash:hash(headers.filter(h=>!metadata.has(h))),records};
+    result[profile.id]={headersHash:hash(headers.filter(h=>fingerprintColumn(profile.id,h))),records};
   }
   return result;
 }
@@ -59,7 +75,7 @@ function compare(previous,current) {
   for(const profile of Object.keys(previous))if(!current[profile])conflicts.push({profile,reason:'source_profile_missing'});
   return {ok:conflicts.length===0,additions,profiles,conflicts};
 }
-function planEdits(previous,current, upstreamChanges = []) {
+function planEdits(previous,current, upstreamChanges = [], options = {}) {
  const operations={},conflicts=[],matched={};let added=0,updated=0,refreshed=0;
  for(const [profile,next]of Object.entries(current)){
   const prior=previous[profile];operations[profile]=[];matched[profile]=[];
@@ -104,7 +120,11 @@ function planEdits(previous,current, upstreamChanges = []) {
  const order=['pre-costing-bootstrap','po','dispo','yarn-receive','yarn-issue','warping','sizing','loom','folding','greige-delivery'];
  const affected=new Map(upstreamChanges);
  for(const [profile,rows]of Object.entries(operations))for(const r of rows)for(const dispo of [r.dispo,r.previousDispo])if(dispo)affected.set(dispo,Math.min(affected.get(dispo)??99,order.indexOf(profile)));
- for(const [profile,rows]of Object.entries(matched))for(const r of rows)if(r.dispo&&affected.has(r.dispo)&&order.indexOf(profile)>affected.get(r.dispo)){operations[profile].push({...r,action:'refresh'});refreshed++;}
+ const refreshLots=new Set(options.refreshLots||[]);
+ for(const [profile,rows]of Object.entries(matched))for(const r of rows){
+  const lot=profile==='yarn-issue'?require('./source_index').normalizeYarnLotIdentity(r.yarnIdentity?.lot):'';
+  if(options.refreshAll||(lot&&refreshLots.has(lot))||(r.dispo&&affected.has(r.dispo)&&order.indexOf(profile)>affected.get(r.dispo))){operations[profile].push({...r,action:'refresh'});refreshed++;}
+ }
  return {ok:conflicts.length===0,added,updated,refreshed,operations,conflicts};
 }
 function applyReviewedReassignments(profile,previous,current,reviews){
@@ -113,6 +133,19 @@ function applyReviewedReassignments(profile,previous,current,reviews){
   if(!old&&review.introducedAfterBaseline===true)continue;
   if(!old)throw Error('Reviewed source UID not found: '+profile);
   const approvedDigests=[review.oldDigest,...(review.previousApprovedDigests||[])];
+  if(review.action==='superseded-revision'){
+   const {eventKey,parseIdentity}=require('./yarn_sync_identity');
+   const identity=parseIdentity(old.yarnIdentity);
+   const complete=identity&&['dispo','count','lot','direction','date','challan'].every(k=>identity[k]&&!/^(?:n\/?a|none|null|unknown|-)$/i.test(identity[k]));
+   const key=complete?eventKey(identity):null;
+   const selected=current.records.filter(r=>eventKey(r.yarnIdentity)===key);
+   if(!key||key!==review.eventKey||old.group!==review.oldGroup||!approvedDigests.includes(old.digest)||
+      selected.length!==1||!review.businessNeutralized||!review.evidenceFile||
+      !previous.records.some(r=>r.uid===review.survivorUid&&eventKey(r.yarnIdentity)===key))
+    throw Error('Superseded revision evidence is stale or ambiguous: '+profile);
+   previous.records=previous.records.filter(r=>r.uid!==review.sourceUid);
+   continue;
+  }
   if(review.action==='retain-missing'){
    // Explicitly reviewed source removals retain ERP business rows. If the key
    // reappears, normal matching resumes instead of silently ignoring its edit.
@@ -132,4 +165,4 @@ function applyReviewedReassignments(profile,previous,current,reviews){
  }
  return previous;
 }
-module.exports={fingerprint,inventory,compare,planEdits,hash,applyReviewedReassignments};
+module.exports={fingerprint,fingerprintColumn,inventory,compare,planEdits,hash,applyReviewedReassignments};

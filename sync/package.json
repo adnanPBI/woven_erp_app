@@ -59,7 +59,8 @@
     "local:dashboard": "node scripts/local/dashboard_server.js",
     "test:sync-storage": "node tests/sync_storage.test.js",
     "test:sync-yarn": "node tests/sheets_sync_plan.test.js && node tests/yarn_sync_identity.test.js && node tests/sync_exclusions.test.js",
-    "test:sync-yarn:mysql": "node tests/yarn_sync_mysql.test.js"
+    "test:sync-yarn:mysql": "node tests/yarn_sync_mysql.test.js",
+    "test:sync-recovery": "node tests/challan_entries_normalization.test.js && node tests/sync_business_dates.test.js && node tests/sync_date_scope.test.js && node tests/sync_history_policy.test.js && node tests/sync_legacy_resolution_guard.test.js && node tests/sync_lineage_guard.test.js && node tests/sync_lineage_signed_proof.test.js && node tests/sync_lot_refresh.test.js && node tests/sync_resume_mapping.test.js && node tests/sync_superseded_revision.test.js && node tests/yarn_provenance.test.js && node tests/yarn_revision_policy.test.js"
   },
   "dependencies": {
     "csv-parse": "^5.5.6",

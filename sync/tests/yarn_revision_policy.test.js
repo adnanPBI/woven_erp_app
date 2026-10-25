@@ -1,0 +1,35 @@
+'use strict';
+const assert=require('assert/strict');
+const {selectLatestYarnRevisions:select,revisionTime}=require('../lib/yarn_revision_policy');
+const options={start:'2026-09-22',end:'2026-10-19',allowSourceOrder:true};
+const row=(n,amount,change={})=>({rowNumber:n,digest:'digest'+n,businessDate:'2026-10-08',amount,yarnIdentity:{version:1,dispo:'nh/26/001',count:'10',lot:'5410',direction:'receipt',date:'2026-10-08',challan:'41806612'},...change});
+const input=[row(10,299),row(11,30)],saved=JSON.stringify(input);
+const kept=select('yarn-receive',input,{...options,preserveEntries:true});
+assert.deepEqual(kept.selected,input);assert.equal(kept.superseded.length,0);assert.equal(JSON.stringify(input),saved);
+let result=select('yarn-receive',input,options);assert.equal(result.selected.length,1);assert.equal(result.selected[0].amount,30);assert.equal(result.superseded.length,1);assert.equal(JSON.stringify(input),saved);
+for(const value of [0,-30])assert.equal(select('yarn-receive',[row(10,299),row(11,value)],options).selected[0].amount,value);
+result=select('yarn-receive',[row(10,50,{lastModified:'09/10/2026 12:00:00'}),row(11,30,{lastModified:'08/10/2026 12:00:00'})],options);assert.equal(result.selected[0].amount,50);
+result=select('yarn-receive',[row(10,50,{lastModified:'09/10/2026 12:00:00'}),row(11,30)],options);assert.equal(result.conflicts.length,1);assert.equal(result.selected.length,2);
+result=select('yarn-receive',input,{...options,allowSourceOrder:false});assert.equal(result.conflicts.length,1);
+for(const [key,value]of [['dispo','yt/26/001'],['dispo','nh/26/01'],['lot','other'],['count','20'],['direction','weft'],['date','2026-10-09'],['challan','another']]){
+ const second=row(11,30);second.yarnIdentity={...second.yarnIdentity,[key]:value};assert.equal(select('yarn-issue',[row(10,299),second],options).selected.length,2);
+}
+assert.equal(select('yarn-receive',input,{...options,start:'2026-10-09'}).superseded.length,0);
+assert.equal(revisionTime('nonsense'),null);assert.equal(revisionTime('08/10/2026 25:00:00'),null);
+assert.equal(select('yarn-receive',input.map(r=>({...r,yarnIdentity:{...r.yarnIdentity,challan:'N/A'}})),options).selected.length,2);
+assert.deepEqual(select('yarn-receive',select('yarn-receive',input,options).selected,options).selected,[input[1]]);
+const {outsideRevisionSignature}=require('../lib/yarn_revision_policy');
+const outsideHeaders=['Warp','Weft','Out Side','PI NO','Yarn Composition','Last Modified','Search Column'];
+const firstOutside=['','','31','PI','Slub Cotton','','helper'];
+const secondOutside=['','','35','PI','Slub Cotton','','other helper'];
+const signature=outsideRevisionSignature(outsideHeaders,firstOutside);
+assert.equal(signature,outsideRevisionSignature(outsideHeaders,secondOutside));
+const outsideRow=(n,amount,sig=signature)=>row(n,amount,{yarnIdentity:{...input[0].yarnIdentity,direction:''},outsideRevisionSignature:sig});
+assert.equal(select('yarn-issue',[outsideRow(10,31),outsideRow(11,35)],options).selected[0].amount,35);
+assert.equal(select('yarn-issue',[outsideRow(10,31),outsideRow(11,35,null)],options).selected.length,2);
+assert.notEqual(signature,outsideRevisionSignature(outsideHeaders,['','','35','other PI','Slub Cotton','','']));
+assert.notEqual(signature,outsideRevisionSignature(outsideHeaders,['','','35','PI','Organic Cotton','','']));
+assert.equal(outsideRevisionSignature(outsideHeaders,['','','','PI','Slub Cotton','','']),null);
+assert.equal(outsideRevisionSignature(outsideHeaders,['1','','35','PI','Slub Cotton','','']),null);
+assert.equal(select('yarn-issue',[outsideRow(10,31),outsideRow(11,35,'f'.repeat(64))],options).selected.length,2);
+console.log('Yarn revision policy tests passed');

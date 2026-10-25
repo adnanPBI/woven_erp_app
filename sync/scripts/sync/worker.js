@@ -85,6 +85,10 @@ async function main(){
  dataDir=path.resolve(env.SYNC_DATA_DIR||path.join(ROOT,'sync_data'));
  fs.mkdirSync(dataDir,{recursive:true});
  connection=await require('mysql2/promise').createConnection({host:env.DB_HOST,port:Number(env.DB_PORT||3306),user:env.DB_USER,password:env.DB_PASSWORD,database:expected,dateStrings:true});
+ if(env.SYNC_EXPECTED_HOSTNAME){
+  const [[server]]=await connection.query('SELECT @@hostname hostname');
+  if(String(server.hostname).toLowerCase()!==env.SYNC_EXPECTED_HOSTNAME.toLowerCase())throw Error('Connected MySQL server hostname differs from the configured XAMPP server');
+ }
  lockName='weaving_sheets_sync_'+expected;
  const [[lock]]=await connection.query('SELECT GET_LOCK(?,0) acquired',[lockName]);
  if(Number(lock.acquired)!==1){console.log('Another sync is active; this interval was skipped.');return;}
@@ -142,7 +146,7 @@ async function main(){
  const pending=fs.existsSync(pendingFile)?JSON.parse(fs.readFileSync(pendingFile)):null;
  if(args['prepared-cycle']&&!local)throw Error('Prepared fixture reuse is local-only');
  const resume=args['resume-host-cycle']?path.resolve(args['resume-host-cycle']):null;
- if(resume&&(!resume.startsWith(path.resolve(dataDir,'cycles')+path.sep)||!fs.existsSync(path.join(resume,'local_state.json'))))throw Error('Only an existing certified hosted cycle can resume');
+ if(resume&&(!resume.startsWith(path.resolve(dataDir,'cycles')+path.sep)||!require('fs').existsSync(path.join(resume,'local_state.json'))))throw Error('Only an existing certified hosted cycle can resume');
  const cycle=pending?.cycle||resume||(args['prepared-cycle']?path.resolve(args['prepared-cycle']):path.join(dataDir,'cycles',stamp()));
  if(!path.resolve(cycle).startsWith(path.resolve(dataDir,'cycles')+path.sep))throw Error('Cycle must be within sync data directory');
  activeCycle=cycle;
@@ -169,12 +173,30 @@ async function main(){
  const headers=JSON.parse(meta.headers_json);
  const exclusionEntries=env.SYNC_EXCLUSIONS_FILE?JSON.parse(fs.readFileSync(path.resolve(env.SYNC_EXCLUSIONS_FILE))):[];
  const exclusionPolicy=env.SYNC_CONFLICT_POLICY||'block';
+ const repairMode=env.SYNC_VERIFIED_WRITES==='true';
+ const windowStart=env.SYNC_START_DATE||null;
+ if(args['refresh-window']&&(!local||!windowStart))throw Error('Full-window refresh requires the explicitly bounded local preview');
+ if(windowStart&&!repairMode)throw Error('A bounded sync window requires verified writes');
+ if(env.SYNC_MISSING_ROW_POLICY&&!['block','retain-history'].includes(env.SYNC_MISSING_ROW_POLICY))throw Error('Unknown missing-row policy');
+ function scoped(profile,previous,current){
+  return windowStart?require('../../lib/sync_history_policy').scopeHistory(previous,current,windowStart,date):{previous,current};
+ }
+ const changedReceiptLots=new Set();
+ function historyPlan(profile,previous,current,upstream=[]){
+  const partial=planEdits({[profile]:previous},{[profile]:current},upstream,{refreshAll:args['refresh-window']===true,refreshLots:[...changedReceiptLots]});
+  return env.SYNC_MISSING_ROW_POLICY==='retain-history'?require('../../lib/sync_history_policy').retainMissingHistory(profile,partial,previous,current):partial;
+ }
  const exclusions=(exclusionEntries.length||exclusionPolicy!=='block')?new (require('../../lib/sync_exclusions').SyncExclusions)(exclusionEntries,exclusionPolicy):null;
- const protection=JSON.parse(fs.readFileSync(path.join(ROOT,'protection-policy.json')));
- if(protection.heldCases.length!==42||protection.originalExclusions.length!==14||!exclusions)throw Error('Required protections missing');
- for(const dispo of protection.seedDispos)exclusions.dispos.add(dispo);
- for(const e of protection.originalExclusions)exclusions.edge(e.dispo,e.lot);
+ const protection=!local?JSON.parse(fs.readFileSync(path.join(ROOT,'protection-policy.json'))):null;
+ if(protection){
+  if(protection.heldCases.length!==42||protection.originalExclusions.length!==14||!exclusions)throw Error('Required protections missing');
+  for(const dispo of protection.seedDispos)exclusions.dispos.add(dispo);
+  for(const e of protection.originalExclusions)exclusions.edge(e.dispo,e.lot);
+ }
  const plan=pending?JSON.parse(fs.readFileSync(path.join(cycle,'plan.json'))):{ok:true,added:0,updated:0,refreshed:0,operations:{},conflicts:[]};
+ if(!pending&&windowStart)plan.businessWindow={start:windowStart,end:date};
+ if(!pending&&repairMode&&local)plan.originalFingerprintDatabase='weavonpq_weaving_local';
+ if(!pending)plan.missingRowPolicy=env.SYNC_MISSING_ROW_POLICY||'block';
  if(!pending){
  for(const profile of contract.profiles){
   if(global.gc)global.gc();
@@ -182,10 +204,20 @@ async function main(){
   const current=await inventory(prepared.latestCertifiedDir,[profile]);
   const [events]=await connection.query('SELECT source_uid uid,group_key `group`,digest,dispo,match_hash matchHash,yarn_identity yarnIdentity FROM sheets_sync_events WHERE profile=?',[profile.id]);
   await saveHydratedIdentities(connection,profile.id,hydrateIdentities({records:events},current[profile.id]));
-  const previous=applyReviewedReassignments(profile.id,{headersHash:headers[profile.id],records:events},current[profile.id],reviewed);
-  const partial=planEdits({[profile.id]:previous},current);
+  let previous=applyReviewedReassignments(profile.id,{headersHash:headers[profile.id],records:events},current[profile.id],reviewed);
+  const bounded=scoped(profile.id,previous,current[profile.id]);previous=bounded.previous;current[profile.id]=bounded.current;
+  const partial=historyPlan(profile.id,previous,current[profile.id]);
+  if(profile.id==='yarn-receive'){
+   const old=new Map(events.map(r=>[r.uid,r]));
+   for(const op of partial.operations[profile.id]||[])for(const identity of [op.yarnIdentity,old.get(op.uid)?.yarnIdentity]){
+    const parsed=require('../../lib/yarn_sync_identity').parseIdentity(identity);
+    const lot=require('../../lib/source_index').normalizeYarnLotIdentity(parsed?.lot);
+    if(lot)changedReceiptLots.add(lot);
+   }
+  }
+  if(partial.retainedHistory?.length)(plan.retainedHistory||=[]).push(...partial.retainedHistory);
   if(exclusions)exclusions.inspect(profile.id,previous,current[profile.id],partial);
-  plan.ok=plan.ok&&partial.ok;plan.added+=partial.added;plan.updated+=partial.updated;Object.assign(plan.operations,partial.operations);plan.conflicts.push(...partial.conflicts);
+  plan.ok=plan.ok&&partial.ok;plan.added+=partial.added;plan.updated+=partial.updated;plan.refreshed+=partial.refreshed;Object.assign(plan.operations,partial.operations);plan.conflicts.push(...partial.conflicts);
  }
  if(exclusions){exclusions.seal();exclusions.filter(plan);}
  // The planner is streamed one profile at a time. Carry upstream changes into
@@ -199,42 +231,59 @@ async function main(){
    if(![...affected.values()].some(index=>index<order.indexOf(profile.id)))continue;
    const current=await inventory(prepared.latestCertifiedDir,[profile]);
    const [events]=await connection.query('SELECT source_uid uid,group_key `group`,digest,dispo,match_hash matchHash,yarn_identity yarnIdentity FROM sheets_sync_events WHERE profile=?',[profile.id]);
-   const previous=applyReviewedReassignments(profile.id,{headersHash:headers[profile.id],records:events},current[profile.id],reviewed);
-   const partial=planEdits({[profile.id]:previous},current,[...affected]);
-   plan.ok=plan.ok&&partial.ok;Object.assign(plan.operations,partial.operations);plan.refreshed+=partial.refreshed;plan.conflicts.push(...partial.conflicts);
+   let previous=applyReviewedReassignments(profile.id,{headersHash:headers[profile.id],records:events},current[profile.id],reviewed);
+   const bounded=scoped(profile.id,previous,current[profile.id]);previous=bounded.previous;current[profile.id]=bounded.current;
+   const partial=historyPlan(profile.id,previous,current[profile.id],[...affected]);
+   plan.ok=plan.ok&&partial.ok;Object.assign(plan.operations,partial.operations);plan.conflicts.push(...partial.conflicts);
   }
  }
  if(exclusions)exclusions.filter(plan);
+ plan.refreshed=Object.values(plan.operations).flat().filter(r=>r.action==='refresh').length;
  json(path.join(cycle,'plan.json'),plan);
  if(plan.exclusions)json(path.join(dataDir,'excluded-records-report.json'),{at:new Date().toISOString(),cycle,...plan.exclusions});
  }
- require('../../lib/hosted_protection_guard').assertProtected(plan,protection);
+ if(protection)require('../../lib/hosted_protection_guard').assertProtected(plan,protection);
  if(!plan.ok){
   json(path.join(dataDir,'conflict-review.json'),{at:new Date().toISOString(),cycle,conflicts:plan.conflicts});
   throw Error('Ambiguous edits/deletions or changed keys require review: '+path.join(cycle,'plan.json'));
  }
- if(args.plan||(!args['dry-run']&&plan.added+plan.updated===0)){json(path.join(dataDir,'status.json'),{status:args.plan?'planned':'unchanged',database:expected,cycle,at:new Date().toISOString(),added:plan.added,updated:plan.updated});console.log(JSON.stringify({readOnly:!!args.plan,added:plan.added,updated:plan.updated,cycle}));return;}
+ if(args.plan||(!args['dry-run']&&plan.added+plan.updated+(plan.refreshed||0)===0)){json(path.join(dataDir,'status.json'),{status:args.plan?'planned':'unchanged',database:expected,cycle,at:new Date().toISOString(),added:plan.added,updated:plan.updated});console.log(JSON.stringify({readOnly:!!args.plan,added:plan.added,updated:plan.updated,cycle}));return;}
  storage.assertCapacity(dataDir,storageConfig);
  const {sha256File}=require('../local/common');
- const {SheetsSyncRuntime}=require('../../lib/sheets_sync_runtime');
+ const {SheetsSyncRuntime}=require(repairMode?'../../lib/sheets_sync_runtime.repair':'../../lib/sheets_sync_runtime');
  Object.assign(process.env,childEnv,{CSV_DIR:prepared.latestCertifiedDir,SOURCE_MANIFEST_FILE:prepared.latestSourceManifest,NORMALIZATION_ATTESTATION_FILE:prepared.latestNormalizationAttestation,CLI_CONTRACT_OUTPUT_ROOT:path.join(cycle,'runs'),IMPORT_PROGRESS_JSONL:'true',IMPORT_PROGRESS_EVERY:'1000'});
- const {runDynamicImport}=require('../../lib/mapping_contract_runtime');
+ const {runDynamicImport}=require(repairMode?'../../lib/mapping_contract_runtime.repair':'../../lib/mapping_contract_runtime');
  const hash=sha256File(prepared.latestSourceManifest);
  const planHash=sha256File(path.join(cycle,'plan.json'));
  if(pending&&(pending.manifestHash!==hash||pending.planHash!==planHash||pending.database!==expected))throw Error('Pending sync evidence changed');
  const dryId='sync_dry_'+stamp();
  json(path.join(dataDir,'status.json'),{status:'validating',database:expected,cycle,dryId,at:new Date().toISOString(),added:plan.added,updated:plan.updated,refreshed:plan.refreshed});
- await runDynamicImport({rootDir:ROOT,args:{'dry-run':true,'run-id':dryId,'output-dir':path.join(cycle,'runs',dryId)},sync:new SheetsSyncRuntime(plan,bundle.protectedMasters,hash)});
+ const drySync=new SheetsSyncRuntime(plan,bundle.protectedMasters,hash);
+ await runDynamicImport({rootDir:ROOT,args:{'dry-run':true,'run-id':dryId,'output-dir':path.join(cycle,'runs',dryId)},sync:drySync});
+ const preimages=repairMode?drySync.exportBusinessPreimages():null;
+ if(preimages)json(path.join(cycle,'business-preimages.json'),preimages);
  if(args['dry-run']){
   json(path.join(dataDir,'status.json'),{status:'dry-run-completed',database:expected,cycle,dryId,at:new Date().toISOString(),added:plan.added,updated:plan.updated,refreshed:plan.refreshed});
   console.log(JSON.stringify({status:'dry-run-completed',dryId,cycle}));return;
  }
  json(path.join(dataDir,'status.json'),{status:'backing-up',database:expected,cycle,dryId,at:new Date().toISOString()});
  const backupFile=await backup(env,cycle);
+ if(repairMode&&local)await connection.query(`CREATE TABLE IF NOT EXISTS erp_sync_row_changes (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,run_id VARCHAR(120),profile VARCHAR(40),source_uid VARCHAR(64),
+ source_file VARCHAR(255),source_row INT,source_action VARCHAR(30),dispo VARCHAR(255),table_name VARCHAR(64),
+ action VARCHAR(30),row_key TEXT,identity_scope VARCHAR(40),affected_rows INT,changed_columns TEXT,
+ before_json LONGTEXT,after_json LONGTEXT,note TEXT,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ KEY idx_sync_history_run(run_id),KEY idx_sync_history_source(profile,source_uid)) ENGINE=InnoDB`);
  json(pendingFile,{cycle,database:expected,manifestHash:hash,planHash,backupFile});
  const liveId='sync_live_'+stamp();
  json(path.join(dataDir,'status.json'),{status:'applying',database:expected,cycle,liveId,backupFile,at:new Date().toISOString()});
- await runDynamicImport({rootDir:ROOT,args:{live:true,yes:true,'backup-confirmed':true,'approved-dry-run':dryId,'run-id':liveId,'output-dir':path.join(cycle,'runs',liveId),'production-approval':childEnv.PRODUCTION_APPROVAL_TOKEN},sync:new SheetsSyncRuntime(plan,bundle.protectedMasters,hash)});
+ await runDynamicImport({rootDir:ROOT,args:{live:true,yes:true,'backup-confirmed':true,'approved-dry-run':dryId,'run-id':liveId,'output-dir':path.join(cycle,'runs',liveId),'production-approval':childEnv.PRODUCTION_APPROVAL_TOKEN},sync:new SheetsSyncRuntime(plan,bundle.protectedMasters,hash,repairMode?{businessPreimages:preimages}:{})});
+ if(repairMode){
+  const verifyId='sync_verify_'+stamp(),verifySync=new SheetsSyncRuntime(plan,bundle.protectedMasters,hash,{verifyOnly:true});
+  await runDynamicImport({rootDir:ROOT,args:{'dry-run':true,'run-id':verifyId,'output-dir':path.join(cycle,'runs',verifyId)},sync:verifySync});
+  const createdCostingMasters=await require('../../lib/sync_business_evidence').verifyCapturedCostingMasters(connection,preimages);
+  json(path.join(cycle,'business-verification.json'),{ok:true,verifyId,manifestHash:hash,planHash,targetsVerified:verifySync.business.targetsVerified,createdCostingMasters,sharedMasterReuses:verifySync.sharedMasterReuses||[],retainedBlankAmounts:verifySync.retainedBlankAmounts||[],retainedChildren:verifySync.retainedChildren||[]});
+ }
  json(path.join(dataDir,'status.json'),{status:'completed',database:expected,cycle,backupFile,at:new Date().toISOString(),added:plan.added,updated:plan.updated});
  fs.unlinkSync(pendingFile);
 

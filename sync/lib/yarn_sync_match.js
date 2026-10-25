@@ -42,6 +42,16 @@ function matchYarn(previous, current) {
   };
   // Existing exact-except-one-field signatures also work on legacy ledgers.
   unique(r => r.matchHash);
+  // A blank quantity has no warp/weft direction. When the complete legacy
+  // group is unique on both sides, keep that event binding without guessing
+  // a direction. A subsequent numeric amount can restore its direction.
+  const groupCounts=rows=>{const m=new Map();for(const r of rows)m.set(r.group,(m.get(r.group)||0)+1);return m;};
+  const priorGroups=groupCounts(previous.records),currentGroups=groupCounts(current.records);
+  unique(r=>r.group,(a,b)=>{
+    const x=a.yarnIdentity,y=b.yarnIdentity;
+    return priorGroups.get(a.group)===1&&currentGroups.get(b.group)===1&&x&&y&&
+      (!x.direction||!y.direction)&&['dispo','count','lot','date','challan'].every(k=>x[k]===y[k]);
+  });
   unique(r => eventKey(r.yarnIdentity));
   unique(r => yarnKey(r.yarnIdentity), (a, b) => ['date', 'challan'].every(k =>
     !a.yarnIdentity[k] || !b.yarnIdentity[k] || a.yarnIdentity[k] === b.yarnIdentity[k]));
@@ -65,10 +75,12 @@ function matchYarn(previous, current) {
   };
   const priorEvents = new Set(previous.records.map(collisionKey).filter(Boolean));
   const digestCounts = new Map(), eventCounts = new Map();
+  const amountGroups=new Map();
   for (const row of current.records) {
     digestCounts.set(row.digest, (digestCounts.get(row.digest) || 0) + 1);
     const key = collisionKey(row);
     if (key) eventCounts.set(key, (eventCounts.get(key) || 0) + 1);
+    if(key){if(!amountGroups.has(key))amountGroups.set(key,[]);amountGroups.get(key).push(row);}
   }
   for (const [a, b] of pairs) {
     const key = collisionKey(b);
@@ -78,7 +90,12 @@ function matchYarn(previous, current) {
   }
   for (const row of fresh) {
     const key = collisionKey(row);
-    if (digestCounts.get(row.digest) > 1 || (!reviewedGroups.has(row.group) && key && (priorEvents.has(key) || eventCounts.get(key) > 1))) {
+    const siblings=amountGroups.get(key)||[];
+    // Multiple supplied amounts are separate audit entries, even when the
+    // complete challan/Dispo/date and yarn identity are the same. Exact copies,
+    // missing references and unresolved edits still fail for review.
+    const separateAmounts=eventKey(row.yarnIdentity)&&!/^(?:n\/?a|none|null|unknown|-)$/i.test(row.yarnIdentity.challan)&&siblings.length>1&&siblings.every(r=>r.entryAmounts)&&new Set(siblings.map(r=>r.entryAmounts)).size===siblings.length;
+    if (digestCounts.get(row.digest) > 1 || (!separateAmounts&&!reviewedGroups.has(row.group) && key && (priorEvents.has(key) || eventCounts.get(key) > 1))) {
       conflicts.push({reason: 'duplicate_or_ambiguous_yarn_event', rowNumber: row.rowNumber, group: row.group});
     } else inserts.push(row);
   }

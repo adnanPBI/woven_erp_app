@@ -1,5 +1,11 @@
 # ERP and scheduled Google Sheets sync
 
+## October 25 policy and rollout update
+
+Multiple amounts on one challan/Dispo/date remain separate audit entries in all modules, including yarn; an identical NH/YT/SW/SC prefix does not make them revisions of one row. The published default preserves those rows. An edit of a single tracked entry retains its binding, and ambiguous edits stop for review. This supersedes older latest-yarn-revision descriptions below.
+
+For an existing hosted installation, follow [the October rollout requirements](../docs/SYNC_RECOVERY_2026-10.md) and preserve [the deployed protected baseline](../docs/CRITICAL_CPANEL_BASELINE.md). The verified path uses `SYNC_VERIFIED_WRITES=true` and `SYNC_START_DATE=2026-09-21`; existing private policies, 42 holds/14 exclusions, wrapper and cron remain mandatory. Git publication does not apply schema or folding-ledger transitions or certify hosting readiness.
+
 The ERP and the sync worker are separate processes sharing the same MySQL database. Target on cPanel: `weavonpq_weaving_main`. The ERP does not need to restart after each sync; dropdown searches query MySQL when opened.
 
 Local verification: the Windows ten-minute task completed a fresh September29 live cycle with 2042 inserts, 820 edits, 16381 refreshes and zero rejections. September30 verification matched all 19243 planned ledger operations and all original retained rows across 22 tables. A later timer-triggered cycle exited 0 with no changes. Local target is weavonpq_weaving_sep22_preview; this does not install cPanel cron. The hosted baseline still targets the original September22 SQL import.

@@ -77,4 +77,51 @@ async function saveHydratedIdentities(connection, profile, rows) {
     await connection.commit();
   } catch (error) { await connection.rollback(); throw error; }
 }
-module.exports = {YARN_PROFILES, yarnIdentity, yarnKey, eventKey, parseIdentity, hydrateIdentities, ensureIdentityColumn, saveHydratedIdentities};
+// Reconstruct only from a one-to-one source UID → provenance PK → business
+// detail binding. This is READ-ONLY evidence: callers must not auto-release
+// held events or write metadata without separate authorization.
+function recoverFromVerifiedProvenance(profile, ledger, link, form, detail) {
+  const reject=reason=>({ok:false,reason});
+  if(!YARN_PROFILES.has(profile)||!ledger?.uid||!ledger?.digest||!ledger?.group||
+     !ledger?.dispo||!link||!form||!detail)return reject('incomplete_preimage');
+  const expectedTable=profile==='yarn-issue'?'yarn_issue_form':'yarn_receive_form';
+  const foreignKey=profile==='yarn-issue'?'yarn_issue_form_id':'yarn_receive_form_id';
+  if(link.profile!==profile||link.source_uid!==ledger.uid||
+     link.target_table!==expectedTable||
+     !/^[1-9]\d*$/.test(String(link.target_primary_key||''))||
+     String(link.target_primary_key)!==String(form.id)||
+     String(detail[foreignKey])!==String(form.id))return reject('provenance_target_mismatch');
+  const dispo=normalize(detail.dispo_number);
+  if(dispo!==normalize(ledger.dispo))return reject('dispo_preimage_mismatch');
+  const count=normalize(form.yarn_count),lot=normalize(form.yarn_lot);
+  const date=normalize(profile==='yarn-issue'?detail.issue_date:detail.received_date);
+  const challan=normalize(profile==='yarn-issue'?form.issue_challan_no:form.challan_no);
+  const brand=profile==='yarn-receive'?normalize(form.yarn_brand):null;
+  if(!count||!lot||!dispo||!challan||
+     !/^\d{4}-\d{2}-\d{2}$/.test(date)||
+     (profile==='yarn-receive'&&!brand))return reject('incomplete_original_group_fields');
+  const cols=profile==='yarn-issue'?
+    [profile,count,lot,date,dispo,challan]:
+    [profile,count,brand,lot,date,dispo,challan];
+  const groupHash=require('crypto').createHash('sha256')
+    .update(JSON.stringify(cols)).digest('hex');
+  if(groupHash!==ledger.group)return reject('historical_group_digest_mismatch');
+  let direction='receipt';
+  if(profile==='yarn-issue'){
+    const n=x=>Number(String(x??'0').replace(/,/g,''));
+    const warp=n(form.total_warp_issue_kgs),weft=n(form.total_weft_issue_kgs);
+    if(!Number.isFinite(warp)||!Number.isFinite(weft)||warp<0||weft<0)
+      return reject('invalid_direction_values');
+    if(warp>0&&weft===0)direction='warp';
+    else if(weft>0&&warp===0)direction='weft';
+    else return reject('warp_weft_direction_ambiguous');
+  }
+  const identity={version:1,dispo,count,lot,direction,date,challan};
+  const evidenceDigest=require('crypto').createHash('sha256')
+    .update(JSON.stringify([profile,ledger.uid,ledger.digest,ledger.group,
+      expectedTable,String(form.id),String(detail.id),identity])).digest('hex');
+  return {ok:true,identity,evidenceDigest,
+    targetTable:expectedTable,targetPrimaryKey:String(form.id),
+    targetDetailId:String(detail.id),requiresIndependentReview:true};
+}
+module.exports = {YARN_PROFILES, yarnIdentity, yarnKey, eventKey, parseIdentity, hydrateIdentities, ensureIdentityColumn, saveHydratedIdentities, recoverFromVerifiedProvenance};

@@ -1,6 +1,20 @@
 # Project memory
 
-Updated: 2026-10-04. This public journal excludes credentials and private datasets.
+Updated: 2026-10-25. This public journal excludes credentials and private datasets.
+
+## Owner challan audit rule — latest instruction
+
+Any challan with multiple amounts under the same full Dispo and date must retain separate entries for audit convenience, even with the same NH/YT/SW/SC prefix/index. This applies across modules, including yarn receipts/issues and deliveries. Do not merge, sum or choose one source amount merely because those references match. An edit to one tracked entry still uses its existing source/provenance binding; ambiguous changes require review.
+
+The publication defaults to preserving separate source entries. The former latest-yarn-revision selector is an explicit legacy recovery utility. This rule supersedes conflicting older revision notes. Existing historical consolidations require a separately qualified transition; no such production database changes are authorized by publication.
+
+## October 25 source publication
+
+Integrated the local verified-sync recovery source with the fetched October 13 hosted baseline. Preserved the ERP header/console/history, transactional capture, mandatory hosted guard (42 holds/14 exclusions), quota/flock wrapper, download retries, GC support and hosted-cycle resume. No production files, database, scheduler, private policies or credentials were changed.
+
+Included exact source/ledger/business evidence, nondeleting reconciliation, mapped post-verification, decimal rounding, distinct shared-reference entries, direction clearing, unchanged-refresh verification, cross-Dispo lot refresh, costing preservation, PO free-text status preservation, folding helper projection and live-column capacity qualification. Local recovery and an actual Windows scheduled cycle succeeded; those results do not certify the hosted database.
+
+Checks: npm run check and npm test passed, including 20 ERP HTTP/console/hosted-protection cases and planner/yarn/exclusion/dry-run/storage suites. Recovery regressions and 19 actual-MySQL disposable-fixture cases passed. See docs/SYNC_RECOVERY_2026-10.md for rollout prerequisites. The checked-in example selects verified writes and the required production boundary; do not overwrite an existing private env file. No automatic cPanel deployment is implied.
 
 ## Architecture
 

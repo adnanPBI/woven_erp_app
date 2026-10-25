@@ -16,7 +16,13 @@
   },
   "po": {
     "duplicate_policy": "canonical_latest_revision_with_full_lineage",
-    "ranking": ["po_revised_no", "po_revise_date", "last_modified_date", "po_approval_date", "source_row"]
+    "ranking": [
+      "po_revised_no",
+      "po_revise_date",
+      "last_modified_date",
+      "po_approval_date",
+      "source_row"
+    ]
   },
   "dispo": {
     "duplicate_policy": "canonical_latest_revision_with_full_lineage",
@@ -40,18 +46,28 @@
   },
   "warping": {
     "preserve_each_source_event": true,
-    "lookup_hierarchy": ["dispo+program+date", "dispo+program", "dispo_when_program_blank"],
+    "lookup_hierarchy": [
+      "dispo+program+date",
+      "dispo+program",
+      "dispo_when_program_blank"
+    ],
     "dispo_is_business_anchor": true,
     "idempotency": "source_uid_provenance"
   },
   "sizing": {
     "preserve_each_source_event": true,
-    "identity_preference": ["dispo+sizing_set+date", "dispo+date+source_uid"],
+    "identity_preference": [
+      "dispo+sizing_set+date",
+      "dispo+date+source_uid"
+    ],
     "warping_set": "matched_warping_set_when_available",
     "idempotency": "source_uid_provenance"
   },
   "loom": {
-    "group_key": ["dispo", "weaving_date"],
+    "group_key": [
+      "dispo",
+      "weaving_date"
+    ],
     "reducers": {
       "In house Production/Day": "sum",
       "Out Side Production/Day": "sum",
@@ -61,7 +77,10 @@
     }
   },
   "folding": {
-    "group_key": ["dispo", "folding_production_date"],
+    "group_key": [
+      "dispo",
+      "folding_production_date"
+    ],
     "reducers": {
       "A-Grade": "sum",
       "B-Grade": "sum",
@@ -77,7 +96,28 @@
     "idempotency": "source_uid_provenance"
   },
   "synthetic_identifier_policy": {
-    "allowed": ["MIGPC-* only when present in bound placeholder audit"],
-    "forbidden": ["AUTO-*", "NO-DISPO-*", "NO-CHALLAN-*", "generated PO", "generated Dispo"]
+    "allowed": [
+      "MIGPC-* only when present in bound placeholder audit"
+    ],
+    "forbidden": [
+      "AUTO-*",
+      "NO-DISPO-*",
+      "NO-CHALLAN-*",
+      "generated PO",
+      "generated Dispo"
+    ]
+  },
+  "yarn_revisions": {
+    "start": "2026-09-22",
+    "end": "9999-12-31",
+    "policy": "preserve_separate_challan_entries",
+    "identity": "full_dispo_count_lot_direction_business_date_challan",
+    "ranking": [
+      "last_modified_when_complete",
+      "source_row"
+    ],
+    "allow_source_order": false,
+    "outside_quantity_only_revisions": false,
+    "retain_superseded_source_audit": true
   }
 }
