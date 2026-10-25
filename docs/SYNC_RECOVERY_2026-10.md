@@ -1,6 +1,14 @@
 # October sync fixes and hosted rollout
 
-The October 25 fixes were verified against the local preview database. Publishing them does not deploy cPanel or establish that the hosted database and cron are healthy.
+The October 25 fixes now run in the actual local preview and the controlled cPanel installation. Git publication alone does not deploy either environment; the practical verification below is separate from publication.
+
+## Observed rollout result
+
+Local separate-entry transition and multiple real Windows timer runs succeeded, with source/ledger and mapped-value verification, zero-change replay and all 22 original-table fingerprint checks passing. The 39 qualified neutralized yarn entries were restored on their existing IDs; four confirmed delivery entries remain separate. A later certified source audit matched 12,283/12,283 available profile records dated September 23–October 25 (latest source business dates October 24; Loom has no source rows in that window). The latest observed timer run completed 2 inserts/1 edit/23 refreshes, with 26 ledger operations and 52 mapped targets verified; task result 0, Ready, no pending import.
+
+cPanel source and three targeted schema widenings were installed after an 81-table backup restore test. A complete dry run and controlled live 2 inserts/1 edit succeeded; three ledger operations/eight mapped targets and zero-operation replay passed. All 922,944 protected/historical rows plus private protection files and ERP files stayed unchanged. The original wrapper/cron was restored; its fresh-source cycle recorded SYNC_SUCCESS at 2026-10-25T10:47:19Z. All 44 changed sync files match tested runtime commit b9cb6fa2871385feaeb72d1c8aa6d33f8ce32328.
+
+**Full hosted catch-up is still blocked by existing protections.** The audited window contains 12,285 source-profile records: 128 exact ledger matches and 12,157 unmatched, all within the held closure; zero unheld gaps. The 42 holds/14 original exclusions remain, with 11,425 Dispos/3,621 lots in their closure. Do not describe a successful cron poll as complete transfer of these held records, or release them without the required genuine evidence, owner sign-off and independent second review. Counts include bootstrap operations, and the local/hosted snapshots were fetched at different times.
 
 ## Challan entries are audit records
 
