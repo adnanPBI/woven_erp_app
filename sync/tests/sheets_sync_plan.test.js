@@ -53,6 +53,11 @@ const {planEdits}=require('../lib/sheets_sync_plan');
  assert.equal(moved.refreshed,1,'A corrected receipt also refreshes records linked to its previous Dispo');
 }
 (async()=>{
+ const delivered={headersHash:'h',records:[{uid:'old-delivery',key:'a',group:'challan',digest:'4217',rowNumber:2}]};
+ const deliveries={headersHash:'h',records:[...delivered.records,{uid:'fresh-delivery',key:'b',group:'challan',digest:'3964',rowNumber:3}]};
+ const separateDelivery=planEdits({'greige-delivery':delivered},{'greige-delivery':deliveries});
+ assert(separateDelivery.ok);assert.equal(separateDelivery.added,1);
+ assert.equal(separateDelivery.operations['greige-delivery'][0].peerSources,undefined,'Delivery payload selectors must not receive the yarn-only peer scope');
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'weaving-sync-plan-'));
  const file=path.join(dir,'events.csv'),profiles=[{id:'events',source_file:'events.csv',header_row:0}];
  try{

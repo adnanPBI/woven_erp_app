@@ -129,8 +129,10 @@ function planEdits(previous,current, upstreamChanges = [], options = {}) {
  // entry to coexist with a peer's proven provenance target, even when the
  // physical payload is identical. Unknown/unbound targets remain collisions.
  for(const [profile,rows]of Object.entries(operations)){
+  if(!YARN_PROFILES.has(profile)||!rows.length)continue;
+  const wantedGroups=new Set(rows.map(r=>r.group));
   const grouped=new Map();
-  for(const r of [...(matched[profile]||[]),...rows]){if(!grouped.has(r.group))grouped.set(r.group,new Map());grouped.get(r.group).set(r.uid,{uid:r.uid,digest:r.digest,previousDigest:r.previousDigest??null});}
+  for(const cohort of [matched[profile]||[],rows])for(const r of cohort){if(!wantedGroups.has(r.group))continue;if(!grouped.has(r.group))grouped.set(r.group,new Map());grouped.get(r.group).set(r.uid,{uid:r.uid,digest:r.digest,previousDigest:r.previousDigest??null});}
   for(const r of rows){const peers=[...(grouped.get(r.group)?.values()||[])];if(peers.length>1)r.peerSources=peers;}
  }
  return {ok:conflicts.length===0,added,updated,refreshed,operations,conflicts};

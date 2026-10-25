@@ -10,6 +10,8 @@ The publication defaults to preserving separate source entries. The former lates
 
 ## October 25 source publication
 
+Peer-cohort follow-up: build peer evidence only for yarn profiles and groups with planned operations. Delivery entries keep their payload selectors instead of receiving an unsupported yarn scope; no-op and non-yarn profiles avoid unused peer maps. Planner regression, yarn regressions,21 actual MySQL fixture cases and npm test passed. Hosted standalone replay passed with the existing768MiB setting; a512MiB experiment exhausted the planner heap and was not adopted.
+
 The actual cPanel dry run also exposed SHOW GRANTS literal escaping: the server grants ALL PRIVILEGES on the exact database using escaped underscores. Trigger visibility now decodes literal escaped underscores/percent/backslashes before exact scope comparison; wider patterns are not silently accepted. Regression coverage retains rejection for missing privileges, incomplete table coverage, another database and actual triggers. No database privilege was broadened and no trigger gate was removed.
 
 Hosted rollout found an exclusion/date-window integration bug: exact unchanged historical exclusion bindings were absent from the bounded planning view and falsely reported as changed. Protection validation and dependency closure now use the full ledger/source evidence, while planned writes remain bounded. Stale historical fingerprints still reject. New regression covers the false failure, retained shared-lot hold and stale out-of-window refusal; npm run check/npm test passed. No private policy fingerprint or approval was changed to fix this.
