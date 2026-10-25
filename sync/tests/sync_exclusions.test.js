@@ -27,4 +27,19 @@ removed.inspect('yarn-issue',{records:[a]},{records:[added]},removedPlan);remove
 const blank=new SyncExclusions([],'skip-dispos');const noDispo={...a,dispo:''};const unbounded={ok:false,operations:{'yarn-issue':[]},conflicts:[conflict]};blank.inspect('yarn-issue',{records:[noDispo]},{records:[]},unbounded);blank.seal();assert(!blank.filter(unbounded).ok);
 const defaultScope=new SyncExclusions();defaultScope.inspect('yarn-issue',{records:[a]},{records:[a]},initial);defaultScope.seal();assert(!defaultScope.filter(structuredClone(initial)).ok,'Default still blocks');
 assert.equal(a.digest,'a','Original ledger evidence is not changed');
+// Historical exclusions must be verified against full evidence, while only
+// the date-bounded records enter the write planner.
+const {scopeHistory}=require('../lib/sync_history_policy');
+const historical={...record('historic','nh/26/history','shared'),businessDate:'2026-04-08'};
+const fresh={...record('fresh','nh/26/new','shared'),businessDate:'2026-10-01'};
+const fullPrevious={records:[historical,fresh]},fullCurrent={records:[historical,fresh]};
+const bounded=scopeHistory(fullPrevious,fullCurrent,'2026-09-23','2026-10-25');
+assert(!bounded.previous.records.some(r=>r.uid===historical.uid));
+const boundedPlan={ok:true,operations:{'yarn-issue':[{...fresh,action:'update'}]},conflicts:[]};
+const historicEntries=[{profile:'yarn-issue',sourceUid:historical.uid,digest:historical.digest,dispo:historical.dispo,lot:'shared'}];
+assert.throws(()=>new SyncExclusions(historicEntries,'skip-dispos').inspect('yarn-issue',bounded.previous,bounded.current,boundedPlan),/preimage/);
+const historicScope=new SyncExclusions(historicEntries,'skip-dispos');
+historicScope.inspect('yarn-issue',fullPrevious,fullCurrent,boundedPlan);historicScope.seal();
+assert.equal(historicScope.filter(boundedPlan).updated,0,'Historical held lot still protects its in-window dependency');
+assert.throws(()=>new SyncExclusions([{...historicEntries[0],digest:'changed'}],'skip-dispos').inspect('yarn-issue',fullPrevious,fullCurrent,boundedPlan),/preimage/,'Out-of-window fingerprints are never waived');
 console.log('Sync exclusion tests passed: exact preimages, full prefixes, dependency closure, unknown replacements, schema guards and default blocking.');

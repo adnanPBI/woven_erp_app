@@ -205,6 +205,9 @@ async function main(){
   const [events]=await connection.query('SELECT source_uid uid,group_key `group`,digest,dispo,match_hash matchHash,yarn_identity yarnIdentity FROM sheets_sync_events WHERE profile=?',[profile.id]);
   await saveHydratedIdentities(connection,profile.id,hydrateIdentities({records:events},current[profile.id]));
   let previous=applyReviewedReassignments(profile.id,{headersHash:headers[profile.id],records:events},current[profile.id],reviewed);
+  // Protection preimages and shared-lot closure use full evidence; only the
+  // write planner is narrowed to the authorized business-date window.
+  const exclusionPrevious=previous,exclusionCurrent=current[profile.id];
   const bounded=scoped(profile.id,previous,current[profile.id]);previous=bounded.previous;current[profile.id]=bounded.current;
   const partial=historyPlan(profile.id,previous,current[profile.id]);
   if(profile.id==='yarn-receive'){
@@ -216,7 +219,7 @@ async function main(){
    }
   }
   if(partial.retainedHistory?.length)(plan.retainedHistory||=[]).push(...partial.retainedHistory);
-  if(exclusions)exclusions.inspect(profile.id,previous,current[profile.id],partial);
+  if(exclusions)exclusions.inspect(profile.id,exclusionPrevious,exclusionCurrent,partial);
   plan.ok=plan.ok&&partial.ok;plan.added+=partial.added;plan.updated+=partial.updated;plan.refreshed+=partial.refreshed;Object.assign(plan.operations,partial.operations);plan.conflicts.push(...partial.conflicts);
  }
  if(exclusions){exclusions.seal();exclusions.filter(plan);}

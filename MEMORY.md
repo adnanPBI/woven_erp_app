@@ -10,6 +10,8 @@ The publication defaults to preserving separate source entries. The former lates
 
 ## October 25 source publication
 
+Hosted rollout found an exclusion/date-window integration bug: exact unchanged historical exclusion bindings were absent from the bounded planning view and falsely reported as changed. Protection validation and dependency closure now use the full ledger/source evidence, while planned writes remain bounded. Stale historical fingerprints still reject. New regression covers the false failure, retained shared-lot hold and stale out-of-window refusal; npm run check/npm test passed. No private policy fingerprint or approval was changed to fix this.
+
 Follow-up: distinguishable equal-amount entries sharing references now retain individual source bindings. Absence evidence may exclude another entry only through its exact provenance plus current/previous ledger fingerprint; unknown or unbound identical targets still block writes. Separate parameterized provenance/ledger reads support legacy mixed collations. Planner/resume/yarn regressions and21 actual disposable MySQL runtime cases passed, including equal-amount peers, an intervening unbound collision and mixed-collation tables. npm run check/npm test passed. This follow-up does not clear hosted holds or establish cPanel deployment.
 
 Integrated the local verified-sync recovery source with the fetched October 13 hosted baseline. Preserved the ERP header/console/history, transactional capture, mandatory hosted guard (42 holds/14 exclusions), quota/flock wrapper, download retries, GC support and hosted-cycle resume. No production files, database, scheduler, private policies or credentials were changed.
