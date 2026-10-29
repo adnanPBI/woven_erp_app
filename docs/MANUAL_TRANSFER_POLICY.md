@@ -29,3 +29,11 @@ After apply, independently verify source coverage, ledger and physical mapped ta
 **Automatic synchronization remains off until a separate explicit owner restart instruction.** The deployed scheduler environment stays disabled. A supervised manual launch does not authorize cron restoration or future automatic cycles.
 
 Legacy policies retain their original guards until an explicitly qualified migration; the new mode is not a general protection bypass or approval for unrelated historical changes.
+
+## Explicitly authorized recurring synchronization
+
+After a verified manual transfer and a separate owner restart instruction, a version-3 `scheduled-exact-skips` policy can authorize ten-minute scheduling. It must explicitly grant automatic restart, pin the immutable reviewed manual exception by SHA256, keep zero broad holds/exclusions and retain the production database/start boundary. `SYNC_ENABLED` remains a separate scheduler switch; templates do not enable writes.
+
+Each fresh certified snapshot must contain exactly the same six business fingerprints, groups, dates and duplicate multiplicities. Rebind their current source UIDs and rows without selecting additional records. Missing, changed or additional identical records require review. Preserve all retained ledger/physical preimages and verify qualified physical absences before and after apply. Recalculate each affected lot from its complete new source total minus the unchanged skipped contribution plus the qualified retained contribution. Legitimate new receipts stay eligible.
+
+Leave the end date unset so the worker uses the current Asia/Dhaka date. Persist an immutable cycle-specific qualification and reuse it, including its original cutoff, during recovery. Keep the normal full dry run, pre-apply backup, per-row transactions/history and mapped-value verification. Scheduler/file and database locks prevent overlapping writers; new unknown conflicts block the cycle. Archive completed migration evidence outside the active scheduler retention directory.
