@@ -1,5 +1,7 @@
 # Woven ERP and Google Sheets sync
 
+For future cPanel changes, start with the [existing-installation operations runbook](docs/CPANEL_OPERATIONS.md), [October source/change record](docs/CPANEL_CHANGELOG_2026-10.md) and [manual/recurring policy specification](docs/MANUAL_TRANSFER_POLICY.md). These describe the authorized v2/v3 paths in addition to the legacy guard. Historical rollout notes are dated evidence, not live scheduler status.
+
 October 25: [verified sync fixes and the separate-entry challan rule](docs/SYNC_RECOVERY_2026-10.md). Existing cPanel installations require the documented schema/ledger review and a verified hosted cycle; pulling this repository is not a deployment or reconciliation approval.
 
 > **CRITICAL — deployed cPanel baseline:** Read [the preservation note](docs/CRITICAL_CPANEL_BASELINE.md) before modifying or deploying this repository. The owner requires the database/history features, right-aligned two-row header and sync protections to remain intact during security fixes. Git publication does not authorize overwriting the live installation.
@@ -16,6 +18,9 @@ Node.js/MySQL weaving ERP, including the updated search dropdowns and a separate
 | `sync/` | Importer, mappings, schema, normalization and scheduling |
 | `sync/config/cpanel-sync.env.example` | Private cron configuration template |
 | `docs/CPANEL_DEPLOYMENT.md` | Database baseline, app setup and ten-minute cron |
+| `docs/CPANEL_OPERATIONS.md` | Existing-host qualification, deployment, recovery, quota and future maintenance |
+| `docs/CPANEL_CHANGELOG_2026-10.md` | Implementation map, verification metrics and historical rollout boundaries |
+| `sync/sql/verify_business_sync_readonly.sql` | Operator-parameterized, read-only all-table and exact-run audit checks |
 | `MEMORY.md` | Architecture, changes and verification history |
 
 Production target: `weavonpq_weaving_main`. Keep the clone, sync snapshots, backups, Google key and private tracking bundle outside `public_html`.

@@ -30,6 +30,9 @@ class SheetsSyncRuntime{
   }
   if(identity.db==='weavonpq_weaving_main'){
    const w=this.plan.businessWindow;
+   // Preserve the earliest authorized recovery floor while accepting a later
+   // explicitly qualified window. Equality to the original floor incorrectly
+   // rejected narrower catch-ups. Every selected operation is still date-checked.
    if(!w||!isoBusinessDate(w.start)||!isoBusinessDate(w.end)||w.start<'2026-09-21'||w.start>w.end)throw Error('Production requires an explicit business-date boundary');
    for(const ops of this.selected.values())for(const r of ops.values()){
     const d=isoBusinessDate(r.businessDate);if(!d||d<w.start||d>w.end)throw Error('Planned operation is outside the production date boundary');

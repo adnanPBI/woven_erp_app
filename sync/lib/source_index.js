@@ -363,6 +363,9 @@ class SourceIndex {
       aggregate.rows += 1;
       return true;
     });
+    // Adjust only after reading the complete immutable receipt source. The
+    // pinned cycle proof subtracts skipped receipts and adds only retained
+    // target quantities; all importer phases use this same dependency index.
     require('./sync_manual_conflict_skips').applyReceiptTotals(this.yarnReceipts);
     this.loadedFiles.yarnReceipts = { file, rows: meta.nonempty_rows || 0 };
   }

@@ -1,5 +1,8 @@
 'use strict';
 // A private, frozen source/DB exception. No record selection is shipped in Git.
+// The legacy function name is also used for a scheduled cycle's derived v2
+// exception. A valid exception is NOT, by itself, authority to start a writer;
+// hosted_protection_guard and the worker enforce the separate policy/switch.
 const fs=require('fs'),crypto=require('crypto'),path=require('path');
 const sha=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 const hex=value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
@@ -12,6 +15,8 @@ function loadManualSkips(env,manifestSha256,cycle){
   p.sourceManifestSha256!==manifestSha256||path.resolve(p.cycle)!==path.resolve(cycle)||
   !(p.automaticRestartAuthorized===false||(p.automaticRestartAuthorized===true&&p.qualification==='scheduled-exact-rebind'&&
    env.SYNC_AUTOMATIC_RESTART_AUTHORIZED==='true'&&hex(p.scheduledBaseSha256)&&p.scheduledBaseSha256===env.SYNC_SCHEDULED_SKIPS_BASE_SHA256))||
+  // Eight original findings overlap six source rows. These counts freeze that
+  // reviewed scope; never increase them merely to silence a new source conflict.
   p.originalConflicts?.length!==8||p.currentRows?.length!==6||
   !Array.isArray(p.oldRecords)||!Array.isArray(p.absentLedger)||p.oldRecords.length+p.absentLedger.length!==6||
   !Array.isArray(p.protectedRows)||!Array.isArray(p.receiptLots)||!p.window||p.window.start!==env.SYNC_START_DATE)fail('binding or scope changed');
@@ -41,6 +46,9 @@ async function verifyRetained(db,loaded){
  for(const r of p.absentLedger){const [rows]=await db.query('SELECT 1 FROM sheets_sync_events WHERE profile=? AND source_uid=?',[r.profile,r.uid]);if(rows.length)fail('absent historical ledger appeared');}
  for(const r of p.currentRows){if(p.oldRecords.some(o=>o.profile===r.profile&&o.uid===r.uid))continue;const [rows]=await db.query('SELECT 1 FROM sheets_sync_events WHERE profile=? AND source_uid=?',[r.profile,r.uid]);if(rows.length)fail('skipped source was applied');}
  let physicalRows=0,absentPhysicalTargets=0;
+ // Absence is a qualified target state too. An out-of-band inserted business
+ // row must stop the run even if its old ledger UID is still absent. Selectors
+ // are private, bounded, identifier-checked and compared NULL-safely.
  for(const r of p.physicalAbsences||[]){
   const fields=Object.keys(r.selector||{});if(!/^\w+$/.test(r.table)||!fields.length||fields.some(k=>!/^\w+$/.test(k)))fail('unsafe absence selector');
   const [rows]=await db.query('SELECT 1 FROM `'+r.table+'` WHERE '+fields.map(k=>'`'+k+'` <=> ?').join(' AND ')+' LIMIT 1',fields.map(k=>r.selector[k]));
@@ -55,6 +63,8 @@ function applyReceiptTotals(receipts,env=process.env){
  const manifestHash=sha(fs.readFileSync(env.SOURCE_MANIFEST_FILE));
  const raw=JSON.parse(fs.readFileSync(env.SYNC_MANUAL_SKIPS_FILE));
  const loaded=loadManualSkips(env,manifestHash,raw.cycle);
+ // Recheck the complete source sum each time an index is built. Dry capture,
+ // live apply and verify-only imports must all see the same adjusted total.
  for(const r of loaded.policy.receiptLots){const actual=receipts.get(r.lot)?.total??0;if(Math.abs(actual-r.sourceTotal)>1e-7)fail('receipt source total drift');const prior=receipts.get(r.lot)||{rows:0};receipts.set(r.lot,{...prior,total:r.effectiveTotal,manualSkipAdjusted:true});}
 }
 module.exports={loadManualSkips,verifyRetained,applyReceiptTotals};

@@ -1,8 +1,14 @@
 'use strict';
 function assertProtected(plan,policy,context={}){
+ // Versioned modes are explicit migrations, not a fallback that removes legacy
+ // protections. Keep the original 42/14 checks below for installations that have
+ // NOT qualified a private v2/v3 policy. No business rows are deleted here.
  const scheduled=policy.version===3&&policy.mode==='scheduled-exact-skips';
  if((policy.version===2&&policy.mode==='manual-exact-skips')||scheduled){
   const skips=context.manualSkips,p=skips?.policy,env=context.env;
+  // v2 grants only a frozen manual exception. v3 requires independent restart
+  // authorization plus the pinned base and cycle-specific producer identity.
+  // SYNC_ENABLED is a separate execution switch enforced by the worker.
   const authorized=env&&p&&(scheduled?
    policy.manualOnly===false&&policy.automaticRestartAuthorized===true&&env.SYNC_AUTOMATIC_RESTART_AUTHORIZED==='true'&&
    p.automaticRestartAuthorized===true&&p.qualification==='scheduled-exact-rebind'&&policy.intervalMinutes===10&&
@@ -12,6 +18,8 @@ function assertProtected(plan,policy,context={}){
    policy.heldCases.length||policy.originalExclusions.length||policy.seedDispos.length||policy.businessCorrectionsApproved!==0||
    plan.manualSkips?.sha256!==skips.summary.sha256||plan.exclusions||
    plan.businessWindow?.start!==p.window.start||plan.businessWindow?.end!==p.window.end)throw Error('Qualified manual hosted policy required');
+  // Check source positions as well as UIDs: planned ledger UIDs may be rebound
+  // by matching/provenance, while the certified source row must remain skipped.
   for(const [profile,ops]of Object.entries(plan.operations||{}))for(const op of ops){
    if(op.businessDate<p.window.start||op.businessDate>p.window.end||!op.businessDate)throw Error('Manual operation outside qualified window');
    if(p.currentRows.some(r=>r.profile===profile&&(op.rowNumber===r.rowNumber||op.uid===r.uid))||

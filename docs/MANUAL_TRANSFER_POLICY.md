@@ -1,5 +1,7 @@
 # Qualified manual transfer policy
 
+See [CPANEL_OPERATIONS.md](CPANEL_OPERATIONS.md) for the complete migration, scheduler, deployment, quota and recovery procedure, and [the source change record](CPANEL_CHANGELOG_2026-10.md) for implementation/verification history. This specification grants no live execution authority by itself.
+
 The owner-authorized manual mode replaces the former fixed 42 holds and 14 overlapping exclusions with an empty active hold/exclusion set and one exact private exception. Removing restrictions never deletes business records.
 
 The original eight conflict findings overlap: six current source records are skipped. They remain unresolved. The worker preserves the qualified existing state, including absence when an old event has never existed in the target. It does not choose a quantity, reassign an ambiguous identity or reset tracking to bypass a conflict.
@@ -26,7 +28,7 @@ Require a full database-backed dry run, exact business preimages, historical-pre
 
 After apply, independently verify source coverage, ledger and physical mapped targets, preserved history, skipped/absent events and a zero-change replay. A successful plan or worker exit alone is not complete reconciliation.
 
-**Automatic synchronization remains off until a separate explicit owner restart instruction.** The deployed scheduler environment stays disabled. A supervised manual launch does not authorize cron restoration or future automatic cycles.
+**A manual rollout stays paused until a separate explicit owner restart instruction.** Templates default to disabled. A supervised manual launch does not authorize cron restoration or future automatic cycles. An installation later authorized for recurring mode can enable its scheduler under the v3 requirements below; inspect its actual environment/cron rather than reading this manual-mode rule as live status.
 
 Legacy policies retain their original guards until an explicitly qualified migration; the new mode is not a general protection bypass or approval for unrelated historical changes.
 
