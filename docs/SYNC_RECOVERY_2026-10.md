@@ -1,5 +1,7 @@
 # October sync fixes and hosted rollout
 
+**Historical October 25 checkpoint:** the results, old mandatory hold counts and old start/schedule instructions below describe that rollout. Later explicitly qualified v2/v3 modes are documented in [MANUAL_TRANSFER_POLICY.md](MANUAL_TRANSFER_POLICY.md) and [CPANEL_OPERATIONS.md](CPANEL_OPERATIONS.md), with a [source change record](CPANEL_CHANGELOG_2026-10.md). Preserve the old evidence; do not treat its blocker counts as live status or repeat its database transitions over a newer installation.
+
 The October 25 fixes now run in the actual local preview and the controlled cPanel installation. Git publication alone does not deploy either environment; the practical verification below is separate from publication.
 
 ## Observed rollout result

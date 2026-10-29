@@ -4,7 +4,9 @@
 
 This note supersedes older historical statements that hosting was untouched. Publishing a Git commit does not authorize redeploying cPanel, reinitializing synchronization or repeating migration.
 
-## Current hosted installation
+**Later authorized policy migrations:** the installation/scheduler and hold statements below record the October 11–13 baseline. For the later frozen manual and separately authorized recurring modes, read [the policy specification](MANUAL_TRANSFER_POLICY.md), [source change record](CPANEL_CHANGELOG_2026-10.md) and [current maintenance procedure](CPANEL_OPERATIONS.md). Legacy 42/14 guards remain mandatory for legacy policies; do not impose their old broad exclusions on an explicitly qualified v2/v3 mode or remove the legacy guard globally. These documents do not themselves change a live policy or schedule.
+
+## Historical October 11–13 hosted installation
 
 | Component | Verified location / setting |
 | --- | --- |
@@ -28,9 +30,9 @@ Repository `sync/` maps to the separate private sync root, not an HTTP-accessibl
 6. **Atomic capture:** row-history writes share each importer mutation's connection and transaction. Rollback removes both. Tables without unique primary keys explicitly identify matching row sets or submitted values instead of inventing unique identities.
 7. **Sync protections:** preserve tracked-row updates, idempotent replay, duplicate prevention, yarn identity matching, dependency exclusions, full database-backed dry-run gates, bounded storage, download retries, quota checks, scheduler flock and database advisory lock. Sheets remain read-only and source deletion mirroring remains disabled.
 
-## Reconciliation holds are not approvals
+## Legacy reconciliation holds are not approvals
 
-- **42 holds and 14 original exclusions remain active.** The worker requires the private protection policy and protected-record bindings. These files must stay out of Git.
+- **Legacy policies require 42 holds and 14 original exclusions.** Later owner-qualified v2/v3 modes replace broad restrictions with exact private bindings as specified above. All modes require their applicable private policy; keep record selections out of Git.
 - **26 staging technical retentions are not production approval.** No correction approvals were invented.
 - Held corrections require genuine source/history/form evidence, authorized human sign-off and an independent second review, followed by fingerprint validation and a full exclusion-bound, database-backed dry run before production synchronization.
 - Preserve original/2023 records and private fingerprints. Never rerun migration or reset the ledger to make validation pass.
@@ -52,6 +54,6 @@ The v2 deployment verified unchanged checksums for 36 physical business tables; 
 
 Run `npm run check` and `npm test`. Optional real database tests use `ERP_TEST_MYSQL_ENV`, pointing to an external private credential file for a local disposable server, and `npm run test:console:mysql`. They accept only localhost/127.0.0.1, create/drop their own uniquely named test database and never use the configured business database.
 
-Ten-minute scheduling is active, but successful completion every interval is not established: retained evidence includes successful unchanged polls, source-download failures, missing final completion markers and roughly twenty-minute start gaps. The UI must keep these distinctions. Production row-level history has begun accumulating; this does not approve historical corrections or prove every source change was imported.
+At this historical checkpoint, ten-minute scheduling was active, but successful completion every interval was not established: retained evidence included successful unchanged polls, source-download failures, missing final completion markers and roughly twenty-minute start gaps. Keep these distinctions in the UI and inspect the live installed environment/cron/cycle for current status. Row-level history does not itself approve historical corrections or prove every later source change was imported.
 
 The owner will supply security findings separately. This publication does not claim those findings are fixed or that the entire application has been security-audited.

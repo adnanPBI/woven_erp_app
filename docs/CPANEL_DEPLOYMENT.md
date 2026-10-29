@@ -1,12 +1,12 @@
 # cPanel deployment
 
-For an existing installation, first read [the October recovery rollout](SYNC_RECOVERY_2026-10.md) and [the protected hosted baseline](CRITICAL_CPANEL_BASELINE.md). The new verified path requires schema/ledger compatibility checks and the separate-entry challan policy; a Git pull alone does not migrate those. Preserve the deployed private wrapper, cron and 42 holds/14 exclusions.
+For an existing installation, first read [CPANEL_OPERATIONS.md](CPANEL_OPERATIONS.md), [the policy specification](MANUAL_TRANSFER_POLICY.md) and [the protected hosted baseline](CRITICAL_CPANEL_BASELINE.md). Schema/ledger compatibility and the separate-entry challan policy require qualification; a Git pull alone does not migrate them. Preserve the deployed private wrapper, configuration and applicable policy. Legacy 42/14 enforcement and later explicitly authorized v2/v3 modes are distinct.
 
-> **Existing live installation:** First read [CRITICAL_CPANEL_BASELINE.md](CRITICAL_CPANEL_BASELINE.md). cPanel is already syncing. Current separate app/sync paths and the `5,15,25,35,45,55` cron are recorded there. Do not replay initial-install instructions over the live database, private state, protection policy or scheduler. Console schema and history already exist.
+> **Existing live installation:** Inspect actual status, pending recovery, policy version and installed cron. Historical deployment notes are not live scheduler state. Do not replay initial-install instructions over populated tables, an initialized ledger, private state or existing console/history schema. Source publication does not authorize a production deployment or restart.
 
 The ERP and cron worker share `weavonpq_weaving_main`. Replace ACCOUNT and runtime paths below with your hosting values. No credentials or database dumps are published here.
 
-## 1. Back up and install
+## 1. New installation: back up and install
 
 Back up the hosted database and application. Preserve your existing private credentials, session secret, Google key and hosting-generated Passenger settings.
 
@@ -70,11 +70,21 @@ GOOGLE_SERVICE_ACCOUNT_JSON_PATH=/home/ACCOUNT/private_keys/google-service-accou
 
 Grant the Google service account Viewer access to the nine configured tabs. Alternatively, use SYNC_GOOGLE_MODE=public-csv when their exports are public. The worker only reads Google Sheets. Restrict private configuration/key files to your hosting account.
 
-From the clone:
+After preparing the installation's applicable private policy, run the read-only readiness check from the clone. Its `schedulerEnabled=false` field means the checker did not activate a scheduler; inspect the installed environment and crontab for real state.
 
 ```sh
 node sync/scripts/sync/check_cpanel.js --env=/home/ACCOUNT/private_sync.env
+```
+
+Only for a new, uninitialized ledger whose approved imported baseline has been verified:
+
+```sh
 node sync/scripts/sync/run.js --env=/home/ACCOUNT/private_sync.env --initialize
+```
+
+For an initialized installation, skip initialization. Use mode-appropriate source qualification: v2 manual mode needs its already certified, frozen source cycle; v3 recurring mode derives a new exact exception for each fresh snapshot. See [the existing-host runbook](CPANEL_OPERATIONS.md). Ordinary recurring checks are:
+
+```sh
 node sync/scripts/sync/run.js --env=/home/ACCOUNT/private_sync.env --plan
 node sync/scripts/sync/run.js --env=/home/ACCOUNT/private_sync.env --dry-run
 ```
@@ -85,31 +95,33 @@ The DB account needs business/tracking table access and permission to create/alt
 
 ## 5. Apply one verified cycle
 
-Once plan and full dry run pass, set SYNC_ENABLED=true and run:
+For a qualified v2 manual catch-up, follow the frozen plan/preimage, historical review, fresh backup and supervisor procedure in [CPANEL_OPERATIONS.md](CPANEL_OPERATIONS.md). An old job's database/source bindings are not portable. Manual completion alone does not authorize cron activation.
+
+For a separately authorized v3 recurring rollout, stage with `SYNC_ENABLED=false`, a pinned immutable reviewed base, no fixed `SYNC_END_DATE` and no persisted per-cycle `SYNC_MANUAL_SKIPS_*` values. After the fresh source plan/full dry pass and the restart is authorized, set the private switch to true and update only its approved protected-manifest entry. Test the same installed wrapper that cron will invoke:
 
 ```sh
-node sync/scripts/sync/run.js --env=/home/ACCOUNT/private_sync.env
+/bin/bash /home/ACCOUNT/private_sync/run-hosted-sync.sh
 ```
 
 Confirm `private_sync_data/status.json` says completed or unchanged. Check cycle reports and ERP dropdowns. A database connection or registered cron entry alone is not proof that data refreshed.
 
 ## 6. Schedule every ten minutes
 
-In cPanel Cron Jobs, set minute `*/10` and all other fields to `*`. Use the actual absolute Node executable path:
+In cPanel Cron Jobs, set minute `*/10` and all other fields to `*`. The reviewed private wrapper must activate the correct Node PATH, target the correct private sync root/environment and retain the checksum/account-quota/flock checks:
 
 ```sh
-/ABSOLUTE/PATH/TO/node /home/ACCOUNT/woven_erp_app/sync/scripts/sync/run.js --env=/home/ACCOUNT/private_sync.env
+/bin/bash /home/ACCOUNT/private_sync/run-hosted-sync.sh
 ```
 
-SYNC_INTERVAL_MINUTES documents the intended interval; it does not install cron. A MySQL advisory lock prevents overlap. Large catch-ups can exceed ten minutes and overlapping starts skip. Verify a scheduled completion and a later unchanged poll.
+SYNC_INTERVAL_MINUTES documents the intended interval; it does not install cron. File and MySQL advisory locks prevent overlap. Large catch-ups can exceed ten minutes and overlapping starts skip. Exit zero can mean an interval was skipped; verify a newly completed/unchanged cycle and actual source/ledger/mapped evidence. Do not substitute a raw Node cron command that omits the installed wrapper's integrity/account-quota checks.
 
-Source removals retain ERP history. Ambiguous identities stop for review; exact reviewed fingerprints handle confirmed corrections. Sheet edits replace mapped fields of tracked records, so coordinate manual ERP edits to those fields.
+Source removals never mirror into business deletion. Ambiguous removals/identity changes still stop for review unless an applicable qualified history-retention policy handles that exact case. Fingerprint-bound `retain-missing` reviews preserve existing rows without excluding current source; reappearing groups resume normal matching. Sheet edits replace mapped fields of tracked records, so coordinate manual ERP edits to those fields.
 
 Disable the cron entry or set SYNC_ENABLED=false to pause future writes; let an active transaction finish. If pending.json exists, the next run resumes that exact snapshot. Do not delete pending evidence to bypass an error. The latest two complete backups and two source cycles are retained independently by default, including after failed cycles; current/pending recovery evidence is protected. Logs rotate at 5 MiB with three archived segments. Do not append cron output to an unbounded file; managed logs are in private_sync_data/logs/sync.log. Keep cron startup/failure notifications enabled.
 
 ## Updating
 
-Back up, pull the new commit, install dependencies if lockfiles changed and restart the app through cPanel. Keep credentials and sync state outside the clone. Do not reinitialize after ordinary code updates. Check the next cron result and ERP login/dropdowns.
+Follow the staged deployment procedure in [CPANEL_OPERATIONS.md](CPANEL_OPERATIONS.md): inspect active/pending work, preserve exact old hashes/config/cron and restore evidence, install only selected reviewed files into the correct app or private sync root, and update only their authorized checksum pins. Comments change hashes too. Install dependencies only when required by reviewed lockfile changes. Restart Passenger only for an authorized app change; a sync update need not touch ERP files. Do not reinitialize, repeat a completed migration or regenerate policy/data pins. Verify the actual next cycle, coverage and relevant app smoke checks. A Git merge by itself changes none of the hosted files.
 
 Official references: [Node application setup](https://docs.cpanel.net/knowledge-base/web-services/how-to-install-a-node.js-application/), [Cron Jobs](https://docs.cpanel.net/cpanel/advanced/cron-jobs/), [Git deployment](https://docs.cpanel.net/knowledge-base/web-services/guide-to-git-deployment/).
 

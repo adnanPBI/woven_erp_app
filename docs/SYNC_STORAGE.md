@@ -5,7 +5,7 @@ Windows `node_modules` to cPanel. Install the ERP/sync source and the separate
 private baseline bundle outside `public_html`. The hosted database must match
 the baseline before first initialization; ordinary updates never reinitialize it.
 
-## Defaults for a 15 GB account
+## Default runtime settings
 
 | Private sync environment setting | Default | Meaning |
 | --- | ---: | --- |
@@ -23,11 +23,15 @@ take priority over retention counts. If protected data cannot fit, the worker
 fails visibly instead of deleting recovery evidence. The newest two complete
 backups remain protected even when polls report no changes.
 
+These are template defaults, not a claim about an installed account's allowance or current settings. A measured, explicitly approved constrained deployment may retain one active cycle/two backups. Do not impose that tuning on other hosts or reduce retention as a side effect of a source update. See [the cPanel operations runbook](CPANEL_OPERATIONS.md).
+
 Cleanup runs under the MySQL advisory lock before work and in finalization,
 including source conflicts, validation failures and explicit dry runs. It removes
 only recognized cycle directories, expired backup files and old scheduler logs;
 it refuses symbolic links/junctions. Interrupted partial dumps are never accepted
 as complete backups. Unknown files count toward the budget but are not deleted.
+
+Status can name a newly failed cycle. With low retention, the previous successful source snapshot may then be retired. Put permanent source/plan/preimage/backup-restore/verification custody outside the actively pruned directory; current/pending protection is not an indefinite archive of every successful run.
 
 The public `scripts/sync/run.js` launches `worker.js` under a separate supervisor.
 The supervisor samples folder usage and filesystem free space every second even
@@ -60,16 +64,20 @@ node sync/scripts/sync/run.js --env=/home/ACCOUNT/private_sync.env --maintenance
 For the local workspace add `--local` and use its private local environment file.
 Maintenance can run with `SYNC_ENABLED=false` and never changes business rows.
 
-The cPanel cron command (every ten minutes) is:
+For a protected existing cPanel installation, cron should invoke its reviewed private wrapper (every ten minutes):
 
 ```sh
-/ABSOLUTE/PATH/TO/node /home/ACCOUNT/woven_erp_app/sync/scripts/sync/run.js --env=/home/ACCOUNT/private_sync.env
+/bin/bash /home/ACCOUNT/private_sync/run-hosted-sync.sh
 ```
 
-Do not append `>> private_sync_cron.log`: the worker owns rotated logs at
+The wrapper adds protected-manifest/account-quota/flock checks before the supervised Node worker. Adapt only the approved private installation paths; a raw Node cron entry omits those checks. Do not append `>> private_sync_cron.log`: the worker owns rotated logs at
 `SYNC_DATA_DIR/logs/sync.log`. Keep cron email/error notifications enabled for
 startup errors that occur before the worker owns the database lock. Cycle worker
 logs rotate too. The Windows launcher also delegates logging to Node.
+
+Wrapper integrity/quota failures occur before its `SYNC_START` event. A successful exit can also mean overlap was skipped. Correlate wrapper events with a newly completed/unchanged cycle, the actual data directory and any independent coverage proof.
+
+Account-quota reports can remain cached after an approved cleanup. Check exact reclaimed paths/bytes and the account report before deleting more. An own-account vendor cache refresh changes reporting, not quota limits; do not lower reserves or run server-wide quota rebuilds. A cleanup script may retire files and then fail its later quota check, so inspect its durable cleanup report before retrying.
 
 Inspect `status.json`, `storage-report.json` (sampled peak), `cleanup-report.json`,
 `last-pruned.json` and `conflict-review.json`. Old reports may describe earlier

@@ -91,7 +91,10 @@ function cleanup(root, config, {current, extraProtected = [], reserve = 0} = {})
     for (const name of logs.slice(0, Math.max(0, logs.length - config.logFiles))) remove(path.join(legacyLogs, name), legacyLogs);
   }
   for (const file of backups) if (!protectedBackups.has(path.resolve(file))) remove(file, backupDir);
-  // Pending/current/status always win over count and byte limits.
+  // Pending/current/status always win over count and byte limits. "Status" may
+  // name a failed NEW cycle: low retention can then retire the previous success.
+  // Archive durable last-good source/plan/verification evidence outside this
+  // actively pruned directory before reducing retention for hosting quota.
   for (const cycle of cycles.slice(0, Math.max(0, cycles.length - config.cycles))) if (!protect.has(path.resolve(cycle))) remove(cycle, base);
   let bytes = size(root);
   for (const cycle of cycles) {

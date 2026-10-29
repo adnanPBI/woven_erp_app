@@ -94,6 +94,10 @@ async function main(){
  const [[lock]]=await connection.query('SELECT GET_LOCK(?,0) acquired',[lockName]);
  if(Number(lock.acquired)!==1){console.log('Another sync is active; this interval was skipped.');return;}
  hasLock=true;
+ // Shared hosts may close an idle connection during fetch/normalization. The
+ // advisory lock belongs to THIS connection, so keep it alive and stop the
+ // supervised writer if ownership could be lost. A second pooled connection
+ // would not keep this lock session alive.
  let heartbeatPending=false;
  lockHeartbeat=setInterval(()=>{if(heartbeatPending)return;heartbeatPending=true;
   connection.query('SELECT 1').catch(()=>{console.error('Advisory-lock heartbeat failed; stopping supervised writer');process.kill(process.ppid,'SIGTERM');}).finally(()=>{heartbeatPending=false;});
@@ -183,7 +187,11 @@ async function main(){
  if(args['refresh-window']&&(!windowStart||(!local&&!env.SYNC_MANUAL_SKIPS_FILE)))throw Error('Full-window refresh requires a bounded local or qualified manual run');
  if(windowStart&&!repairMode)throw Error('A bounded sync window requires verified writes');
  if(env.SYNC_MISSING_ROW_POLICY&&!['block','retain-history'].includes(env.SYNC_MISSING_ROW_POLICY))throw Error('Unknown missing-row policy');
+ // Bind the fresh source before planning. Explicit resume/pending reuses the
+ // already frozen qualification, rather than reselecting source rows on retry.
  const scheduledSkips=await require('../../lib/sync_scheduled_skips').qualifyScheduledSkips(env,prepared,cycle,date,{pending:!!pending||!!resume,connection});
+ // The mapper's SourceIndex runs through childEnv/process.env. Forward the
+ // exact same per-cycle file/hash so yarn balances cannot include skipped stock.
  if(scheduledSkips)Object.assign(childEnv,{SYNC_MANUAL_SKIPS_FILE:env.SYNC_MANUAL_SKIPS_FILE,SYNC_MANUAL_SKIPS_SHA256:env.SYNC_MANUAL_SKIPS_SHA256});
  const manualSkips=scheduledSkips||require('../../lib/sync_manual_conflict_skips').loadManualSkips(env,require('../local/common').sha256File(prepared.latestSourceManifest),cycle);
  if(env.SYNC_END_DATE&&(!manualSkips||env.SYNC_END_DATE!==manualSkips.policy.window.end))throw Error('Frozen end date requires exact manual qualification');
@@ -198,6 +206,9 @@ async function main(){
   return env.SYNC_MISSING_ROW_POLICY==='retain-history'?require('../../lib/sync_history_policy').retainMissingHistory(profile,partial,previous,current):partial;
  }
  const exclusions=(exclusionEntries.length||exclusionPolicy!=='block')?new (require('../../lib/sync_exclusions').SyncExclusions)(exclusionEntries,exclusionPolicy):null;
+ // Legacy dependency-wide exclusions remain available to legacy installs.
+ // Authorized v2/v3 modes remove those broad restrictions, not business rows;
+ // their exact exception and zero-exclusion scope are checked again below.
  const protection=!local?JSON.parse(fs.readFileSync(path.join(ROOT,'protection-policy.json'))):null;
  if(protection&&!['manual-exact-skips','scheduled-exact-skips'].includes(protection.mode)){
   if(protection.heldCases.length!==42||protection.originalExclusions.length!==14||!exclusions)throw Error('Required protections missing');
@@ -276,6 +287,8 @@ async function main(){
  json(path.join(dataDir,'status.json'),{status:'validating',database:expected,cycle,dryId,at:new Date().toISOString(),added:plan.added,updated:plan.updated,refreshed:plan.refreshed});
  const drySync=new SheetsSyncRuntime(plan,bundle.protectedMasters,hash);
  await runDynamicImport({rootDir:ROOT,args:{'dry-run':true,'run-id':dryId,'output-dir':path.join(cycle,'runs',dryId)},sync:drySync});
+ // Capture against the actual target schema. Apply checks these business
+ // preimages inside row transactions; a dry-run success is not a write receipt.
  const preimages=repairMode?drySync.exportBusinessPreimages():null;
  if(preimages)json(path.join(cycle,'business-preimages.json'),preimages);
  if(args['dry-run']){
@@ -290,6 +303,8 @@ async function main(){
  action VARCHAR(30),row_key TEXT,identity_scope VARCHAR(40),affected_rows INT,changed_columns TEXT,
  before_json LONGTEXT,after_json LONGTEXT,note TEXT,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
  KEY idx_sync_history_run(run_id),KEY idx_sync_history_source(profile,source_uid)) ENGINE=InnoDB`);
+ // Recovery owns this exact source/plan/backup. Do not remove pending.json or
+ // rebuild the tracking baseline to make a partially applied run appear clean.
  json(pendingFile,{cycle,database:expected,manifestHash:hash,planHash,backupFile});
  if(manualSkips)await require('../../lib/sync_manual_conflict_skips').verifyRetained(connection,manualSkips);
  const liveId='sync_live_'+stamp();
