@@ -6,18 +6,21 @@ const {loadManualSkips,verifyRetained}=require('./sync_manual_conflict_skips');
 const {isoBusinessDate}=require('./sync_date_scope');
 const sha=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 const fail=message=>{throw Error('Scheduled exact skips: '+message);};
-const key=r=>JSON.stringify([r.profile,r.group,r.digest,r.businessDate]);
+const key=(r,anchor=r)=>JSON.stringify([r.profile,r.group,anchor.mutableField==='Last Received Date'?r.sourceMatchHash||r.matchHash:r.digest,r.businessDate]);
 function rebindPolicy(base,snapshots,receiptTotals,{cycle,manifestSha256,baseSha256,end}){
  if(!isoBusinessDate(end)||end<base.window.end)fail('invalid advancing cutoff');
- const buckets=new Map();for(const r of base.currentRows){const k=key(r);if(!buckets.has(k))buckets.set(k,[]);buckets.get(k).push(r);}
+ const buckets=new Map();for(const r of base.currentRows){
+  if(r.mutableField&&(r.profile!=='yarn-receive'||r.mutableField!=='Last Received Date'||!/^[a-f0-9]{64}$/.test(r.sourceMatchHash||'')))fail('unsupported mutable-field qualification');
+  const k=key(r);if(!buckets.has(k))buckets.set(k,[]);buckets.get(k).push(r);
+ }
  const currentRows=[],skippedTotals=new Map();
  for(const anchors of buckets.values()){
-  const anchor=anchors[0],found=snapshots[anchor.profile].records.filter(r=>key({...r,profile:anchor.profile})===key(anchor));
+  const anchor=anchors[0],found=snapshots[anchor.profile].records.filter(r=>key({...r,profile:anchor.profile},anchor)===key(anchor));
   if(found.length!==anchors.length)fail('reviewed source fingerprint or duplicate multiplicity changed');
   const ordered=[...found].sort((a,b)=>a.rowNumber-b.rowNumber);
   for(let i=0;i<anchors.length;i++){
    const row=ordered[i];if(!row.uid||!Number.isInteger(row.rowNumber))fail('source identity missing');
-   currentRows.push({...anchors[i],uid:row.uid,rowNumber:row.rowNumber});
+   currentRows.push({...anchors[i],uid:row.uid,digest:row.digest,rowNumber:row.rowNumber});
    if(anchor.profile==='yarn-receive'){
     const lot=require('./source_index').normalizeYarnLotIdentity(row.yarnIdentity?.lot),amounts=JSON.parse(row.entryAmounts||'null');
     if(!lot||!Array.isArray(amounts)||!Number.isFinite(amounts[0])||amounts[0]<0)fail('skipped receipt amount is unqualified');
