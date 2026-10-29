@@ -7,6 +7,7 @@ const args=Object.fromEntries(process.argv.slice(2).filter(a=>a.startsWith('--')
 const stamp=()=>new Date().toISOString().replace(/[:.]/g,'-');
 const storage=require('../../lib/sync_storage');
 const {ensureIdentityColumn,hydrateIdentities,saveHydratedIdentities}=require('../../lib/yarn_sync_identity');
+let lockHeartbeat;
 let connection,lockName,dataDir,storageConfig,activeCycle,hasLock=false,storageReady=false;
 async function handshake(type,reply,details={}) {
  if(!process.send)throw Error('Use scripts/sync/run.js so storage supervision is active');
@@ -93,6 +94,10 @@ async function main(){
  const [[lock]]=await connection.query('SELECT GET_LOCK(?,0) acquired',[lockName]);
  if(Number(lock.acquired)!==1){console.log('Another sync is active; this interval was skipped.');return;}
  hasLock=true;
+ let heartbeatPending=false;
+ lockHeartbeat=setInterval(()=>{if(heartbeatPending)return;heartbeatPending=true;
+  connection.query('SELECT 1').catch(()=>{console.error('Advisory-lock heartbeat failed; stopping supervised writer');process.kill(process.ppid,'SIGTERM');}).finally(()=>{heartbeatPending=false;});
+ },10000);lockHeartbeat.unref();
  const pendingBefore=storage.readJson(path.join(dataDir,'pending.json'));
  const previousStatus=storage.readJson(path.join(dataDir,'status.json'));
  activeCycle=pendingBefore?.cycle||(args['prepared-cycle']?path.resolve(args['prepared-cycle']):undefined);
@@ -141,7 +146,7 @@ async function main(){
   }
   console.log(JSON.stringify({status:'yarn-identities-upgraded',hydrated,businessRowsChanged:0}));return;
  }
- const date=(local&&args.cutoff)||new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Dhaka',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ const date=(local&&args.cutoff)||env.SYNC_END_DATE||new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Dhaka',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
  const pendingFile=path.join(dataDir,'pending.json');
  const pending=fs.existsSync(pendingFile)?JSON.parse(fs.readFileSync(pendingFile)):null;
  if(args['prepared-cycle']&&!local)throw Error('Prepared fixture reuse is local-only');
@@ -175,10 +180,14 @@ async function main(){
  const exclusionPolicy=env.SYNC_CONFLICT_POLICY||'block';
  const repairMode=env.SYNC_VERIFIED_WRITES==='true';
  const windowStart=env.SYNC_START_DATE||null;
- if(args['refresh-window']&&(!local||!windowStart))throw Error('Full-window refresh requires the explicitly bounded local preview');
+ if(args['refresh-window']&&(!windowStart||(!local&&!env.SYNC_MANUAL_SKIPS_FILE)))throw Error('Full-window refresh requires a bounded local or qualified manual run');
  if(windowStart&&!repairMode)throw Error('A bounded sync window requires verified writes');
  if(env.SYNC_MISSING_ROW_POLICY&&!['block','retain-history'].includes(env.SYNC_MISSING_ROW_POLICY))throw Error('Unknown missing-row policy');
+ const manualSkips=require('../../lib/sync_manual_conflict_skips').loadManualSkips(env,require('../local/common').sha256File(prepared.latestSourceManifest),cycle);
+ if(env.SYNC_END_DATE&&(!manualSkips||env.SYNC_END_DATE!==manualSkips.policy.window.end))throw Error('Frozen end date requires exact manual qualification');
+ if(manualSkips)await require('../../lib/sync_manual_conflict_skips').verifyRetained(connection,manualSkips);
  function scoped(profile,previous,current){
+  if(manualSkips)({previous,current}=manualSkips.apply(profile,{previous,current}));
   return windowStart?require('../../lib/sync_history_policy').scopeHistory(previous,current,windowStart,date):{previous,current};
  }
  const changedReceiptLots=new Set();
@@ -188,13 +197,15 @@ async function main(){
  }
  const exclusions=(exclusionEntries.length||exclusionPolicy!=='block')?new (require('../../lib/sync_exclusions').SyncExclusions)(exclusionEntries,exclusionPolicy):null;
  const protection=!local?JSON.parse(fs.readFileSync(path.join(ROOT,'protection-policy.json'))):null;
- if(protection){
+ if(protection&&protection.mode!=='manual-exact-skips'){
   if(protection.heldCases.length!==42||protection.originalExclusions.length!==14||!exclusions)throw Error('Required protections missing');
   for(const dispo of protection.seedDispos)exclusions.dispos.add(dispo);
   for(const e of protection.originalExclusions)exclusions.edge(e.dispo,e.lot);
  }
  const plan=pending?JSON.parse(fs.readFileSync(path.join(cycle,'plan.json'))):{ok:true,added:0,updated:0,refreshed:0,operations:{},conflicts:[]};
  if(!pending&&windowStart)plan.businessWindow={start:windowStart,end:date};
+ if(!pending&&manualSkips)plan.manualSkips=manualSkips.summary;
+ if(protection?.mode==='manual-exact-skips'&&!args.plan&&!args['dry-run']&&!resume&&!pending)throw Error('Manual hosted apply requires an explicitly resumed frozen cycle');
  if(!pending&&repairMode&&local)plan.originalFingerprintDatabase='weavonpq_weaving_local';
  if(!pending)plan.missingRowPolicy=env.SYNC_MISSING_ROW_POLICY||'block';
  if(!pending){
@@ -245,7 +256,7 @@ async function main(){
  json(path.join(cycle,'plan.json'),plan);
  if(plan.exclusions)json(path.join(dataDir,'excluded-records-report.json'),{at:new Date().toISOString(),cycle,...plan.exclusions});
  }
- if(protection)require('../../lib/hosted_protection_guard').assertProtected(plan,protection);
+ if(protection)require('../../lib/hosted_protection_guard').assertProtected(plan,protection,{manualSkips,env});
  if(!plan.ok){
   json(path.join(dataDir,'conflict-review.json'),{at:new Date().toISOString(),cycle,conflicts:plan.conflicts});
   throw Error('Ambiguous edits/deletions or changed keys require review: '+path.join(cycle,'plan.json'));
@@ -278,6 +289,7 @@ async function main(){
  before_json LONGTEXT,after_json LONGTEXT,note TEXT,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
  KEY idx_sync_history_run(run_id),KEY idx_sync_history_source(profile,source_uid)) ENGINE=InnoDB`);
  json(pendingFile,{cycle,database:expected,manifestHash:hash,planHash,backupFile});
+ if(manualSkips)await require('../../lib/sync_manual_conflict_skips').verifyRetained(connection,manualSkips);
  const liveId='sync_live_'+stamp();
  json(path.join(dataDir,'status.json'),{status:'applying',database:expected,cycle,liveId,backupFile,at:new Date().toISOString()});
  await runDynamicImport({rootDir:ROOT,args:{live:true,yes:true,'backup-confirmed':true,'approved-dry-run':dryId,'run-id':liveId,'output-dir':path.join(cycle,'runs',liveId),'production-approval':childEnv.PRODUCTION_APPROVAL_TOKEN},sync:new SheetsSyncRuntime(plan,bundle.protectedMasters,hash,repairMode?{businessPreimages:preimages}:{})});
@@ -287,6 +299,7 @@ async function main(){
   const createdCostingMasters=await require('../../lib/sync_business_evidence').verifyCapturedCostingMasters(connection,preimages);
   json(path.join(cycle,'business-verification.json'),{ok:true,verifyId,manifestHash:hash,planHash,targetsVerified:verifySync.business.targetsVerified,createdCostingMasters,sharedMasterReuses:verifySync.sharedMasterReuses||[],retainedBlankAmounts:verifySync.retainedBlankAmounts||[],retainedChildren:verifySync.retainedChildren||[]});
  }
+ if(manualSkips)json(path.join(cycle,'manual-skips-verification.json'),await require('../../lib/sync_manual_conflict_skips').verifyRetained(connection,manualSkips));
  json(path.join(dataDir,'status.json'),{status:'completed',database:expected,cycle,backupFile,at:new Date().toISOString(),added:plan.added,updated:plan.updated});
  fs.unlinkSync(pendingFile);
 
@@ -303,6 +316,7 @@ main().catch(e=>{
   }
  }catch(e){console.error('Storage maintenance failed: '+e.message);process.exitCode=1;}
  finally {
+  clearInterval(lockHeartbeat);
   if(connection){if(hasLock)await connection.query('SELECT RELEASE_LOCK(?)',[lockName]).catch(()=>{});await connection.end();}
   if(process.connected)process.disconnect();
  }

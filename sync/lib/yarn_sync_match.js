@@ -52,6 +52,10 @@ function matchYarn(previous, current) {
     return priorGroups.get(a.group)===1&&currentGroups.get(b.group)===1&&x&&y&&
       (!x.direction||!y.direction)&&['dispo','count','lot','date','challan'].every(k=>x[k]===y[k]);
   });
+  unique(r => {
+    const y=r.yarnIdentity,key=yarnKey(y);
+    return key&&y.date&&y.weavingReturnReference?JSON.stringify([key,y.date,y.weavingReturnReference]):null;
+  });
   unique(r => eventKey(r.yarnIdentity));
   unique(r => yarnKey(r.yarnIdentity), (a, b) => ['date', 'challan'].every(k =>
     !a.yarnIdentity[k] || !b.yarnIdentity[k] || a.yarnIdentity[k] === b.yarnIdentity[k]));
@@ -94,7 +98,9 @@ function matchYarn(previous, current) {
     // Multiple supplied amounts are separate audit entries, even when the
     // complete challan/Dispo/date and yarn identity are the same. Exact copies,
     // missing references and unresolved edits still fail for review.
-    const separateAmounts=eventKey(row.yarnIdentity)&&!/^(?:n\/?a|none|null|unknown|-)$/i.test(row.yarnIdentity.challan)&&siblings.length>1&&siblings.every(r=>r.entryAmounts)&&new Set(siblings.map(r=>r.digest)).size===siblings.length;
+    const returnReferences=siblings.map(r=>r.yarnIdentity?.weavingReturnReference);
+    const referencedReturns=row.yarnIdentity?.direction==='receipt'&&returnReferences.every(r=>/^ysr\d{6,20}$/.test(r||''))&&new Set(returnReferences).size===siblings.length;
+    const separateAmounts=eventKey(row.yarnIdentity)&&(!/^(?:n\/?a|none|null|unknown|-)$/i.test(row.yarnIdentity.challan)||referencedReturns)&&siblings.length>1&&siblings.every(r=>r.entryAmounts)&&new Set(siblings.map(r=>r.digest)).size===siblings.length;
     if (digestCounts.get(row.digest) > 1 || (!separateAmounts&&!reviewedGroups.has(row.group) && key && (priorEvents.has(key) || eventCounts.get(key) > 1))) {
       conflicts.push({reason: 'duplicate_or_ambiguous_yarn_event', rowNumber: row.rowNumber, group: row.group});
     } else inserts.push(row);

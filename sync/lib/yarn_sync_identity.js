@@ -12,13 +12,22 @@ function yarnIdentity(profile, headers, values) {
     const active = populated.filter(h => Number(get(h).replace(/,/g, '')) !== 0);
     direction = (active.length ? active : populated).map(h => h.toLowerCase()).join('+');
   }
-  return {
+  const identity = {
     version: 1,
     dispo: get(profile === 'yarn-issue' ? 'Dispo No' : 'Received GD NO'),
     count: get('Yarn Count'), lot: get('Yarn Lot'), direction,
     date: get(profile === 'yarn-issue' ? 'Issue Date' : 'Received Date'),
     challan: get(profile === 'yarn-issue' ? 'S/R/Challan No' : 'Challan No'),
   };
+  // A pure weaving return may have an N/A receipt challan. Preserve its
+  // explicitly supplied issue reference; never synthesize a challan number.
+  if(profile==='yarn-receive'){
+    const quantity=Number(get('Floor Return in kg').replace(/,/g,''));
+    const receipt=get('Receipt Qty (Kgs)'),reference=/^return from weaving ref:\s*(ysr\d{6,20})$/.exec(get('Special Notes'));
+    if(Number.isFinite(quantity)&&quantity>0&&(!receipt||Number(receipt.replace(/,/g,''))===0)&&reference)
+      identity.weavingReturnReference=reference[1];
+  }
+  return identity;
 }
 function parseIdentity(value) {
   if (!value) return null;
