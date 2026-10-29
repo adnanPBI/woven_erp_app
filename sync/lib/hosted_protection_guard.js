@@ -1,10 +1,15 @@
 'use strict';
 function assertProtected(plan,policy,context={}){
- if(policy.version===2&&policy.mode==='manual-exact-skips'){
+ const scheduled=policy.version===3&&policy.mode==='scheduled-exact-skips';
+ if((policy.version===2&&policy.mode==='manual-exact-skips')||scheduled){
   const skips=context.manualSkips,p=skips?.policy,env=context.env;
-  if(!env||!p||policy.database!==env.DB_NAME||policy.database!==p.database||policy.manualOnly!==true||
-   policy.automaticRestartAuthorized!==false||policy.heldCases.length||policy.originalExclusions.length||policy.seedDispos.length||
-   policy.exactSkipsSha256!==skips.summary.sha256||policy.businessCorrectionsApproved!==0||
+  const authorized=env&&p&&(scheduled?
+   policy.manualOnly===false&&policy.automaticRestartAuthorized===true&&env.SYNC_AUTOMATIC_RESTART_AUTHORIZED==='true'&&
+   p.automaticRestartAuthorized===true&&p.qualification==='scheduled-exact-rebind'&&policy.intervalMinutes===10&&
+   policy.windowStart===p.window.start&&policy.baseSkipsSha256===p.scheduledBaseSha256&&policy.baseSkipsSha256===env.SYNC_SCHEDULED_SKIPS_BASE_SHA256:
+   policy.manualOnly===true&&policy.automaticRestartAuthorized===false&&p.automaticRestartAuthorized===false&&policy.exactSkipsSha256===skips.summary.sha256);
+  if(!authorized||policy.database!==env.DB_NAME||policy.database!==p.database||
+   policy.heldCases.length||policy.originalExclusions.length||policy.seedDispos.length||policy.businessCorrectionsApproved!==0||
    plan.manualSkips?.sha256!==skips.summary.sha256||plan.exclusions||
    plan.businessWindow?.start!==p.window.start||plan.businessWindow?.end!==p.window.end)throw Error('Qualified manual hosted policy required');
   for(const [profile,ops]of Object.entries(plan.operations||{}))for(const op of ops){

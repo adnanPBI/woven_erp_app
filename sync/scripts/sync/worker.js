@@ -183,7 +183,9 @@ async function main(){
  if(args['refresh-window']&&(!windowStart||(!local&&!env.SYNC_MANUAL_SKIPS_FILE)))throw Error('Full-window refresh requires a bounded local or qualified manual run');
  if(windowStart&&!repairMode)throw Error('A bounded sync window requires verified writes');
  if(env.SYNC_MISSING_ROW_POLICY&&!['block','retain-history'].includes(env.SYNC_MISSING_ROW_POLICY))throw Error('Unknown missing-row policy');
- const manualSkips=require('../../lib/sync_manual_conflict_skips').loadManualSkips(env,require('../local/common').sha256File(prepared.latestSourceManifest),cycle);
+ const scheduledSkips=await require('../../lib/sync_scheduled_skips').qualifyScheduledSkips(env,prepared,cycle,date,{pending:!!pending||!!resume,connection});
+ if(scheduledSkips)Object.assign(childEnv,{SYNC_MANUAL_SKIPS_FILE:env.SYNC_MANUAL_SKIPS_FILE,SYNC_MANUAL_SKIPS_SHA256:env.SYNC_MANUAL_SKIPS_SHA256});
+ const manualSkips=scheduledSkips||require('../../lib/sync_manual_conflict_skips').loadManualSkips(env,require('../local/common').sha256File(prepared.latestSourceManifest),cycle);
  if(env.SYNC_END_DATE&&(!manualSkips||env.SYNC_END_DATE!==manualSkips.policy.window.end))throw Error('Frozen end date requires exact manual qualification');
  if(manualSkips)await require('../../lib/sync_manual_conflict_skips').verifyRetained(connection,manualSkips);
  function scoped(profile,previous,current){
@@ -197,7 +199,7 @@ async function main(){
  }
  const exclusions=(exclusionEntries.length||exclusionPolicy!=='block')?new (require('../../lib/sync_exclusions').SyncExclusions)(exclusionEntries,exclusionPolicy):null;
  const protection=!local?JSON.parse(fs.readFileSync(path.join(ROOT,'protection-policy.json'))):null;
- if(protection&&protection.mode!=='manual-exact-skips'){
+ if(protection&&!['manual-exact-skips','scheduled-exact-skips'].includes(protection.mode)){
   if(protection.heldCases.length!==42||protection.originalExclusions.length!==14||!exclusions)throw Error('Required protections missing');
   for(const dispo of protection.seedDispos)exclusions.dispos.add(dispo);
   for(const e of protection.originalExclusions)exclusions.edge(e.dispo,e.lot);
