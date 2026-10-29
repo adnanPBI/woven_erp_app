@@ -363,6 +363,7 @@ class SourceIndex {
       aggregate.rows += 1;
       return true;
     });
+    require('./sync_manual_conflict_skips').applyReceiptTotals(this.yarnReceipts);
     this.loadedFiles.yarnReceipts = { file, rows: meta.nonempty_rows || 0 };
   }
 
