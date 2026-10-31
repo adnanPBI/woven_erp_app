@@ -105,7 +105,11 @@ async function main(){
  },10000);lockHeartbeat.unref();
  const pendingBefore=storage.readJson(path.join(dataDir,'pending.json'));
  const previousStatus=storage.readJson(path.join(dataDir,'status.json'));
- activeCycle=pendingBefore?.cycle||(args['prepared-cycle']?path.resolve(args['prepared-cycle']):undefined);
+ // Validate and protect an explicitly resumed certified cycle BEFORE retention.
+ // It may be older than the failed cycle named in status.json; cleanup must
+ // never retire the very snapshot selected for a reviewed recovery operation.
+ const resume=require('../../lib/sync_resume_cycle').resolveHostedResume(dataDir,args['resume-host-cycle']);
+ activeCycle=pendingBefore?.cycle||resume||(args['prepared-cycle']?path.resolve(args['prepared-cycle']):undefined);
  const cleanup=storage.cleanup(dataDir,storageConfig,{current:activeCycle,reserve:args.maintenance?0:storageConfig.reserveBytes});
  console.log(JSON.stringify({maintenance:true,beforeBytes:cleanup.beforeBytes,afterBytes:cleanup.afterBytes,reclaimedBytes:cleanup.reclaimedBytes,removedCount:cleanup.removed.length}));
  if(args.maintenance){storage.assertCapacity(dataDir,storageConfig);return;}
@@ -155,8 +159,6 @@ async function main(){
  const pendingFile=path.join(dataDir,'pending.json');
  const pending=fs.existsSync(pendingFile)?JSON.parse(fs.readFileSync(pendingFile)):null;
  if(args['prepared-cycle']&&!local)throw Error('Prepared fixture reuse is local-only');
- const resume=args['resume-host-cycle']?path.resolve(args['resume-host-cycle']):null;
- if(resume&&(!resume.startsWith(path.resolve(dataDir,'cycles')+path.sep)||!require('fs').existsSync(path.join(resume,'local_state.json'))))throw Error('Only an existing certified hosted cycle can resume');
  const cycle=pending?.cycle||resume||(args['prepared-cycle']?path.resolve(args['prepared-cycle']):path.join(dataDir,'cycles',stamp()));
  if(!path.resolve(cycle).startsWith(path.resolve(dataDir,'cycles')+path.sep))throw Error('Cycle must be within sync data directory');
  activeCycle=cycle;
