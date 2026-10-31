@@ -1532,7 +1532,7 @@ CREATE TABLE `yarn_receive_form` (
   `yarn_count` varchar(20) DEFAULT NULL,
   `yarn_ply` int(11) DEFAULT NULL,
   `yarn_type` varchar(30) DEFAULT NULL,
-  `yarn_composition` varchar(50) DEFAULT NULL,
+  `yarn_composition` varchar(100) DEFAULT NULL,
   `yarn_brand` varchar(50) DEFAULT NULL,
   `yarn_lot` varchar(50) DEFAULT NULL,
   `lc_date` date DEFAULT NULL,
