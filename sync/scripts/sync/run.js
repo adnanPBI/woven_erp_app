@@ -59,6 +59,7 @@ async function supervise(argv = process.argv.slice(2), options = {}) {
       descendants.delete(message.pid);
     } else if (message.type === 'storage-ready') {
       owned = true; monitoring = true; cycle = message.cycle;
+      options.onOwnership?.();
       sample(); timer = setInterval(sample, options.intervalMs || 1000);
       if (!stopping) child.send({type: 'storage-start'});
     } else if (message.type === 'storage-finished') {
@@ -89,5 +90,20 @@ async function supervise(argv = process.argv.slice(2), options = {}) {
   }
   return code;
 }
-if (require.main === module) supervise().then(code => {process.exitCode = code;}).catch(e => {console.error(e.message);process.exitCode = 1;});
-module.exports = {supervise};
+async function scheduled(argv=process.argv.slice(2),options={}) {
+  const envArg=argv.find(a=>a.startsWith('--env='));
+  if(!envArg)throw Error('Specify a private --env=/path/.env.sync');
+  // The shell can be reaped by shared hosting while its Node child continues.
+  // Keep both terminal markers in this supervisor, after the actual child exit
+  // and storage handshake. Neither a registered cron nor a zero exit from an
+  // overlapping worker is evidence of a completed source/database cycle.
+  const log=path.join(path.dirname(path.resolve(envArg.slice(6))),'scheduler.log');
+  const event=(kind,extra='')=>fs.appendFileSync(log,`SYNC_${kind} ${new Date().toISOString()}${extra}\n`,{mode:0o600});
+  event('START');let owned=false,code;
+  try {code=await supervise(argv,{...options,onOwnership:()=>{owned=true;options.onOwnership?.();}});}
+  catch(e){console.error(e.message);code=1;}
+  event(code===0?(owned?'SUCCESS':'SKIPPED'):'FAILURE',code===0?'':' exit_code='+code);
+  return code;
+}
+if (require.main === module) (process.argv.includes('--scheduler-events')?scheduled():supervise()).then(code => {process.exitCode = code;}).catch(e => {console.error(e.message);process.exitCode = 1;});
+module.exports = {supervise,scheduled};
