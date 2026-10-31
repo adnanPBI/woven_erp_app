@@ -22,6 +22,12 @@ test('history distinguishes verified completion, worker-only results, gaps, acti
   assert.deepEqual(parseHistory('SYNC_SUCCESS 2026-10-12T00:10:00Z'),[]);
 });
 
+test('failed intervals retain their finish time, exit code and safe actionable reason',()=>{
+ const [run]=parseHistory('SYNC_START 2026-10-31T03:30:21Z\nError: Ambiguous edits/deletions or changed keys require review: /private/cycle/plan.json\nSYNC_FAILURE 2026-10-31T03:33:13Z exit_code=7');
+ assert.equal(run.status,'failed');assert.equal(run.endedAt,'2026-10-31T03:33:13Z');assert.equal(run.exitCode,7);
+ assert.match(run.failureReason,/Source identity conflict/);assert.doesNotMatch(JSON.stringify(run),/private|plan.json/);
+});
+
 test('HTTP access boundaries, default locks, hold checks, stale reads and audit atomicity',async t=>{
   const root=await fs.mkdtemp(path.join(os.tmpdir(),'erp-console-test-'));
   const cycle=path.join(root,'sync_data/cycles/test');await fs.mkdir(cycle,{recursive:true});
