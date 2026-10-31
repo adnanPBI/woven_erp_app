@@ -28,14 +28,14 @@ if [ -f "$LOG" ] && [ "$(stat -c %s "$LOG")" -gt 5242880 ]; then
   [ ! -f "$LOG.1" ] || mv "$LOG.1" "$LOG.2"
   mv "$LOG" "$LOG.1"
 fi
-printf '\nSYNC_START %s\n' "$(date -u +%FT%TZ)" >> "$LOG"
-if node scripts/sync/run.js --env="$ROOT/.env.sync" >> "$LOG" 2>&1; then
-  printf 'SYNC_SUCCESS %s\n' "$(date -u +%FT%TZ)" >> "$LOG"
+# Node owns start/final events: shared hosting may end this shell before the
+# detached worker finishes. Do not duplicate or infer terminal events here.
+if node scripts/sync/run.js --env="$ROOT/.env.sync" --scheduler-events >> "$LOG" 2>&1; then
+  exit 0
 else
   code=$?
   # Preserve the worker exit code and make post-start failure visible in the
   # same event stream as starts/successes. This matches the deployed wrapper.
-  printf 'SYNC_FAILURE %s exit_code=%s\n' "$(date -u +%FT%TZ)" "$code" >> "$LOG"
   tail -n 20 "$LOG" >&2
   exit "$code"
 fi

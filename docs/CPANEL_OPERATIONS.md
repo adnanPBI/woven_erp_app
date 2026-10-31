@@ -17,6 +17,10 @@ The installation can have multiple historical data directories. Inspect the actu
 
 The history API resolves `SYNC_DATA_DIR` from the installed private `.env.sync`, using `sync_data` only for legacy installations without a configured directory. A broken or failed active cycle must not fall back to an older successful directory. Coverage keeps current unresolved conflicts, broad dependency exclusions and exact reviewed skips separate. Historical failed intervals remain failed; their finish time and safe failure reason come from retained wrapper/worker evidence.
 
+The wrapper passes `--scheduler-events` to the Node supervisor. Deploy the wrapper and `scripts/sync/run.js` together: Node records start and final result after the real worker exits, including its storage handshake, even if shared hosting has ended the parent shell. Do not append a second success from the shell or manufacture terminal markers for old runs. A database-lock overlap records `SYNC_SKIPPED`, which is not a completed source snapshot. A killed supervisor can still leave an unconfirmed interval.
+
+Public CSV downloads use the original export format with bounded retries. Each attempt writes a private `.partial` file; only a complete, nonempty HTTP-success CSV is renamed into the snapshot. Failed attempts retain no partial source and never advance the snapshot pointer. The private log names the profile and safe error (timeout, HTTP/type or transport failure). Keep the original standard endpoint: visualization exports may infer cell types or header rows. A source-service outage must remain a visible failure; never fall back to an old snapshot and call it fresh. Distinguish a TLS/connection failure from a server that completes TLS but never supplies response headers before changing routing.
+
 Examples below use operator-supplied paths:
 
 ```sh

@@ -3,20 +3,14 @@ const fs = require('fs');
 const path = require('path');
 const { ROOT, DATA_ROOT, ensureDir, stamp, writeJson, sha256File } = require('./common');
 const config = require('../../config/local_google_sheets.json');
+const {downloadCsv}=require('../../lib/public_csv_download');
 (async () => {
   const dir = ensureDir(path.join(DATA_ROOT, 'sheet_snapshots', stamp()));
   const results = [];
   for (const p of config.profiles) {
     const url = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(p.spreadsheetId)}/export?format=csv&gid=${p.sheetId}`;
     const file = path.join(dir, p.sourceFile);
-    for(let attempt=1;attempt<=3;attempt++){
-      try{
-        const response=await fetch(url,{signal:AbortSignal.timeout(180000)});
-        if(!response.ok||!/csv/i.test(response.headers.get('content-type')||''))throw Error(p.id+': CSV export failed: '+response.status);
-        await require('stream/promises').pipeline(require('stream').Readable.fromWeb(response.body),fs.createWriteStream(file));
-        break;
-      }catch(e){if(attempt===3)throw e;console.log(p.id+': retrying interrupted export ('+attempt+'/3)');await new Promise(r=>setTimeout(r,attempt*5000));}
-    }
+    await downloadCsv(url,file,{onRetry:({attempt,attempts,reason})=>console.log(`${p.id}: export attempt ${attempt}/${attempts} failed: ${reason}`)});
     results.push({...p, file, sha256: sha256File(file), bytes: fs.statSync(file).size});
     console.log(`${p.id}: downloaded ${fs.statSync(file).size} bytes`);
   }

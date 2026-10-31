@@ -8,7 +8,7 @@ const shellQuote=s=>"'"+s.replace(/'/g,"'\\''")+"'";
 function fixture(){
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'hosted-wrapper-'));
  fs.mkdirSync(path.join(root,'scripts/sync'),{recursive:true});
- fs.writeFileSync(path.join(root,'scripts/sync/run.js'),"require('fs').writeFileSync(process.env.TEST_WORKER_MARKER,'started');process.exit(Number(process.env.FIXTURE_WORKER_CODE||0));\n");
+ fs.writeFileSync(path.join(root,'scripts/sync/run.js'),"const fs=require('fs'),path=require('path');if(!process.argv.includes('--scheduler-events'))throw Error('Supervisor event ownership required');fs.writeFileSync(process.env.TEST_WORKER_MARKER,'started');const code=Number(process.env.FIXTURE_WORKER_CODE||0),log=path.join(__dirname,'../../scheduler.log');fs.appendFileSync(log,'SYNC_START '+new Date().toISOString()+'\\n');fs.appendFileSync(log,'SYNC_'+(code?'FAILURE':'SUCCESS')+' '+new Date().toISOString()+(code?' exit_code='+code:'')+'\\n');process.exit(code);\n");
  const quota=path.join(root,'fixture-uapi');fs.writeFileSync(quota,'#!/bin/bash\nprintf \'%s\' "$FIXTURE_QUOTA"\n',{mode:0o755});
  const marker=path.join(root,'fixture-marker');fs.writeFileSync(marker,'pinned');
  fs.writeFileSync(path.join(root,'protection.sha256'),crypto.createHash('sha256').update('pinned').digest('hex')+'  fixture-marker\n');
