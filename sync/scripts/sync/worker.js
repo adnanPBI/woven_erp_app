@@ -41,7 +41,8 @@ function json(file,value){fs.mkdirSync(path.dirname(file),{recursive:true});cons
 async function command(file,argv,env,log){
  storage.assertCapacity(dataDir,storageConfig);
  await new Promise((resolve,reject)=>{
-  const p=spawn(process.execPath,[file,...argv],{cwd:ROOT,env,stdio:['ignore','pipe','pipe','ipc'],windowsHide:true});
+  if(file==='scripts/local/fetch_google_sheets.js'&&global.gc)global.gc();
+  const p=spawn(process.execPath,require('../../lib/google_fetch_budget').sourceChildArgs(file,argv,env),{cwd:ROOT,env,stdio:['ignore','pipe','pipe','ipc'],windowsHide:true});
   require('../../lib/sync_process_tracking').track(p);
   let error;
   const append=d=>{try{storage.appendLog(log,d,storageConfig);}catch(e){error=e;p.kill();}};

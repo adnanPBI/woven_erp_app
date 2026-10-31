@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { ROOT, DATA_ROOT, ensureDir, stamp, readJson, writeJson, updateState, isPlaceholderId, csvCell, loadEnv } = require('./common');
 const { getSpreadsheetMetadata, getValues, columnLetter, quoteSheetName, resolveKeyPath } = require('./google_sheets_client');
+const {boundedChunkRows,writeCsvRow}=require('../../lib/google_fetch_budget');
 
 loadEnv();
 const configPath = path.join(ROOT, 'config', 'local_google_sheets.json');
@@ -11,7 +12,8 @@ const config = readJson(configPath);
 if (!config || !Array.isArray(config.profiles) || config.profiles.length !== 9) throw new Error('config/local_google_sheets.json must contain exactly nine profiles.');
 const start = String(process.env.LOCAL_CUTOFF_START || config.window?.start || '2024-01-01');
 const end = String(process.env.LOCAL_CUTOFF_END || config.window?.end || '2026-12-31');
-const chunkRows = Math.max(100, Number(process.env.GOOGLE_FETCH_CHUNK_ROWS || 5000));
+const configuredChunkRows = Number(process.env.GOOGLE_FETCH_CHUNK_ROWS || 5000);
+boundedChunkRows(configuredChunkRows,1,{snapshot:true});
 const runId = `google_${stamp()}`;
 const runDir = ensureDir(path.join(DATA_ROOT, 'google_raw', runId));
 const rawDir = ensureDir(path.join(runDir, 'raw'));
@@ -33,7 +35,6 @@ function parseBusinessDate(value) {
 function normalizeHeader(s){ return String(s||'').replace(/\u00a0/g,' ').trim().toLowerCase().replace(/[^a-z0-9]+/g,' ' ).replace(/\s+/g,' ').trim(); }
 function nonEmptyRow(row){ return (row||[]).some(v=>String(v??'').trim()!==''); }
 function inWindow(d){ return d && d >= start && d <= end; }
-function writeCsvRow(stream,row){ stream.write(`${row.map(csvCell).join(',')}\n`); }
 
 async function fetchProfile(profile) {
   if (isPlaceholderId(profile.spreadsheetId)) throw new Error(`${profile.label}: spreadsheetId is still a placeholder.`);
@@ -51,16 +52,17 @@ async function fetchProfile(profile) {
   if (lastHeader < 0) throw new Error(`${profile.label}: configured header row ${headerRow} is empty.`);
   const headers = rawHeaders.slice(0, lastHeader + 1);
   const lastCol = columnLetter(headers.length);
+  const chunkRows=boundedChunkRows(configuredChunkRows,headers.length,{snapshot:!!process.env.GOOGLE_SNAPSHOT_DIR});
   const headerIndex = new Map(); headers.forEach((h,i)=>{ const n=normalizeHeader(h); if(n&&!headerIndex.has(n))headerIndex.set(n,i); });
   const dateIndexes = (profile.dateColumns || []).map(name => ({ name, idx: headerIndex.get(normalizeHeader(name)) })).filter(x => Number.isInteger(x.idx));
   if (!dateIndexes.length) throw new Error(`${profile.label}: none of configured date columns found: ${(profile.dateColumns||[]).join(', ')}`);
 
   const outPath = path.join(rawDir, profile.sourceFile);
   const out = fs.createWriteStream(outPath, { encoding: 'utf8' });
-  writeCsvRow(out, headers);
+  await writeCsvRow(out, headers);
   const rejectedPath = path.join(auditDir, `${profile.id}_excluded_rows.csv`);
   const rejected = fs.createWriteStream(rejectedPath, { encoding: 'utf8' });
-  writeCsvRow(rejected, ['sheet_row','reason','date_value','parsed_date','key_hint']);
+  await writeCsvRow(rejected, ['sheet_row','reason','date_value','parsed_date','key_hint']);
 
   let fetched=0,included=0,excludedBefore=0,excludedAfter=0,undated=0,blank=0;
   const dataStart = headerRow + 1;
@@ -76,18 +78,19 @@ async function fetchProfile(profile) {
       let parsed=null, rawDate='';
       for(const d of dateIndexes){ const val=row[d.idx]; const p=parseBusinessDate(val); if(p){parsed=p;rawDate=String(val??'');break;} if(!rawDate&&String(val??'').trim())rawDate=String(val); }
       const keyHint = String(row[headers.findIndex(h=>/dispo/i.test(h))] ?? row[0] ?? '').slice(0,120);
-      if(!parsed){undated++;writeCsvRow(rejected,[rowNo,'unparseable_or_missing_date',rawDate,'',keyHint]);continue;}
-      if(parsed<start){excludedBefore++;writeCsvRow(rejected,[rowNo,'before_window',rawDate,parsed,keyHint]);continue;}
-      if(parsed>end){excludedAfter++;writeCsvRow(rejected,[rowNo,'after_window',rawDate,parsed,keyHint]);continue;}
+      if(!parsed){undated++;await writeCsvRow(rejected,[rowNo,'unparseable_or_missing_date',rawDate,'',keyHint]);continue;}
+      if(parsed<start){excludedBefore++;await writeCsvRow(rejected,[rowNo,'before_window',rawDate,parsed,keyHint]);continue;}
+      if(parsed>end){excludedAfter++;await writeCsvRow(rejected,[rowNo,'after_window',rawDate,parsed,keyHint]);continue;}
       const padded = headers.map((_,idx)=>row[idx] ?? '');
-      writeCsvRow(out,padded);included++;
+      await writeCsvRow(out,padded);included++;
     }
     process.stdout.write(`[FETCH] ${profile.id}: rows ${from}-${to} | included=${included} fetched=${fetched}\n`);
+    if(!process.env.GOOGLE_SNAPSHOT_DIR&&global.gc)global.gc();
   }
   await Promise.all([new Promise(r=>out.end(r)),new Promise(r=>rejected.end(r))]);
   return {
     id:profile.id,label:profile.label,sourceFile:profile.sourceFile,spreadsheetId:profile.spreadsheetId,sheetName:sourceTitle,configuredSheetName:profile.sheetName,sheetId:sheet.properties.sheetId??null,
-    spreadsheetTitle:meta.properties?.title||null,headerRow,rowCount,colCount,dateColumnsFound:dateIndexes.map(x=>x.name),
+    spreadsheetTitle:meta.properties?.title||null,headerRow,rowCount,colCount,chunkRows,dateColumnsFound:dateIndexes.map(x=>x.name),
     fetchedNonBlank:fetched,included,excludedBefore,excludedAfter,undated,blank,outputPath:outPath,rejectedAuditPath:rejectedPath
   };
 }
