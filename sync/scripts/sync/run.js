@@ -81,7 +81,7 @@ async function supervise(argv = process.argv.slice(2), options = {}) {
   child.stdout.on('data', log); child.stderr.on('data', log);
   const onSignal = () => terminate('Sync supervisor interrupted');
   process.once('SIGTERM', onSignal); process.once('SIGINT', onSignal);
-  const code = await new Promise((resolve, reject) => {child.on('error', reject); child.on('close', code => resolve(code ?? 1));});
+  const code = await new Promise((resolve, reject) => {child.on('error', reject); child.on('close', (code,signal) => {if(signal)console.error(JSON.stringify({stage:'worker-terminated',signal,exitCode:code}));resolve(code ?? 1);});});
   clearInterval(timer); process.removeListener('SIGTERM', onSignal); process.removeListener('SIGINT', onSignal);
   if (stoppedReason) {
     // Shared status belongs to the lock holder; never overwrite another run.
