@@ -226,6 +226,8 @@ Report: "This frozen-window migration committed writes and passed verification; 
 
 ## 10. Handoff for another maintainer
 
+When resuming a certified hosted cycle, validate the explicit `--resume-host-cycle` directory before retention and protect it as the current cycle. A newer failed status can coexist with an older reviewed snapshot. Pending recovery evidence retains priority. Never reconstruct a retired snapshot from source row numbers; use an intact certified cycle or fetch and qualify a fresh one. The resume selector rejects outside, missing and linked directories or linked state files. Its regression test exercises real one-cycle retention with an older selected snapshot and a newer failed status.
+
 Keep the private journal outside Git with: request/authorization scope; current database/server and installed revision; active env/data/policy mode; cron and local-task boundary; current cycle/live/dry/verify IDs; source/plan/preimage/backup hashes; accepted/rejected outcomes; exact review scope; pending/lock state; quota/retention; durable proof locations and safe resume steps.
 
 Public handoff should contain architecture, generic procedures, source commits, tests and historical aggregate outcomes only. Never publish credentials, service-account keys, private case/UID/Dispo lists, source CSVs, SQL exports, approval selections or runtime evidence bundles.
