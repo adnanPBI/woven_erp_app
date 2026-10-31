@@ -15,6 +15,8 @@ Repository work does not deploy cPanel, change a scheduler or authorize business
 
 The installation can have multiple historical data directories. Inspect the actual private environment used by the **installed cron command**. A dashboard or MCP readiness report using a fixed older directory can truthfully describe an old cycle while missing a newer manual job. Compare database, data directory, cycle, manifest, plan and timestamps before calling evidence current.
 
+The history API resolves `SYNC_DATA_DIR` from the installed private `.env.sync`, using `sync_data` only for legacy installations without a configured directory. A broken or failed active cycle must not fall back to an older successful directory. Coverage keeps current unresolved conflicts, broad dependency exclusions and exact reviewed skips separate. Historical failed intervals remain failed; their finish time and safe failure reason come from retained wrapper/worker evidence.
+
 Examples below use operator-supplied paths:
 
 ```sh
@@ -191,6 +193,8 @@ After deletion, cPanel can temporarily report a cached old quota. Verify the act
 | Quota failure after wrapper invocation | No writer may have started; check early stderr, quota cache and cleanup evidence separately from worker status |
 
 An out-of-window historical retention does not approve a within-window identity change. Retentions do not choose quantities, rename a Dispo or mirror a source deletion into MySQL. Do not reset the ledger, relink an ambiguous event or delete business rows to silence a conflict.
+
+For a separately reviewed issue Dispo correction, `sync/lib/sync_exact_dispo_review.js` can produce a **read-only** fingerprint-bound review. It requires the full original digest to be reproduced by reversing only `Dispo No` and its derived `Search Column`, exactly one current candidate, absence of the original source group, one matching physical/provenance target, and an unoccupied destination ledger group. It is not imported by the automatic matcher and grants no blanket rename permission. Archive the private proof and target preimages, stage the exact review with cron coordinated, inspect a full dry run, then use normal backup/apply/verification. Quantity changes, duplicate candidates and foreign target bindings reject qualification. Future edits continue through the original event UID and parent provenance ID; never create an extra parent merely to avoid reviewing a rename.
 
 ## 9. SQL evidence and reporting
 
