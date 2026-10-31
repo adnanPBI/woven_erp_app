@@ -78,7 +78,7 @@ async function googleGet(url) {
 async function getSpreadsheetMetadata(spreadsheetId) {
   const snapshot = snapshotProfile(spreadsheetId);
   if (snapshot) return {properties:{title:snapshot.id}, sheets:[{properties:{title:snapshot.sheetName, gridProperties:{rowCount:snapshot.rows.length, columnCount:Math.max(...snapshot.rows.slice(0,3).map(r=>r.length))}}}]};
-  const fields = encodeURIComponent('properties(title),sheets(properties(title,gridProperties(rowCount,columnCount)))');
+  const fields = encodeURIComponent('properties(title),sheets(properties(sheetId,title,gridProperties(rowCount,columnCount)))');
   return googleGet(`https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}?fields=${fields}`);
 }
 async function getValues(spreadsheetId, range) {

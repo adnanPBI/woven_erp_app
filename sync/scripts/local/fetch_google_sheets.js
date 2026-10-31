@@ -38,13 +38,13 @@ function writeCsvRow(stream,row){ stream.write(`${row.map(csvCell).join(',')}\n`
 async function fetchProfile(profile) {
   if (isPlaceholderId(profile.spreadsheetId)) throw new Error(`${profile.label}: spreadsheetId is still a placeholder.`);
   const meta = await getSpreadsheetMetadata(profile.spreadsheetId);
-  const sheet = (meta.sheets || []).find(s => s.properties?.title === profile.sheetName);
-  if (!sheet) throw new Error(`${profile.label}: sheet tab "${profile.sheetName}" not found in spreadsheet "${meta.properties?.title || profile.spreadsheetId}".`);
+  const sheet = require('../../lib/google_source_sheet').resolveSourceSheet(profile,meta,{snapshot:!!process.env.GOOGLE_SNAPSHOT_DIR});
+  const sourceTitle=sheet.properties.title;
   const rowCount = Number(sheet.properties.gridProperties?.rowCount || 0);
   const colCount = Number(sheet.properties.gridProperties?.columnCount || 0);
   const headerRow = Math.max(1, Number(profile.headerRow || 1));
   const fullLastCol = columnLetter(Math.max(1, colCount));
-  const headerRange = `${quoteSheetName(profile.sheetName)}!A${headerRow}:${fullLastCol}${headerRow}`;
+  const headerRange = `${quoteSheetName(sourceTitle)}!A${headerRow}:${fullLastCol}${headerRow}`;
   const headerResp = await getValues(profile.spreadsheetId, headerRange);
   const rawHeaders = (headerResp.values?.[0] || []).map(v => String(v ?? '').replace(/\u00a0/g,' ').trim());
   let lastHeader = rawHeaders.length - 1; while (lastHeader >= 0 && !rawHeaders[lastHeader]) lastHeader -= 1;
@@ -66,7 +66,7 @@ async function fetchProfile(profile) {
   const dataStart = headerRow + 1;
   for (let from=dataStart; from<=rowCount; from+=chunkRows) {
     const to = Math.min(rowCount, from + chunkRows - 1);
-    const range = `${quoteSheetName(profile.sheetName)}!A${from}:${lastCol}${to}`;
+    const range = `${quoteSheetName(sourceTitle)}!A${from}:${lastCol}${to}`;
     const resp = await getValues(profile.spreadsheetId, range);
     const rows = resp.values || [];
     for (let i=0;i<rows.length;i++) {
@@ -86,7 +86,7 @@ async function fetchProfile(profile) {
   }
   await Promise.all([new Promise(r=>out.end(r)),new Promise(r=>rejected.end(r))]);
   return {
-    id:profile.id,label:profile.label,sourceFile:profile.sourceFile,spreadsheetId:profile.spreadsheetId,sheetName:profile.sheetName,
+    id:profile.id,label:profile.label,sourceFile:profile.sourceFile,spreadsheetId:profile.spreadsheetId,sheetName:sourceTitle,configuredSheetName:profile.sheetName,sheetId:sheet.properties.sheetId??null,
     spreadsheetTitle:meta.properties?.title||null,headerRow,rowCount,colCount,dateColumnsFound:dateIndexes.map(x=>x.name),
     fetchedNonBlank:fetched,included,excludedBefore,excludedAfter,undated,blank,outputPath:outPath,rejectedAuditPath:rejectedPath
   };
