@@ -14,41 +14,46 @@ const fail=message=>{throw Error('Scheduled exact skips: '+message);};
 const key=(r,anchor=r)=>JSON.stringify([r.profile,r.group,anchor.mutableField==='Last Received Date'?r.sourceMatchHash||r.matchHash:r.digest,r.businessDate]);
 function rebindPolicy(base,snapshots,receiptTotals,{cycle,manifestSha256,baseSha256,end}){
  if(!isoBusinessDate(end)||end<base.window.end)fail('invalid advancing cutoff');
+ const retirements=require('./sync_skip_retirements').retirementRules(base),retiredSourceRows=[];
  const buckets=new Map();for(const r of base.currentRows){
   if(r.mutableField&&(r.profile!=='yarn-receive'||r.mutableField!=='Last Received Date'||!/^[a-f0-9]{64}$/.test(r.sourceMatchHash||'')))fail('unsupported mutable-field qualification');
   const k=key(r);if(!buckets.has(k))buckets.set(k,[]);buckets.get(k).push(r);
  }
  const currentRows=[],skippedTotals=new Map();
  for(const anchors of buckets.values()){
-  const anchor=anchors[0],found=snapshots[anchor.profile].records.filter(r=>key({...r,profile:anchor.profile},anchor)===key(anchor));
-  if(found.length!==anchors.length)fail('reviewed source fingerprint or duplicate multiplicity changed');
+  const anchor=anchors[0],found=snapshots[anchor.profile].records.filter(r=>key({...r,profile:anchor.profile},anchor)===key(anchor)),rule=retirements.find(r=>anchors.some(a=>a.uid===r.retiredUid));
+  if(found.length!==(rule?rule.currentCount:anchors.length))fail('reviewed source fingerprint or duplicate multiplicity changed');
+  const activeAnchors=anchors.filter(a=>a.uid!==rule?.retiredUid);
+  if(rule)retiredSourceRows.push(anchors.find(a=>a.uid===rule.retiredUid));
   // Pair indistinguishable reviewed occurrences deterministically AFTER exact
   // multiplicity validation. Row position is not an independent event identity.
   const ordered=[...found].sort((a,b)=>a.rowNumber-b.rowNumber);
-  for(let i=0;i<anchors.length;i++){
+  for(let i=0;i<activeAnchors.length;i++){
    const row=ordered[i];if(!row.uid||!Number.isInteger(row.rowNumber))fail('source identity missing');
    // Even a mutable-date match gets the FULL current digest. Later planning,
    // receipt aggregation, apply and verification all consume this frozen proof.
-   currentRows.push({...anchors[i],uid:row.uid,digest:row.digest,rowNumber:row.rowNumber});
+   currentRows.push({...activeAnchors[i],uid:row.uid,digest:row.digest,rowNumber:row.rowNumber});
    if(anchor.profile==='yarn-receive'){
     const lot=require('./source_index').normalizeYarnLotIdentity(row.yarnIdentity?.lot),amounts=JSON.parse(row.entryAmounts||'null');
     if(!lot||!Array.isArray(amounts)||!Number.isFinite(amounts[0])||amounts[0]<0)fail('skipped receipt amount is unqualified');
+    if(rule&&(lot!==rule.lot||Math.abs(amounts[0]-rule.amount)>1e-7))fail('retired duplicate contribution changed');
     skippedTotals.set(lot,(skippedTotals.get(lot)||0)+amounts[0]);
    }
   }
  }
- if(new Set(currentRows.map(r=>r.profile+'|'+r.uid)).size!==6)fail('ambiguous rebound source identity');
+ if(new Set([...currentRows,...retiredSourceRows].map(r=>r.profile+'|'+r.uid)).size!==6)fail('ambiguous rebound source identity');
  // Recompute from the complete new receipt source, not just changed operations.
  // Do not let skipped/untransferred quantities enter dependent issue balances.
  // The retained contribution comes from verified target state, possibly zero.
  const receiptLots=base.receiptLots.map(r=>{
-  if(Math.abs((skippedTotals.get(r.lot)||0)-r.skippedTotal)>1e-7)fail('reviewed skipped contribution changed');
-  const sourceTotal=receiptTotals.get(r.lot)||0,effectiveTotal=sourceTotal-r.skippedTotal+r.retainedTotal;
+  const skippedTotal=r.skippedTotal-retirements.filter(a=>a.lot===r.lot).reduce((n,a)=>n+a.amount,0);
+  if(skippedTotal<0||Math.abs((skippedTotals.get(r.lot)||0)-skippedTotal)>1e-7)fail('reviewed skipped contribution changed');
+  const sourceTotal=receiptTotals.get(r.lot)||0,effectiveTotal=sourceTotal-skippedTotal+r.retainedTotal;
   if(!Number.isFinite(effectiveTotal)||effectiveTotal<0)fail('invalid effective receipt total');
-  return {...r,sourceTotal,effectiveTotal};
+  return {...r,sourceTotal,skippedTotal,effectiveTotal};
  });
  if([...skippedTotals.keys()].some(lot=>!base.receiptLots.some(r=>r.lot===lot)))fail('unreviewed skipped receipt lot');
- return {...base,cycle,sourceManifestSha256:manifestSha256,window:{start:base.window.start,end},currentRows,receiptLots,
+ return {...base,cycle,sourceManifestSha256:manifestSha256,window:{start:base.window.start,end},currentRows,retiredSourceRows,receiptLots,
   automaticRestartAuthorized:true,scheduledBaseSha256:baseSha256,qualification:'scheduled-exact-rebind'};
 }
 async function qualifyScheduledSkips(env,prepared,cycle,end,{pending=false,connection}={}){

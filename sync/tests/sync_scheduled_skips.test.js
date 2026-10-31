@@ -53,5 +53,27 @@ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'scheduled-skip-'));
  await assert.rejects(()=>qualifyScheduledSkips(integrationEnv,prepared,dir,'2026-10-30',{connection:fake}),/already qualified/);
  await assert.rejects(()=>qualifyScheduledSkips({...integrationEnv,SYNC_SCHEDULED_SKIPS_BASE_SHA256:hex(77)},prepared,dir,'2026-10-30',{connection:fake,pending:true}),/checksum/);
  fs.writeFileSync(manifest,'{"drift":true}');await assert.rejects(()=>qualifyScheduledSkips(integrationEnv,prepared,dir,'2026-10-30',{connection:fake,pending:true}),/binding/);
- console.log('Scheduled skips: advancing/reordered snapshots, exact duplicate multiplicity, receipt totals, authorization, source/DB drift and physical absence checks passed.');
+ // A source owner removed ONE previously skipped duplicate. The private rule
+ // shrinks active scope, preserves all old absence checks, and rejects either
+ // disappearance of the survivor or reappearance of a second occurrence.
+ fs.writeFileSync(manifest,'{}');
+ const pair=integrationBase.currentRows.filter(r=>r.group===integrationBase.currentRows[1].group),retirementBase=copy(integrationBase);
+ assert.equal(pair.length,2);
+ retirementBase.duplicateRetirements=[{profile:'yarn-receive',group:pair[0].group,businessDate:pair[0].businessDate,signature:pair[0].sourceMatchHash,originalCount:2,currentCount:1,retiredUid:pair[1].uid,amount:10,lot:'b'}];
+ const smaller=copy(original);smaller['yarn-receive'].records=smaller['yarn-receive'].records.filter(r=>r.uid!==pair[1].uid);
+ const retiredPolicy=rebindPolicy(retirementBase,smaller,totals,scope);
+ assert.equal(retiredPolicy.currentRows.length,5);assert.equal(retiredPolicy.retiredSourceRows.length,1);
+ assert.equal(retiredPolicy.receiptLots.find(r=>r.lot==='b').skippedTotal,10);
+ assert.equal(base.absentLedger.length,retiredPolicy.absentLedger.length);
+ for(const records of [original['yarn-receive'].records,smaller['yarn-receive'].records.filter(r=>r.group!==pair[0].group)])assert.throws(()=>rebindPolicy(retirementBase,{...smaller,'yarn-receive':{records}},totals,scope),/multiplicity/);
+ const edited=copy(smaller);edited['yarn-receive'].records.find(r=>r.group===pair[0].group).matchHash=hex(999);assert.throws(()=>rebindPolicy(retirementBase,edited,totals,scope),/multiplicity/);
+ fs.writeFileSync(baseFile,JSON.stringify(retirementBase));fs.writeFileSync(file,JSON.stringify(retiredPolicy));
+ const retiredEnv={...env,SYNC_SCHEDULED_SKIPS_BASE_FILE:baseFile,SYNC_SCHEDULED_SKIPS_BASE_SHA256:sha(fs.readFileSync(baseFile)),SYNC_MANUAL_SKIPS_SHA256:sha(fs.readFileSync(file))};
+ retiredPolicy.scheduledBaseSha256=retiredEnv.SYNC_SCHEDULED_SKIPS_BASE_SHA256;fs.writeFileSync(file,JSON.stringify(retiredPolicy));retiredEnv.SYNC_MANUAL_SKIPS_SHA256=sha(fs.readFileSync(file));
+ const retiredLoaded=loadManualSkips(retiredEnv,scope.manifestSha256,dir);assert.equal(retiredLoaded.summary.skippedCurrentRows,5);assert.equal(retiredLoaded.summary.retiredSourceRows,1);
+ assert.equal(retiredLoaded.apply('yarn-receive',{previous:{records:[]},current:smaller['yarn-receive']}).current.records.length,0);
+ assert.throws(()=>retiredLoaded.apply('yarn-receive',{previous:{records:[]},current:original['yarn-receive']}),/multiplicity/);
+ assert.equal((await verifyRetained(fake,retiredLoaded)).absentPhysicalTargets,1);
+ const bad=copy(retirementBase);bad.duplicateRetirements[0].retiredUid=hex(999);assert.throws(()=>rebindPolicy(bad,smaller,totals,scope),/unqualified/);
+ console.log('Scheduled skips: source/DB guards, exact duplicate counts and individually reviewed single-occurrence retirement passed.');
 }finally{fs.rmSync(dir,{recursive:true,force:true});}})().catch(e=>{console.error(e);process.exitCode=1;});

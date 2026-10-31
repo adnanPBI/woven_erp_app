@@ -21,6 +21,8 @@ The wrapper passes `--scheduler-events` to the Node supervisor. Deploy the wrapp
 
 Public CSV downloads use the original export format with bounded retries. Each attempt writes a private `.partial` file; only a complete, nonempty HTTP-success CSV is renamed into the snapshot. Failed attempts retain no partial source and never advance the snapshot pointer. The private log names the profile and safe error (timeout, HTTP/type or transport failure). Keep the original standard endpoint: visualization exports may infer cell types or header rows. A source-service outage must remain a visible failure; never fall back to an old snapshot and call it fresh. Distinguish a TLS/connection failure from a server that completes TLS but never supplies response headers before changing routing.
 
+If the source owner removes one occurrence of an already skipped exact duplicate pair, the unchanged count guard must first block the run. A separately qualified private `duplicateRetirements` rule may identify the original pair by profile, group, date and full matching signature, the one retired original anchor UID, the exact 2-to-1 count and unchanged per-occurrence lot/quantity. The derived policy then has five active skips and one retired source anchor; their combined original scope remains six. Recompute the skipped contribution from the remaining source occurrence and preserve every original ledger/physical absence check. This does not delete a business row or authorize skipping a new record. Reappearance of the duplicate, loss of the survivor, quantity/signature drift or an unbound retirement must block again. Do not grant a general missing-row or count tolerance.
+
 Examples below use operator-supplied paths:
 
 ```sh
