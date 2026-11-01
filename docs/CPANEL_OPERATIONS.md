@@ -170,6 +170,8 @@ Public static files need web-server-readable permissions. On this cPanel/LiteSpe
 
 For rollback, restore only qualified source/config preimages under the same locks and pins. After any committed business writes, a code rollback does not undo data. Preserve the pending source/plan/history and reconcile exact committed rows; never restore an old full SQL dump over newer live records as a shortcut.
 
+Checksum verification covers only the files actually listed. When a loader such as `mapping_contract_runtime.js` delegates to `mapping_contract_runtime.repair.js`, inspect both entries before deployment; a pinned loader does not bind an unlisted implementation. If the selected existing module was not previously listed, first qualify its exact old bytes against the published baseline, preserve the full manifest and module before-images, test the selected replacement, then add that one reviewed module's new hash while retaining every existing manifest entry. Record this explicit coverage addition. Never regenerate the whole manifest from an unreviewed tree or describe an interrupted pin finalization as a completed deployment.
+
 ## 7. Capacity and retention
 
 Read [SYNC_STORAGE.md](SYNC_STORAGE.md). There are three separate limits:

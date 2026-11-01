@@ -18,6 +18,7 @@ This is a source/maintenance record, not a live status endpoint. The procedures 
 | Committed row history | `sync/lib/sync_row_history.js` | Captures source/profile/table/key/before/after in the business transaction; rollback removes both; no-primary-key scopes remain explicit |
 | Storage/overlap supervision | `sync/scripts/sync/run.js`, `sync/lib/sync_storage.js`, wrapper | Keeps pending/current evidence, rotates logs, checks budget/free space, enforces file/database locks and stops supervised workers on capacity failure |
 | Wrapper failure event | `sync/run-hosted-sync.sh` | Repository wrapper now records the deployed `SYNC_FAILURE` event while preserving the worker exit code and stderr tail |
+| Explicit outside issue amounts, PR #21 | `mapping_contract_runtime.repair.js`, `sync_issue_explicit_amount.test.js` | Preserve history only when all three amount cells are blank; explicit outside zero/positive/negative corrections update original mapped parent/detail/balance values after identity qualification |
 | Operator documentation and comments | This change, the operations guide, SQL reference and inline comments | Explains private/public boundaries, one-off qualification, exact-mode transition, deployment pins, quota caching, retention and failure interpretation |
 
 The older dated Stage 3 remediation note and October 25 rollout remain historical evidence. Their old blocker counts/schedules do not override a later explicitly qualified v2/v3 policy. Their preservation, backup, evidence and no-reinitialization principles still apply.
