@@ -17,3 +17,27 @@ test('quota failure retries the same requested page through the pacing gate; per
  let denied=0;await assert.rejects(readGoogleJson('https://example.invalid',{...deps,fetchImpl:async()=>{denied++;return{ok:false,status:403,json:async()=>({error:'denied'})};}}),/403/);assert.equal(denied,1);
  calls=0;waits.length=0;await assert.rejects(readGoogleJson('https://example.invalid',{...deps,fetchImpl:async()=>{calls++;return{ok:false,status:429,headers:{get:()=>null},json:async()=>({error:'quota'})};}}),/429/);assert.equal(calls,6);assert.equal(waits.length,5);
 });
+
+test('native transport preserves formatted JSON, uses IPv4/fresh sockets and enforces its response budget',async()=>{
+ const http=require('http'),{createGoogleFetch}=require('../lib/google_http_transport'),payload={values:[['001','2026-10-30',' a,b ','"quoted"']]},server=http.createServer((req,res)=>{assert.equal(req.headers.authorization,'Bearer fixture');assert.equal(req.headers['accept-encoding'],'identity');res.setHeader('X-Fixture','yes');res.end(JSON.stringify(payload));});
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const url='http://127.0.0.1:'+server.address().port+'/values';let options;
+ const transport=createGoogleFetch({request:(u,o,cb)=>{options=o;return http.request(u,o,cb);}});
+ try{const r=await transport(url,{headers:{authorization:'Bearer fixture'}});assert.equal(r.status,200);assert.equal(r.headers.get('X-Fixture'),'yes');assert.deepEqual(await r.json(),payload);assert.equal(options.family,4);assert.equal(options.agent,false);
+  await assert.rejects(createGoogleFetch({request:http.request,maxBytes:4})(url,{headers:{authorization:'Bearer fixture'}}),{code:'GOOGLE_RESPONSE_TOO_LARGE'});
+ }finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
+});
+
+test('stalled headers AND stalled bodies hit a hard deadline, retry the same page and stop after six attempts',async()=>{
+ const http=require('http'),{createGoogleFetch}=require('../lib/google_http_transport'),server=http.createServer((req,res)=>{if(req.url==='/body'){res.writeHead(200,{'Content-Type':'application/json'});res.write('{"values":');}});
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const retries=[],calls=[],transport=createGoogleFetch({request:http.request});
+ try{for(const part of ['headers','body']){
+  retries.length=0;calls.length=0;const url='http://127.0.0.1:'+server.address().port+'/'+part;
+  await assert.rejects(readGoogleJson(url,{getToken:async()=>'private-fixture-token',fetchImpl:(u,o)=>{calls.push(u);return transport(u,o);},pacer:async()=>{},wait:async()=>{},delay:()=>0,requestTimeoutMs:50,onRetry:r=>retries.push(r)}),error=>['TimeoutError','AbortError'].includes(error.name)||error.code==='ECONNRESET');
+  assert.equal(calls.length,6);assert.ok(calls.every(u=>u===url));assert.equal(retries.length,5);assert.ok(retries.every(r=>r.kind==='transport'));assert.ok(!JSON.stringify(retries).includes('private-fixture-token'));assert.ok(!JSON.stringify(retries).includes(url));
+ }}finally{server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
+});
+
+test('connection resets and malformed successful JSON retry safely; payload budget and certificate errors stop',async()=>{
+ const {retryableTransport}=require('../lib/google_read_throttle');let attempts=0;const r=await readGoogleJson('https://example.invalid/exact-page',{getToken:async()=>'fixture',pacer:async()=>{},wait:async()=>{},onRetry:()=>{},fetchImpl:async()=>{attempts++;if(attempts===1)throw Object.assign(Error('reset'),{code:'ECONNRESET'});return{ok:true,json:async()=>{if(attempts===2)throw SyntaxError('truncated');return{values:[['001']]};}};}});
+ assert.deepEqual(r,{values:[['001']]});assert.equal(attempts,3);assert.equal(retryableTransport({code:'GOOGLE_RESPONSE_TOO_LARGE'}),false);assert.equal(retryableTransport({code:'CERT_HAS_EXPIRED'}),false);
+});

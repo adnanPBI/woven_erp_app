@@ -17,14 +17,27 @@ function retryDelayMs(status,attempt,retryAfter,{now=Date.now,random=Math.random
  return Math.max(supplied,base+Math.floor(random()*1001));
 }
 const pace=createReadPacer();
-async function readGoogleJson(url,{getToken,fetchImpl=global.fetch,pacer=pace,wait=sleep,delay=retryDelayMs}={}){
+function retryableTransport(error){
+ return ['TimeoutError','AbortError','SyntaxError'].includes(error?.name)||
+  ['ECONNRESET','ETIMEDOUT','EAI_AGAIN','ECONNREFUSED','ENOTFOUND','EPIPE','UND_ERR_CONNECT_TIMEOUT','UND_ERR_HEADERS_TIMEOUT','UND_ERR_BODY_TIMEOUT','UND_ERR_SOCKET'].includes(error?.cause?.code||error?.code)||
+  error?.name==='TypeError'&&error.message==='fetch failed';
+}
+async function readGoogleJson(url,{getToken,fetchImpl=require('./google_http_transport').googleFetch,pacer=pace,wait=sleep,delay=retryDelayMs,requestTimeoutMs=45000,onRetry=details=>console.error(JSON.stringify({stage:'google-read-retry',...details}))}={}){
+ if(!Number.isSafeInteger(requestTimeoutMs)||requestTimeoutMs<1)throw Error('Invalid Google request deadline');
  for(let attempt=0;attempt<6;attempt++){
-  const token=await getToken();await pacer();
-  const response=await fetchImpl(url,{headers:{authorization:`Bearer ${token}`}}),json=await response.json().catch(()=>({}));
+  let response,json;
+  try{
+   const token=await getToken();await pacer();
+   response=await fetchImpl(url,{headers:{authorization:`Bearer ${token}`},signal:AbortSignal.timeout(requestTimeoutMs)});
+   try{json=await response.json();}catch(error){if(response.ok)throw error;json={error:'Non-JSON HTTP response'};}
+  }catch(error){
+   if(!retryableTransport(error)||attempt===5)throw error;
+   const waitMs=delay(503,attempt,null);onRetry({kind:'transport',attempt:attempt+1,waitMs,reason:['TimeoutError','AbortError'].includes(error.name)?'deadline-or-abort':'connection-or-json'});await wait(waitMs);continue;
+  }
   if(response.ok)return json;
   const error=Error(`Google Sheets API failed (${response.status}): ${JSON.stringify(json)}`);
   if(![429,500,502,503,504].includes(response.status)||attempt===5)throw error;
-  await wait(delay(response.status,attempt,response.headers.get('retry-after')));
+  const waitMs=delay(response.status,attempt,response.headers.get('retry-after'));onRetry({kind:'http',status:response.status,attempt:attempt+1,waitMs});await wait(waitMs);
  }
 }
-module.exports={createReadPacer,retryDelayMs,readGoogleJson};
+module.exports={createReadPacer,retryDelayMs,readGoogleJson,retryableTransport};
