@@ -53,9 +53,9 @@ async function getAccessToken() {
   const assertion = `${signingInput}.${base64url(signature)}`;
   const body = new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion });
   const response = await fetch(sa.token_uri || 'https://oauth2.googleapis.com/token', {
-    method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body,
+    method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body, signal:AbortSignal.timeout(45000),
   });
-  const json = await response.json().catch(() => ({}));
+  const json = await response.json();
   if (!response.ok || !json.access_token) throw new Error(`Google OAuth token request failed (${response.status}): ${JSON.stringify(json)}`);
   tokenCache = { accessToken: json.access_token, expiresAt: Date.now() + Number(json.expires_in || 3600) * 1000 };
   return tokenCache.accessToken;
