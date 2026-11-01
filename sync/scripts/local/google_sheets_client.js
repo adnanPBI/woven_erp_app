@@ -61,19 +61,9 @@ async function getAccessToken() {
   return tokenCache.accessToken;
 }
 async function googleGet(url) {
-  let lastError = null;
-  for (let attempt = 0; attempt < 6; attempt += 1) {
-    const token = await getAccessToken();
-    const response = await fetch(url, { headers: { authorization: `Bearer ${token}` } });
-    const json = await response.json().catch(() => ({}));
-    if (response.ok) return json;
-    lastError = new Error(`Google Sheets API failed (${response.status}): ${JSON.stringify(json)}`);
-    if (![429, 500, 502, 503, 504].includes(response.status) || attempt === 5) throw lastError;
-    const retryAfter = Number(response.headers.get('retry-after') || 0);
-    const delayMs = retryAfter > 0 ? retryAfter * 1000 : Math.min(16000, 1000 * (2 ** attempt));
-    await new Promise(resolve => setTimeout(resolve, delayMs));
-  }
-  throw lastError || new Error('Google Sheets API request failed.');
+  // Share one gate across metadata, values and retries. Smaller memory-bound
+  // pages must not turn into a burst beyond the service account's read quota.
+  return require('../../lib/google_read_throttle').readGoogleJson(url,{getToken:getAccessToken});
 }
 async function getSpreadsheetMetadata(spreadsheetId) {
   const snapshot = snapshotProfile(spreadsheetId);
