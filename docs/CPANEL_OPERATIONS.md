@@ -198,6 +198,8 @@ After deletion, cPanel can temporarily report a cached old quota. Verify the act
 
 ## 8. Conflict and recovery decisions
 
+Blank issue amounts preserve historical quantities only when **Warp, Weft and Out Side are all blank**. An explicit `0` in Out Side is a numeric edit, even with blank Warp/Weft; the normal mapper must apply and verify its parent quantity, detail quantity and balance after its identity is qualified. Do not record a new zero source fingerprint while silently substituting the old outside amount. This distinction does not authorize fuzzy matching between multiple changed challan entries: bind each exact reviewed source to its original provenance parent first.
+
 | Symptom | Required distinction / action |
 | --- | --- |
 | Manifest/policy/hash mismatch | Investigate drift; restore/requalify reviewed bindings, not blanket checksum regeneration |
