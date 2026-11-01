@@ -125,6 +125,8 @@ Follow the staged deployment procedure in [CPANEL_OPERATIONS.md](CPANEL_OPERATIO
 
 Official references: [Node application setup](https://docs.cpanel.net/knowledge-base/web-services/how-to-install-a-node.js-application/), [Cron Jobs](https://docs.cpanel.net/cpanel/advanced/cron-jobs/), [Git deployment](https://docs.cpanel.net/knowledge-base/web-services/guide-to-git-deployment/).
 
+Preserve web-readable modes for intentionally public static assets (`0644` for `main.js` on this host), while keeping private keys/configuration/evidence owner-only. Verify the script's real public URL and exact response bytes after deployment; a working app page can conceal a static-file HTTP 403. See the permission and HTTP checks in [CPANEL_OPERATIONS.md](CPANEL_OPERATIONS.md).
+
 ## Required storage check before cron
 
 Do not upload local_data/sync_preview. Read [SYNC_STORAGE.md](SYNC_STORAGE.md). Defaults allocate a 4 GiB runtime budget with 1 GiB start headroom and a 2 GiB filesystem free reserve. Check the hosting account quota in cPanel Disk Usage separately. check_cpanel.js reports database allocation and filesystem space but cannot certify account quota. Confirm a hosted dry run and manual apply fit before enabling cron.

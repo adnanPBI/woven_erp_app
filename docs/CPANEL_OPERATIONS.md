@@ -162,6 +162,8 @@ Enabling hosted cron does not enable a Windows/local task. Preserve the requeste
 
 If a remote-command broker reports a storage/network error, the command may already have executed. Inspect durable job markers, status, lock ownership and file hashes before retrying a mutation. A successful clone creation, deployment or activation must not be repeated because its transport response was lost.
 
+Public static files need web-server-readable permissions. On this cPanel/LiteSpeed deployment, keep an intentionally public asset such as `main.js` at `0644`; saving it with the private-file `0600` mode makes LiteSpeed return HTTP 403 even when Passenger serves the app page and API normally. Keep service-account keys, environment files, backups and operational evidence owner-only. Apply permissions only to the exact reviewed public file; never recursively widen the application or sync tree. Record the previous mode and content hash, verify the actual public URL returns HTTP 200 with exactly the deployed bytes, and recheck that anonymous history access remains denied. A successful disk checksum, app-page response or local Express test alone does not prove that the browser can download the script.
+
 For rollback, restore only qualified source/config preimages under the same locks and pins. After any committed business writes, a code rollback does not undo data. Preserve the pending source/plan/history and reconcile exact committed rows; never restore an old full SQL dump over newer live records as a shortcut.
 
 ## 7. Capacity and retention
