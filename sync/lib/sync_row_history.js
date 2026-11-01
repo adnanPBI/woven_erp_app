@@ -40,6 +40,16 @@ async function before(ctx,table,where){
 async function updated(ctx,table,capture){
  if(!capture)return;
  if(!capture.pk.length){const after=await snapshot(ctx,table,capture.where);await record(ctx,table,'updated',capture.where,capture.rows,after,'matching-row-set',capture.rows.length,'Table has no unique primary key; before/after values describe the complete matching row set.');return;}
+ if(ctx.syncOperation?.prefixChange&&capture.pk.includes('dispo_number')){
+  require('./sync_prefix_edits').validatePrefixOperation(ctx.currentSourceDataset==='delivery'?'greige-delivery':ctx.currentSourceDataset,ctx.syncOperation);
+  if(capture.rows.length!==1||Object.keys(capture.where).join(',')!=='id'||String(capture.rows[0].id)!==String(capture.where.id))throw Error('Prefix audit requires the original unique numeric child ID');
+  const after=await snapshot(ctx,table,capture.where),before=capture.rows[0],normal=x=>String(x??'').trim().toLowerCase(),change=ctx.syncOperation.prefixChange;
+  if(after.length!==1||String(after[0].id)!==String(before.id)||normal(before.dispo_number)!==normal(change.oldDispo)||normal(after[0].dispo_number)!==normal(change.newDispo))throw Error('Prefix audit before/after identity does not match qualification');
+  // The old composite PK no longer selects this row. Record its current PK,
+  // retaining the entire old key and payload in before_json in the SAME tx.
+  const key=Object.fromEntries(capture.pk.map(k=>[k,after[0][k]]));
+  await record(ctx,table,'updated',key,before,after[0],'unique-row',1,'Qualified Dispo prefix edit; original numeric child ID preserved.');return;
+ }
  for(const row of capture.rows){const key=Object.fromEntries(capture.pk.map(k=>[k,row[k]]));const after=await snapshot(ctx,table,key);if(after.length!==1)throw Error('Updated audit row is not unique');await record(ctx,table,'updated',key,row,after[0],'unique-row',1);}
 }
 async function deleted(ctx,table,capture){

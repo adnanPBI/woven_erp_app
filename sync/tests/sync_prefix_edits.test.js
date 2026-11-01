@@ -78,3 +78,12 @@ test('business evidence checks original child before update and accepts the comm
  await live.beforeMutation(f.ctx,'update','child',f.desired,{id:7});await f.callbacks.update(f.desired,{id:7});live.finish();await live.verifyReplay(f.ctx);
  const drift=children(op,{dryRun:true}),captured=new BusinessEvidence('p','m');captured.begin(profile.id,op.uid);await captured.capture(drift.ctx,'child',{...drift.desired,id:7},['id']);const apply=new BusinessEvidence('p','m','apply',captured.export());apply.begin(profile.id,op.uid);drift.rows()[0].quantity='-440.00';await assert.rejects(apply.beforeMutation(drift.ctx,'update','child',drift.desired,{id:7}),/changed after qualification/);
 });
+test('composite-key audit records the new key and full old/new row under the unchanged numeric ID',async t=>{
+ const prior=process.env.SYNC_ACCEPT_DISPO_PREFIX_EDITS;process.env.SYNC_ACCEPT_DISPO_PREFIX_EDITS='true';t.after(()=>{if(prior===undefined)delete process.env.SYNC_ACCEPT_DISPO_PREFIX_EDITS;else process.env.SYNC_ACCEPT_DISPO_PREFIX_EDITS=prior;});
+ const op=(await fixture(t)).plan.operations[profile.id][0],f=children(op),before={...f.rows()[0]},writes=[];
+ f.ctx.currentSourceDataset=profile.id;f.ctx.currentSourceUid=op.uid;f.ctx.runId='fixture';const query=f.ctx.conn.query;
+ f.ctx.conn.query=async(sql,args)=>{if(sql.startsWith('INSERT INTO erp_sync_row_changes')){writes.push(args);return[{affectedRows:1}];}return query(sql,args);};
+ await f.callbacks.update(f.desired,{id:7});
+ await require('../lib/sync_row_history').updated(f.ctx,'child',{where:{id:7},pk:['id','dispo_number'],rows:[before]});
+ assert.equal(writes.length,1);assert.deepEqual(JSON.parse(writes[0][9]),{id:7,dispo_number:op.dispo});assert.equal(JSON.parse(writes[0][13]).dispo_number,op.previousDispo);assert.equal(JSON.parse(writes[0][14]).dispo_number,op.dispo);assert.equal(JSON.parse(writes[0][14]).quantity,-439);
+});

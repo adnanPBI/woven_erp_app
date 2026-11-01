@@ -4,7 +4,7 @@ An operator can correct a Dispo factory prefix, for example `SW/.../00123`
 to `YT/.../00123`. After explicit owner authorization, set the private
 `SYNC_ACCEPT_DISPO_PREFIX_EDITS=true` alongside `SYNC_VERIFIED_WRITES=true`.
 The template stays disabled. Deploy the planner, worker, verified runtime,
-write safety helper, mapper and new `sync_prefix_edits.js` together; pin their
+write safety helper, row-history writer, mapper and new `sync_prefix_edits.js` together; pin their
 exact bytes and the selectively edited environment in the private manifest.
 Use the scheduler file lock and database lock, and refuse deployment with a
 pending apply. Preserve all other environment values and private reviews.
@@ -56,7 +56,9 @@ source-row transaction; no business-row deletion or replacement is introduced.
 `sync/tests/sync_prefix_edits.test.js` exercises reordered unequal amounts,
 successive prefixes, legacy full inverse proof, unsafe-field changes,
 coexisting/duplicate/occupied cases, metadata persistence, stable child IDs,
-business preimages and committed replay. Run the complete `npm test` and
+business preimages, composite-key audit before/after values and committed replay.
+The transaction retains consumed private-review group ancestry after a prefix
+edit so that an obsolete review cannot block the next cycle. Run the complete `npm test` and
 `npm run check` and CI before publication/deployment. A passing synthetic
 test or dry run is not a receipt of production business writes.
 
