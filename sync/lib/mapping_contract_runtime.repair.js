@@ -1147,6 +1147,13 @@ async function upsertProvenanceParent(ctx, profile, table, data) {
   return { action: 'inserted', id: inserted.insertId };
 }
 
+async function previewPrefixChild(ctx,profile,table,data,where){
+  const existing=await ctx.sync.captureTarget(ctx,table,{...data,id:where.id},['id']);
+  if(!existing||String(existing.id)!==String(where.id))throw new Error('Prefix child preimage is missing');
+  ctx.preview({profile:profile.id,table,action:'preview_prefix_update',key:JSON.stringify(where),data:JSON.stringify(data)});
+  return {action:'previewed',id:where.id};
+}
+
 async function upsertRow(ctx, profile, table, data) {
   if (ctx.localRetainedMasters && require('../scripts/local/protect_retained_rows').isRetainedMaster(ctx.localRetainedMasters, table, data)) return {action:'preserved', id:null};
   if (provenance.isProvenanceTable(ctx.provenancePolicy, profile.id, table)) return upsertProvenanceParent(ctx, profile, table, data);
@@ -1612,6 +1619,7 @@ async function processProfile(ctx, profile) {
           const scope = { [scopeField]: transformForTarget(parentKeyValue, ctx.schema[table]?.[scopeField], scopeField, { dateOrder: ctx.dateOrder }) };
           const results = await require('./sync_write_safety').reconcileChildren(ctx, profile, table, scope, repeatedRows[table], {
             preview: row => upsertRow(ctx, profile, table, row),
+            previewPrefix: (row,where) => previewPrefixChild(ctx,profile,table,row,where),
             insert: row => insertRow(ctx, table, row),
             update: (row, where) => updateRow(ctx, table, row, where)
           });
@@ -1641,6 +1649,7 @@ async function processProfile(ctx, profile) {
         if (ctx.sync) {
           const rows = await require('./sync_write_safety').reconcileChildren(ctx, profile, table, { [parent.parent_id_field]: pid }, [nonEmptyObject(data)], {
             preview: row => upsertRow(ctx, profile, table, row),
+            previewPrefix: (row,where) => previewPrefixChild(ctx,profile,table,row,where),
             insert: row => insertRow(ctx, table, row),
             update: (row, where) => updateRow(ctx, table, row, where)
           });

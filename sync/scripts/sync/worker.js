@@ -186,6 +186,9 @@ async function main(){
  const exclusionEntries=env.SYNC_EXCLUSIONS_FILE?JSON.parse(fs.readFileSync(path.resolve(env.SYNC_EXCLUSIONS_FILE))):[];
  const exclusionPolicy=env.SYNC_CONFLICT_POLICY||'block';
  const repairMode=env.SYNC_VERIFIED_WRITES==='true';
+ const prefixEdits=env.SYNC_ACCEPT_DISPO_PREFIX_EDITS==='true';
+ if(prefixEdits&&!repairMode)throw Error('Prefix edits require verified writes');
+ const prefixPolicy=require('../../lib/sync_prefix_edits');
  const windowStart=env.SYNC_START_DATE||null;
  if(args['refresh-window']&&(!windowStart||(!local&&!env.SYNC_MANUAL_SKIPS_FILE)))throw Error('Full-window refresh requires a bounded local or qualified manual run');
  if(windowStart&&!repairMode)throw Error('A bounded sync window requires verified writes');
@@ -228,7 +231,7 @@ async function main(){
  for(const profile of contract.profiles){
   if(global.gc)global.gc();
   console.log(JSON.stringify({stage:'planning-profile',profile:profile.id,heapMiB:Math.round(process.memoryUsage().heapUsed/1048576),rssMiB:Math.round(process.memoryUsage().rss/1048576)}));
-  const current=await inventory(prepared.latestCertifiedDir,[profile]);
+  const current=await inventory(prepared.latestCertifiedDir,[profile],{prefixEdits});
   const [events]=await connection.query('SELECT source_uid uid,group_key `group`,digest,dispo,match_hash matchHash,yarn_identity yarnIdentity FROM sheets_sync_events WHERE profile=?',[profile.id]);
   await saveHydratedIdentities(connection,profile.id,hydrateIdentities({records:events},current[profile.id]));
   let previous=applyReviewedReassignments(profile.id,{headersHash:headers[profile.id],records:events},current[profile.id],reviewed);
@@ -236,6 +239,8 @@ async function main(){
   // write planner is narrowed to the authorized business-date window.
   const exclusionPrevious=previous,exclusionCurrent=current[profile.id];
   const bounded=scoped(profile.id,previous,current[profile.id]);previous=bounded.previous;current[profile.id]=bounded.current;
+  if(prefixEdits)await prefixPolicy.backfillSignatures(connection,profile.id,previous,current[profile.id]);
+  if(prefixEdits)previous=await prefixPolicy.qualifyPrefixEdits(profile.id,previous,current[profile.id],{csvDir:prepared.latestCertifiedDir,profileSpec:profile,fullCurrent:exclusionCurrent,fullPrevious:exclusionPrevious});
   const partial=historyPlan(profile.id,previous,current[profile.id]);
   if(profile.id==='yarn-receive'){
    const old=new Map(events.map(r=>[r.uid,r]));
@@ -259,10 +264,12 @@ async function main(){
   if(global.gc)global.gc();
   console.log(JSON.stringify({stage:'planning-profile',profile:profile.id,heapMiB:Math.round(process.memoryUsage().heapUsed/1048576),rssMiB:Math.round(process.memoryUsage().rss/1048576)}));
    if(![...affected.values()].some(index=>index<order.indexOf(profile.id)))continue;
-   const current=await inventory(prepared.latestCertifiedDir,[profile]);
+   const current=await inventory(prepared.latestCertifiedDir,[profile],{prefixEdits});
    const [events]=await connection.query('SELECT source_uid uid,group_key `group`,digest,dispo,match_hash matchHash,yarn_identity yarnIdentity FROM sheets_sync_events WHERE profile=?',[profile.id]);
    let previous=applyReviewedReassignments(profile.id,{headersHash:headers[profile.id],records:events},current[profile.id],reviewed);
+   const fullPrevious=previous,fullCurrent=current[profile.id];
    const bounded=scoped(profile.id,previous,current[profile.id]);previous=bounded.previous;current[profile.id]=bounded.current;
+   if(prefixEdits)previous=await prefixPolicy.qualifyPrefixEdits(profile.id,previous,current[profile.id],{csvDir:prepared.latestCertifiedDir,profileSpec:profile,fullCurrent,fullPrevious});
    const partial=historyPlan(profile.id,previous,current[profile.id],[...affected]);
    plan.ok=plan.ok&&partial.ok;Object.assign(plan.operations,partial.operations);plan.conflicts.push(...partial.conflicts);
   }

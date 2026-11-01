@@ -27,7 +27,7 @@ function fingerprintColumn(profile,header){
 function fingerprint(headers, values, profile) {
   return hash(headers.map((h,i)=>[h,String(values[i]??'')]).filter(([h])=>fingerprintColumn(profile,h)));
 }
-async function inventory(csvDir, profiles) {
+async function inventory(csvDir, profiles, options = {}) {
   const result = {};
   for (const profile of profiles) {
     const records = [], occurrences = new Map(); let headers;
@@ -53,7 +53,8 @@ async function inventory(csvDir, profiles) {
       const amountFields=profile.id==='yarn-receive'?['Receipt Qty (Kgs)','Floor Return in kg']:profile.id==='yarn-issue'?['Out Side','Warp','Weft']:[];
       const amounts=amountFields.map(h=>{const raw=String(row.values[headers.indexOf(h)]??'').trim().replace(/,/g,'');return raw===''?null:Number(raw);});
       const entryAmounts=amounts.some(v=>v!==null)&&amounts.every(v=>v===null||Number.isFinite(v))?JSON.stringify(amounts):null;
-      records.push({key:hash([profile.id,digest,n]),digest,group,uid,matchHash,entryAmounts,yarnIdentity:yarnIdentity(profile.id,headers,row.values),rowNumber:row.logicalRowNumber,businessDate,dispo:dispoHeader?String(row.values[headers.indexOf(dispoHeader)]||'').trim().toLowerCase():''});
+      const prefixMatchHash=options.prefixEdits?require('./sync_prefix_edits').prefixFingerprint(profile.id,headers,row.values):null;
+      records.push({...(prefixMatchHash?{prefixMatchHash}:{}),key:hash([profile.id,digest,n]),digest,group,uid,matchHash,entryAmounts,yarnIdentity:yarnIdentity(profile.id,headers,row.values),rowNumber:row.logicalRowNumber,businessDate,dispo:dispoHeader?String(row.values[headers.indexOf(dispoHeader)]||'').trim().toLowerCase():''});
     }
     if(!headers)throw Error('Missing certified headers: '+profile.id);
     result[profile.id]={headersHash:hash(headers.filter(h=>fingerprintColumn(profile.id,h))),records};
@@ -84,7 +85,7 @@ function planEdits(previous,current, upstreamChanges = [], options = {}) {
    const yarn=matchYarn(prior,next);
    conflicts.push(...yarn.conflicts.map(c=>({profile,...c})));
    for(const [before,after]of yarn.pairs){
-    const row={...after,uid:before.uid,previousDigest:before.digest,previousDispo:before.dispo};
+    const row={...after,...(before.prefixChange?{prefixChange:before.prefixChange}:{}),uid:before.uid,previousDigest:before.digest,previousDispo:before.dispo};
     if(before.digest===after.digest)matched[profile].push(row);
     else{operations[profile].push({...row,action:'update'});updated++;}
    }
@@ -99,7 +100,7 @@ function planEdits(previous,current, upstreamChanges = [], options = {}) {
     if(!old[j].reviewedDigest)continue;
     const candidates=fresh.filter(r=>r.digest===old[j].reviewedDigest);
     if(candidates.length!==1)throw Error('Reviewed correction is not unique within its destination group');
-    operations[profile].push({...candidates[0],uid:old[j].uid,previousDigest:old[j].digest,previousDispo:old[j].dispo,action:'update'});updated++;
+    operations[profile].push({...candidates[0],...(old[j].prefixChange?{prefixChange:old[j].prefixChange}:{}),uid:old[j].uid,previousDigest:old[j].digest,previousDispo:old[j].dispo,action:'update'});updated++;
     fresh.splice(fresh.indexOf(candidates[0]),1);old.splice(j,1);
    }
    for(let i=0;i<fresh.length;){const j=old.findIndex(r=>r.digest===fresh[i].digest);if(j>=0){matched[profile].push({...fresh[i],uid:old[j].uid,previousDigest:old[j].digest});fresh.splice(i,1);old.splice(j,1);}else i++;}
@@ -167,6 +168,10 @@ function applyReviewedReassignments(profile,previous,current,reviews){
   // A reviewed split can keep the same natural key. Bind its exact destination
   // fingerprint once, then let subsequent edits use normal tracked matching.
   if(old.group===review.newGroup&&(review.oldGroup!==review.newGroup||!approvedDigests.includes(old.digest)))continue;
+  // A successfully committed qualified prefix edit can move beyond this
+  // review's destination. Its transactionally persisted ancestry proves that
+  // the earlier review was consumed; do not demand its obsolete source again.
+  if(require('./yarn_sync_identity').parseIdentity(old.yarnIdentity)?.prefixGroups?.includes(review.newGroup))continue;
   const candidate=current.records.filter(r=>r.group===review.newGroup&&r.digest===review.newDigest);
   if(old.group!==review.oldGroup||!approvedDigests.includes(old.digest)||candidate.length!==1)throw Error('Reviewed reassignment is stale or ambiguous: '+profile);
   if(current.records.some(r=>r.group===review.oldGroup&&r.digest===review.oldDigest))throw Error('Original receipt still exists; refusing reassignment');

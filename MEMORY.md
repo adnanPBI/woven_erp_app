@@ -1,5 +1,15 @@
 # Project memory and maintenance journal
 
+## November 1: owner-authorized movement prefix edits
+
+The owner authorized accepting the latest prefix on an existing Dispo movement.
+`SYNC_ACCEPT_DISPO_PREFIX_EDITS` adds a qualified, provenance-bound transition
+for receipt/issue/warping/sizing/delivery records. Parent and single-child numeric
+IDs are preserved; no suffix-wide merging, deletions or broader exclusions.
+See [prefix qualification and future deployment instructions](docs/CPANEL_PREFIX_EDITS.md).
+The implementation and tests are source changes; deployment and real scheduled
+success must be recorded separately with actual evidence.
+
 Updated: November 1, 2026. Business dates use Asia/Dhaka; timestamps ending in `Z` use UTC. This public journal contains reusable implementation details and aggregate outcomes. Private keys, source rows, exact exception selections, review fingerprints, backups and the operator's private running journal stay outside Git.
 
 ## Start here

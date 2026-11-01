@@ -84,6 +84,35 @@ async function reconcileChildren(ctx,profile,table,scope,desiredRows,callbacks){
  }
  const newVirtualParent=ctx.dryRun&&Object.entries(scope).some(([k,v])=>/^(tinyint|smallint|mediumint|int|bigint)/i.test(schema[k]||'')&&typeof v==='string'&&v.startsWith('DRY-'));
  const before=newVirtualParent?[]:await lockedRows(ctx,table,scope);
+ // A qualified prefix edit changes a child's natural key, sometimes part of
+ // its composite PK. Use the original numeric ID under the locked provenance
+ // parent, so the edit cannot become an insert/delete pair or lose its ID.
+ // This path also runs during post-verification, when the new prefix is present.
+ if(ctx.syncOperation?.prefixChange&&keys.includes('dispo_number')){
+  require('./sync_prefix_edits').validatePrefixOperation(profile.id,ctx.syncOperation);
+  const change=ctx.syncOperation.prefixChange,normal=x=>String(x??'').trim().toLowerCase();
+  const fk=spec?.parent?.parent_id_field;
+  if(!fk||!Object.hasOwn(scope,fk)||desired.length!==1||before.length!==1||!before[0].id||
+     ![normal(change.oldDispo),normal(change.newDispo)].includes(normal(before[0].dispo_number))||
+     normal(desired[0].dispo_number)!==normal(change.newDispo))
+   throw error('SYNC_PREFIX_CHILD_AMBIGUOUS','Prefix edit requires one original child under its provenance parent');
+  const where={id:before[0].id};
+  const unique=await lockedRows(ctx,table,where,3);
+  if(unique.length!==1||!equal(unique[0][fk],scope[fk],schema[fk]))
+   throw error('SYNC_PREFIX_CHILD_ID_AMBIGUOUS','Original child ID is not unique under the verified parent');
+  const destination=await lockedRows(ctx,table,keyObject(desired[0],keys),3);
+  if(destination.some(r=>!equal(r.id,where.id,schema.id)))
+   throw error('SYNC_PREFIX_CHILD_OCCUPIED','Prefix destination is occupied by another child');
+  if(ctx.dryRun){
+   if(!callbacks.previewPrefix)throw error('SYNC_PREFIX_PREVIEW_REQUIRED','Stable-ID prefix evidence is required');
+   return [await callbacks.previewPrefix(desired[0],where)];
+  }
+  await callbacks.update(desired[0],where);
+  await assertMappedValues(ctx,table,where,desired[0]);
+  const after=await lockedRows(ctx,table,scope);
+  if(after.length!==1||!equal(after[0].id,where.id,schema.id))throw error('SYNC_PREFIX_CHILD_ID_LOST','Prefix edit lost its original child ID');
+  return [{action:'updated',id:where.id}];
+ }
  const pks=await primaryKeys(ctx,table),identityKeys=pks.length?pks:keys;
  const original=new Map();
  for(const row of before){

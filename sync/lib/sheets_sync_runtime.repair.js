@@ -3,6 +3,7 @@ const {fingerprint,hash}=require('./sheets_sync_plan');
 const {yarnIdentity}=require('./yarn_sync_identity');
 const {BusinessEvidence}=require('./sync_business_evidence');
 const {isoBusinessDate}=require('./sync_date_scope');
+const prefixPolicy=require('./sync_prefix_edits');
 class SheetsSyncRuntime{
  constructor(plan,protectedMasters,manifestHash,options={}){
   if(!plan.ok||!protectedMasters)throw Error('Conflicted or unprotected synchronization plan');
@@ -38,6 +39,7 @@ class SheetsSyncRuntime{
     const d=isoBusinessDate(r.businessDate);if(!d||d<w.start||d>w.end)throw Error('Planned operation is outside the production date boundary');
    }
   }
+  for(const [profile,ops]of this.selected)for(const op of ops.values())prefixPolicy.validatePrefixOperation(profile,op);
   const mode=ctx.dryRun?(this.options.verifyOnly?'verify':'capture'):'apply';
   this.business=new BusinessEvidence(this.hash,this.manifestHash,mode,this.options.businessPreimages||null);
   ctx.localRetainedMasters=Object.fromEntries(Object.entries(this.protectedMasters).map(([t,s])=>[t,{key:s.key,values:new Set(s.values)}]));
@@ -45,11 +47,14 @@ class SheetsSyncRuntime{
  async begin(ctx,profile,fileInfo,values){
   const op=this.selected.get(profile.id)?.get(ctx.currentSourceRowNumber);
   if(!op||fingerprint(fileInfo.headers,values,profile.id)!==op.digest)throw Error('Sync source differs from reviewed plan');
+  if(op.prefixChange&&prefixPolicy.prefixFingerprint(profile.id,fileInfo.headers,values)!==op.prefixMatchHash)throw Error('Prefix business signature changed');
   ctx.syncOperation={...op,yarnIdentity:yarnIdentity(profile.id,fileInfo.headers,values)};
   this.business.begin(profile.id,op.uid);
-  const [rows]=await (ctx.conn||ctx.pool).query('SELECT digest FROM sheets_sync_events WHERE profile=? AND source_uid=?'+(ctx.dryRun?'':' FOR UPDATE'),[profile.id,op.uid]);
+  const [rows]=await (ctx.conn||ctx.pool).query('SELECT digest,group_key,yarn_identity FROM sheets_sync_events WHERE profile=? AND source_uid=?'+(ctx.dryRun?'':' FOR UPDATE'),[profile.id,op.uid]);
   if(rows.length>1)throw Error('Ledger event is not unique');
   const actual=rows[0]?.digest||null;
+  ctx.syncOperation.previousIdentity=require('./yarn_sync_identity').parseIdentity(rows[0]?.yarn_identity);
+  ctx.syncOperation.previousGroup=rows[0]?.group_key;
   ctx.syncOperation.alreadyApplied=actual===op.digest&&op.action!=='refresh';
   if(this.options.verifyOnly){if(actual!==op.digest)throw Error('Independent verification: expected ledger digest is missing');return true;}
   if(actual===op.digest&&op.action!=='refresh'){
@@ -87,7 +92,11 @@ class SheetsSyncRuntime{
   this.business.finish();if(ctx.dryRun)return;
   const r=ctx.syncOperation;
   await ctx.conn.query('INSERT INTO sheets_sync_events (profile,source_uid,group_key,digest,dispo,match_hash) VALUES (?,?,?,?,?,?) ON DUPLICATE KEY UPDATE group_key=VALUES(group_key),digest=VALUES(digest),dispo=VALUES(dispo),match_hash=VALUES(match_hash),updated_at=CURRENT_TIMESTAMP',[profile.id,r.uid,r.group,r.digest,r.dispo||'',r.matchHash||null]);
-  if(r.yarnIdentity)await ctx.conn.query('UPDATE sheets_sync_events SET yarn_identity=? WHERE profile=? AND source_uid=? AND digest=?',[JSON.stringify(r.yarnIdentity),profile.id,r.uid,r.digest]);
+  // Retain the ancestry of an already consumed private review. A later prefix
+  // edit must not make that old exact review look unapplied on the next run.
+  const prefixGroups=[...new Set([...(r.previousIdentity?.prefixGroups||[]),...(r.prefixChange?[r.previousGroup]:[])].filter(Boolean))];
+  const identity=r.yarnIdentity||r.prefixMatchHash?{...(r.yarnIdentity||{version:1}),...(r.prefixMatchHash?{prefixMatchHash:r.prefixMatchHash}:{}),...(prefixGroups.length?{prefixGroups}:{})}:null;
+  if(identity)await ctx.conn.query('UPDATE sheets_sync_events SET yarn_identity=? WHERE profile=? AND source_uid=? AND digest=?',[JSON.stringify(identity),profile.id,r.uid,r.digest]);
  }
 }
 module.exports={SheetsSyncRuntime};
