@@ -1509,6 +1509,26 @@ async function recordOptionalUnlinkedAudits(ctx, profile, fileInfo, row) {
   }
 }
 
+async function preserveBlankIssueAmounts(ctx, profile, fileInfo, row, rowsByTable) {
+  // A blank source is not a new quantity. Explicit outside amounts, including
+  // zero, are real edits even when both warp/weft cells are blank. Looking only
+  // at warp/weft would advance the ledger while retaining an old outside issue.
+  if (!ctx.sync || profile.id !== 'yarn-issue' ||
+      !['update','refresh'].includes(ctx.syncOperation.action) ||
+      !['Warp','Weft','Out Side'].every(column => cleanText(valueFromRow(fileInfo,row,column)) === null)) return;
+  const binding = await provenance.findBinding(ctx,profile.id,ctx.currentSourceUid,'yarn_issue_form');
+  if (!binding) throw new Error('Blank issue amount has no historical binding');
+  const prior = await findOne(ctx,'yarn_issue_form',{id:binding.target_primary_key},null);
+  const [details] = await (ctx.conn||ctx.pool).query('SELECT * FROM yarn_issue_details WHERE yarn_issue_form_id=?',[binding.target_primary_key]);
+  if (!prior || details.length!==1) throw new Error('Blank issue amount has ambiguous historical quantities');
+  const parent=rowsByTable.yarn_issue_form;
+  for(const field of ['total_warp_issue_kgs','total_weft_issue_kgs','outside_issue_kg','total_issued_kg'])parent[field]=prior[field];
+  parent.remaining_stock_kg=Number(parent.total_received_kg??prior.total_received_kg??0)-Number(prior.total_issued_kg??0);
+  rowsByTable.yarn_issue_details.issued_quantity=details[0].issued_quantity;
+  ctx.sync.retainedBlankAmounts ||= [];
+  ctx.sync.retainedBlankAmounts.push({uid:ctx.currentSourceUid,parentId:prior.id,policy:'blank_is_not_a_new_numeric_amount'});
+}
+
 async function processProfile(ctx, profile) {
   if (ctx.localRetainedMasters) {
     const written = new Set((profile.tables || []).map(t=>t.name));
@@ -1566,22 +1586,7 @@ async function processProfile(ctx, profile) {
     await recordOptionalUnlinkedAudits(ctx, profile, fileInfo, row);
     await resolveLogicalUnitDispoBeforeMappings(ctx, profile, fileInfo, row);
     const rowsByTable = await buildTableRows(ctx, profile, fileInfo, row);
-    if (ctx.sync && profile.id === 'yarn-issue' &&
-        cleanText(valueFromRow(fileInfo,row,'Warp')) === null &&
-        cleanText(valueFromRow(fileInfo,row,'Weft')) === null &&
-        ['update','refresh'].includes(ctx.syncOperation.action)) {
-      const binding = await provenance.findBinding(ctx,profile.id,ctx.currentSourceUid,'yarn_issue_form');
-      if (!binding) throw new Error('Blank issue amount has no historical binding');
-      const prior = await findOne(ctx,'yarn_issue_form',{id:binding.target_primary_key},null);
-      const [details] = await (ctx.conn||ctx.pool).query('SELECT * FROM yarn_issue_details WHERE yarn_issue_form_id=?',[binding.target_primary_key]);
-      if (!prior || details.length!==1) throw new Error('Blank issue amount has ambiguous historical quantities');
-      const parent=rowsByTable.yarn_issue_form;
-      for(const field of ['total_warp_issue_kgs','total_weft_issue_kgs','outside_issue_kg','total_issued_kg'])parent[field]=prior[field];
-      parent.remaining_stock_kg=Number(parent.total_received_kg??prior.total_received_kg??0)-Number(prior.total_issued_kg??0);
-      rowsByTable.yarn_issue_details.issued_quantity=details[0].issued_quantity;
-      ctx.sync.retainedBlankAmounts ||= [];
-      ctx.sync.retainedBlankAmounts.push({uid:ctx.currentSourceUid,parentId:prior.id,policy:'blank_is_not_a_new_numeric_amount'});
-    }
+    await preserveBlankIssueAmounts(ctx,profile,fileInfo,row,rowsByTable);
     const repeatedRows = await buildRepeatedRows(ctx, profile, fileInfo, row, rowsByTable);
     if (cleanText(ctx.currentCanonicalDispo) !== null) applyCanonicalDispo(rowsByTable, repeatedRows, ctx.currentCanonicalDispo);
     const idByTable = {};
@@ -2069,5 +2074,5 @@ function renderReportReadme(summary) {
 
 module.exports = {
   parseArgs, runDynamicImport, validateContract, readCsvFile, parseNumber, parseDate, transformForTarget,
-  _test: { findOne, resolveLookup, evalExpression, buildTableRows, rawDispoFromSource, applyCanonicalDispo, sourceGetter, isDispoSourceColumn, mergeDuplicateData, upsertRow, upsertProvenanceParent, compileSafeExpression, isPolicyAuthorizedNullable, authorizedNullableReason, resetRowScopedCaches },
+  _test: { findOne, resolveLookup, evalExpression, buildTableRows, rawDispoFromSource, applyCanonicalDispo, sourceGetter, isDispoSourceColumn, mergeDuplicateData, upsertRow, upsertProvenanceParent, compileSafeExpression, isPolicyAuthorizedNullable, authorizedNullableReason, resetRowScopedCaches, preserveBlankIssueAmounts },
 };
