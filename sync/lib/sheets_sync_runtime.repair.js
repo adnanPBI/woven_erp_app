@@ -1,5 +1,5 @@
 'use strict';
-const {fingerprint,hash}=require('./sheets_sync_plan');
+const {fingerprint,hash,appliedReviewKeys}=require('./sheets_sync_plan');
 const {yarnIdentity}=require('./yarn_sync_identity');
 const {BusinessEvidence}=require('./sync_business_evidence');
 const {isoBusinessDate}=require('./sync_date_scope');
@@ -95,7 +95,8 @@ class SheetsSyncRuntime{
   // Retain the ancestry of an already consumed private review. A later prefix
   // edit must not make that old exact review look unapplied on the next run.
   const prefixGroups=[...new Set([...(r.previousIdentity?.prefixGroups||[]),...(r.prefixChange?[r.previousGroup]:[])].filter(Boolean))];
-  const identity=r.yarnIdentity||r.prefixMatchHash?{...(r.yarnIdentity||{version:1}),...(r.prefixMatchHash?{prefixMatchHash:r.prefixMatchHash}:{}),...(prefixGroups.length?{prefixGroups}:{})}:null;
+  const consumed=[...new Set([...appliedReviewKeys(r.previousIdentity),...appliedReviewKeys({version:1,appliedReviewKeys:r.appliedReviewKeys||[]})])];
+  const identity=r.yarnIdentity||r.prefixMatchHash||consumed.length?{...(r.yarnIdentity||{version:1}),...(r.prefixMatchHash?{prefixMatchHash:r.prefixMatchHash}:{}),...(prefixGroups.length?{prefixGroups}:{}),...(consumed.length?{appliedReviewKeys:consumed}:{})}:null;
   if(identity)await ctx.conn.query('UPDATE sheets_sync_events SET yarn_identity=? WHERE profile=? AND source_uid=? AND digest=?',[JSON.stringify(identity),profile.id,r.uid,r.digest]);
  }
 }

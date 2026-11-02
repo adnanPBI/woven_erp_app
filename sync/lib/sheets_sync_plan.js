@@ -5,6 +5,13 @@ const {iterateCsvRows, dedupeHeaders, isNonEmptyRow} = require('./csv_stream');
 const {YARN_PROFILES, yarnIdentity} = require('./yarn_sync_identity');
 const {matchYarn} = require('./yarn_sync_match');
 const hash = value => crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
+const reviewedReassignmentKey=r=>hash(['reviewed-reassignment-v1',r.profile,r.sourceUid,r.oldGroup,r.oldDigest,r.newGroup,r.newDigest]);
+function appliedReviewKeys(value){
+ const keys=require('./yarn_sync_identity').parseIdentity(value)?.appliedReviewKeys||[];
+ if(!Array.isArray(keys)||keys.some(k=>!/^[a-f0-9]{64}$/.test(k)))throw Error('Invalid applied-review metadata');
+ return [...new Set(keys)];
+}
+const reviewEvidence=before=>before.appliedReviewKeys?.length?{appliedReviewKeys:before.appliedReviewKeys}:{};
 // Run/file/row-position metadata changes on every export and is not an event ID.
 const metadata = new Set(['__MIG_SOURCE_UID', '__MIG_SOURCE_ROW', '__MIG_SOURCE_ROW_COUNT', '__MIG_ACTION', '__MIG_BRIDGE_SOURCE']);
 const businessDateColumns={
@@ -94,7 +101,7 @@ function planEdits(previous,current, upstreamChanges = [], options = {}) {
    const yarn=matchYarn(prior,next);
    conflicts.push(...yarn.conflicts.map(c=>({profile,...c})));
    for(const [before,after]of yarn.pairs){
-    const row={...after,...(before.prefixChange?{prefixChange:before.prefixChange}:{}),uid:before.uid,previousDigest:before.digest,previousDispo:before.dispo};
+    const row={...after,...reviewEvidence(before),...(before.prefixChange?{prefixChange:before.prefixChange}:{}),uid:before.uid,previousDigest:before.digest,previousDispo:before.dispo};
     if(before.digest===after.digest)matched[profile].push(row);
     else{operations[profile].push({...row,action:'update'});updated++;}
    }
@@ -109,19 +116,19 @@ function planEdits(previous,current, upstreamChanges = [], options = {}) {
     if(!old[j].reviewedDigest)continue;
     const candidates=fresh.filter(r=>r.digest===old[j].reviewedDigest);
     if(candidates.length!==1)throw Error('Reviewed correction is not unique within its destination group');
-    operations[profile].push({...candidates[0],...(old[j].prefixChange?{prefixChange:old[j].prefixChange}:{}),uid:old[j].uid,previousDigest:old[j].digest,previousDispo:old[j].dispo,action:'update'});updated++;
+    operations[profile].push({...candidates[0],...reviewEvidence(old[j]),...(old[j].prefixChange?{prefixChange:old[j].prefixChange}:{}),uid:old[j].uid,previousDigest:old[j].digest,previousDispo:old[j].dispo,action:'update'});updated++;
     fresh.splice(fresh.indexOf(candidates[0]),1);old.splice(j,1);
    }
-   for(let i=0;i<fresh.length;){const j=old.findIndex(r=>r.digest===fresh[i].digest);if(j>=0){matched[profile].push({...fresh[i],uid:old[j].uid,previousDigest:old[j].digest});fresh.splice(i,1);old.splice(j,1);}else i++;}
+   for(let i=0;i<fresh.length;){const j=old.findIndex(r=>r.digest===fresh[i].digest);if(j>=0){matched[profile].push({...fresh[i],...reviewEvidence(old[j]),uid:old[j].uid,previousDigest:old[j].digest});fresh.splice(i,1);old.splice(j,1);}else i++;}
    for(let i=fresh.length-1;i>=0;i--){
     const signature=fresh[i].matchHash;
     if(!signature||fresh.filter(r=>r.matchHash===signature).length!==1)continue;
     const candidates=old.filter(r=>r.matchHash===signature);
     if(candidates.length!==1)continue;
-    operations[profile].push({...fresh[i],uid:candidates[0].uid,previousDigest:candidates[0].digest,previousDispo:candidates[0].dispo,action:'update'});updated++;
+    operations[profile].push({...fresh[i],...reviewEvidence(candidates[0]),uid:candidates[0].uid,previousDigest:candidates[0].digest,previousDispo:candidates[0].dispo,action:'update'});updated++;
     old.splice(old.indexOf(candidates[0]),1);fresh.splice(i,1);
    }
-   if(old.length===1&&fresh.length===1){operations[profile].push({...fresh[0],uid:old[0].uid,previousDigest:old[0].digest,previousDispo:old[0].dispo,action:'update'});updated++;}
+   if(old.length===1&&fresh.length===1){operations[profile].push({...fresh[0],...reviewEvidence(old[0]),uid:old[0].uid,previousDigest:old[0].digest,previousDispo:old[0].dispo,action:'update'});updated++;}
    else if(old.length===0){for(const r of fresh){operations[profile].push({...r,uid:hash(['sync',profile,r.key]),previousDigest:null,action:'insert'});added++;}}
    else conflicts.push({profile,group,reason:'ambiguous_edit_key_change_or_deletion',previousUnmatched:old.length,currentUnmatched:fresh.length});
   }
@@ -176,17 +183,24 @@ function applyReviewedReassignments(profile,previous,current,reviews){
   }
   // A reviewed split can keep the same natural key. Bind its exact destination
   // fingerprint once, then let subsequent edits use normal tracked matching.
-  if(old.group===review.newGroup&&(review.oldGroup!==review.newGroup||!approvedDigests.includes(old.digest)))continue;
+  const key=reviewedReassignmentKey(review),mark=()=>{old.appliedReviewKeys=[...new Set([...(old.appliedReviewKeys||[]),key])];};
+  // Persist consumption with the next normal row transaction. A later valid
+  // automatic date/key edit must not reactivate an already applied exact review.
+  // Bind the complete review, so a newly qualified correction back to an older
+  // destination remains a different authorization and still must be applied.
+  if(appliedReviewKeys(old.yarnIdentity).includes(key))continue;
+  if(old.group===review.newGroup&&(old.digest===review.newDigest||review.oldGroup!==review.newGroup||!approvedDigests.includes(old.digest))){mark();continue;}
   // A successfully committed qualified prefix edit can move beyond this
   // review's destination. Its transactionally persisted ancestry proves that
   // the earlier review was consumed; do not demand its obsolete source again.
-  if(require('./yarn_sync_identity').parseIdentity(old.yarnIdentity)?.prefixGroups?.includes(review.newGroup))continue;
+  if(old.group!==review.oldGroup&&require('./yarn_sync_identity').parseIdentity(old.yarnIdentity)?.prefixGroups?.includes(review.newGroup)){mark();continue;}
   const candidate=current.records.filter(r=>r.group===review.newGroup&&r.digest===review.newDigest);
   if(old.group!==review.oldGroup||!approvedDigests.includes(old.digest)||candidate.length!==1)throw Error('Reviewed reassignment is stale or ambiguous: '+profile);
   if(current.records.some(r=>r.group===review.oldGroup&&r.digest===review.oldDigest))throw Error('Original receipt still exists; refusing reassignment');
   old.group=review.newGroup;
   old.reviewedDigest=review.newDigest;
+  mark();
  }
  return previous;
 }
-module.exports={fingerprint,fingerprintColumn,inventory,compare,planEdits,hash,applyReviewedReassignments};
+module.exports={fingerprint,fingerprintColumn,inventory,compare,planEdits,hash,applyReviewedReassignments,reviewedReassignmentKey,appliedReviewKeys};

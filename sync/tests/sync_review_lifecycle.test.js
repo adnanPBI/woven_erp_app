@@ -1,0 +1,25 @@
+'use strict';
+const assert=require('assert/strict'),{test}=require('node:test'),fs=require('fs'),os=require('os'),path=require('path');
+const {inventory,planEdits,applyReviewedReassignments,reviewedReassignmentKey}=require('../lib/sheets_sync_plan'),{SheetsSyncRuntime}=require('../lib/sheets_sync_runtime.repair');
+const p={id:'yarn-receive',source_file:'receipt.csv'};
+async function fixtures(t){const dir=fs.mkdtempSync(path.join(os.tmpdir(),'review-life-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));const read=async(prefix,date,amount='7')=>{fs.writeFileSync(path.join(dir,p.source_file),['Yarn Count,Yarn brand,Yarn Lot,Received Date,Received GD NO,Challan No,Receipt Qty (Kgs),Last Received Date',`10,Brand,Lot,${date},${prefix}/REF/26/00123,C,${amount},${date}`].join('\n'));return(await inventory(dir,[p]))[p.id];};return{read,A:await read('SW','2026-10-30'),B:await read('YT','2026-10-30'),C:await read('YT','2026-10-31')};}
+const review=(a,b)=>({profile:p.id,sourceUid:'original-event',oldGroup:a.records[0].group,oldDigest:a.records[0].digest,newGroup:b.records[0].group,newDigest:b.records[0].digest});
+async function finish(op,previousIdentity){const writes=[],db={query:async(sql,args)=>{writes.push({sql,args});return[{affectedRows:1}];}},runtime=new SheetsSyncRuntime({ok:true,operations:{}},{},'manifest');runtime.business={finish:()=>{}};await runtime.finish({conn:db,syncOperation:{...op,previousIdentity}},p);return JSON.parse(writes.at(-1).args[0]);}
+test('an already applied review remains consumed after a normal automatic date correction',async t=>{
+ const f=await fixtures(t),r=review(f.A,f.B),old={...f.B,records:[{...f.B.records[0],uid:r.sourceUid}]},before=applyReviewedReassignments(p.id,old,f.C,[r]),plan=planEdits({[p.id]:before},{[p.id]:f.C});assert.equal(plan.ok,true);assert.equal(plan.updated,1);const op=plan.operations[p.id][0];assert.deepEqual(op.appliedReviewKeys,[reviewedReassignmentKey(r)]);
+ const saved=await finish(op,f.B.records[0].yarnIdentity),next={...f.C,records:[{...f.C.records[0],uid:r.sourceUid,yarnIdentity:saved}]};applyReviewedReassignments(p.id,next,f.C,[r]);assert.equal(planEdits({[p.id]:next},{[p.id]:f.C}).ok,true);assert.equal(planEdits({[p.id]:next},{[p.id]:f.C}).updated,0);
+ const D=await f.read('YT','2026-11-01'),later=planEdits({[p.id]:next},{[p.id]:D});assert.equal(later.ok,true);const retained=await finish(later.operations[p.id][0],saved);assert.deepEqual(retained.appliedReviewKeys,saved.appliedReviewKeys);
+});
+test('new exact correction back to an older group still requires its own frozen review',async t=>{
+ const f=await fixtures(t),first=review(f.A,f.B),second=review(f.C,f.B),old={...f.C,records:[{...f.C.records[0],uid:first.sourceUid,yarnIdentity:{...f.C.records[0].yarnIdentity,prefixGroups:[first.newGroup],appliedReviewKeys:[reviewedReassignmentKey(first)]}}]};
+ const previous=applyReviewedReassignments(p.id,old,f.B,[first,second]);assert.equal(previous.records[0].reviewedDigest,second.newDigest);assert.deepEqual(previous.records[0].appliedReviewKeys,[reviewedReassignmentKey(second)]);const plan=planEdits({[p.id]:previous},{[p.id]:f.B});assert.equal(plan.ok,true);assert.equal(plan.updated,1);const saved=await finish(plan.operations[p.id][0],old.records[0].yarnIdentity);assert.equal(saved.appliedReviewKeys.length,2);
+});
+test('consumed review cannot suppress new source ambiguity or an unrelated unapplied exact review',async t=>{
+ const f=await fixtures(t),r=review(f.A,f.B),old={...f.C,records:[{...f.C.records[0],uid:r.sourceUid,yarnIdentity:{...f.C.records[0].yarnIdentity,appliedReviewKeys:[reviewedReassignmentKey(r)]}}]},duplicates={...f.C,records:[f.C.records[0],{...f.C.records[0],rowNumber:3,key:'another-key'}]};applyReviewedReassignments(p.id,old,duplicates,[r]);assert.equal(planEdits({[p.id]:old},{[p.id]:duplicates}).ok,false);
+ const wanted=await f.read('YT','2026-10-31','8'),changed=await f.read('YT','2026-10-31','9'),unapplied=review(f.C,wanted);assert.throws(()=>applyReviewedReassignments(p.id,structuredClone(old),changed,[unapplied]),/stale or ambiguous/);
+ const malformed=structuredClone(old);malformed.records[0].yarnIdentity.appliedReviewKeys=['not-a-fingerprint'];assert.throws(()=>applyReviewedReassignments(p.id,malformed,f.C,[r]),/Invalid applied-review metadata/);
+});
+test('newly applied exact review and unchanged refresh carry their consumption into the ledger transaction',async t=>{
+ const f=await fixtures(t),r=review(f.A,f.B),old={...f.A,records:[{...f.A.records[0],uid:r.sourceUid}]},previous=applyReviewedReassignments(p.id,old,f.B,[r]),plan=planEdits({[p.id]:previous},{[p.id]:f.B});assert.equal(plan.ok,true);assert.deepEqual(plan.operations[p.id][0].appliedReviewKeys,[reviewedReassignmentKey(r)]);
+ const fulfilled={...f.B,records:[{...f.B.records[0],uid:r.sourceUid}]};applyReviewedReassignments(p.id,fulfilled,f.B,[r]);const refresh=planEdits({[p.id]:fulfilled},{[p.id]:f.B},[],{refreshAll:true});assert.equal(refresh.refreshed,1);assert.deepEqual(refresh.operations[p.id][0].appliedReviewKeys,[reviewedReassignmentKey(r)]);
+});

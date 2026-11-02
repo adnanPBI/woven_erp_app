@@ -1,5 +1,31 @@
 # Project memory and maintenance journal
 
+## November 2: applied-review lifecycle correction
+
+The verified full-window recovery committed 73 physical inserts and 488 updates,
+zero deletes, plus two separately audited reference updates, and verified 31,473
+mapped targets. An independent read-only daily check matched 1,154 eligible
+October 29–November 2 records and 2,304 targets; the whole recovery window
+matched 15,487 eligible records, zero missing. This remains a frozen-source claim.
+
+A later real scheduled cycle found one stale review after an already applied
+reference review was followed by a legitimate automatic date edit. The ledger
+correctly held the newer date, but the old exact review expected its former
+destination group. The planner/runtime now carry a fingerprint of each consumed
+exact review through the normal source-row transaction and preserve it on later
+updates. A fresh correction back to an older group has a different full review
+fingerprint and still requires qualification. New source ambiguities remain
+blocked. The current legacy case requires a metadata-only backfill proved from
+the completed plan's previous digest, current ledger and mapped verification;
+no business row or exception is changed by that backfill.
+
+This lifecycle source change needs its own CI/deployment and a later actual
+scheduled success before recurring health is confirmed. Historical failures
+remain visible. Completed generated reports can be stored losslessly in private
+gzip archives with original-byte/hash/mtime/mode verification and restoration
+locators; accepted SQL backups, current certified source and primary plans stay
+in place. Do not lower the cron reserve to hide a storage shortfall.
+
 ## November 2: bounded planner inventories
 
 A large full-window qualification passed, but the subsequent hosted worker was
