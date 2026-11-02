@@ -212,6 +212,11 @@ async function main(){
   return env.SYNC_MISSING_ROW_POLICY==='retain-history'?require('../../lib/sync_history_policy').retainMissingHistory(profile,partial,previous,current):partial;
  }
  const exclusions=(exclusionEntries.length||exclusionPolicy!=='block')?new (require('../../lib/sync_exclusions').SyncExclusions)(exclusionEntries,exclusionPolicy):null;
+ // Legacy dependency closures and exact skipped profiles need their complete
+ // row inventories. Other bounded profiles need only selected business rows
+ // plus full-source group evidence; retaining every historical payload can
+ // exhaust shared-host memory before the mapper even starts.
+ const inventoryOptions=profile=>({prefixEdits,...(windowStart&&!exclusions&&!manualSkips?.policy.currentRows.some(r=>r.profile===profile.id)?{window:{start:windowStart,end:date}}:{})});
  // Legacy dependency-wide exclusions remain available to legacy installs.
  // Authorized v2/v3 modes remove those broad restrictions, not business rows;
  // their exact exception and zero-exclusion scope are checked again below.
@@ -231,7 +236,7 @@ async function main(){
  for(const profile of contract.profiles){
   if(global.gc)global.gc();
   console.log(JSON.stringify({stage:'planning-profile',profile:profile.id,heapMiB:Math.round(process.memoryUsage().heapUsed/1048576),rssMiB:Math.round(process.memoryUsage().rss/1048576)}));
-  const current=await inventory(prepared.latestCertifiedDir,[profile],{prefixEdits});
+  const current=await inventory(prepared.latestCertifiedDir,[profile],inventoryOptions(profile));
   const [events]=await connection.query('SELECT source_uid uid,group_key `group`,digest,dispo,match_hash matchHash,yarn_identity yarnIdentity FROM sheets_sync_events WHERE profile=?',[profile.id]);
   await saveHydratedIdentities(connection,profile.id,hydrateIdentities({records:events},current[profile.id]));
   let previous=applyReviewedReassignments(profile.id,{headersHash:headers[profile.id],records:events},current[profile.id],reviewed);
@@ -264,7 +269,7 @@ async function main(){
   if(global.gc)global.gc();
   console.log(JSON.stringify({stage:'planning-profile',profile:profile.id,heapMiB:Math.round(process.memoryUsage().heapUsed/1048576),rssMiB:Math.round(process.memoryUsage().rss/1048576)}));
    if(![...affected.values()].some(index=>index<order.indexOf(profile.id)))continue;
-   const current=await inventory(prepared.latestCertifiedDir,[profile],{prefixEdits});
+   const current=await inventory(prepared.latestCertifiedDir,[profile],inventoryOptions(profile));
    const [events]=await connection.query('SELECT source_uid uid,group_key `group`,digest,dispo,match_hash matchHash,yarn_identity yarnIdentity FROM sheets_sync_events WHERE profile=?',[profile.id]);
    let previous=applyReviewedReassignments(profile.id,{headersHash:headers[profile.id],records:events},current[profile.id],reviewed);
    const fullPrevious=previous,fullCurrent=current[profile.id];

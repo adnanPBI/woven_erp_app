@@ -1,5 +1,37 @@
 # Project memory and maintenance journal
 
+## November 2: bounded planner inventories
+
+A large full-window qualification passed, but the subsequent hosted worker was
+killed during validation. A smaller 512 MiB retry then produced an explicit heap
+failure while planning historical folding rows. The planner now retains full
+source-group presence evidence but materializes business records only inside
+the authorized window where no legacy dependency closure or exact skipped
+profile requires a full row inventory. Full source acquisition/certification,
+historical-removal guards, duplicate ordinals and the ledger remain intact.
+Regression tests compare complete old/new selected records and plans and
+exercise a large historical payload. This source change requires separate CI,
+deployment and real hosted validation; the interrupted business transfer is
+not marked complete by publication.
+
+## November 2: latest-prefix runtime deployed and tested
+
+PR #23 is merged as **300a03b32dba13411e32b1c0faede61609768365**;
+PR CI41301836232 and main CI41301952474 passed. Seven selected runtime
+modules and the explicit recurring prefix grant were deployed at03:19:29.937Z.
+Eight hosted regression tests and a real temporary-table MySQL test of the
+actual mapper, stable child ID, composite-key audit, rollback and replay passed.
+Private settings, original exact exceptions and the ten-minute cron stayed
+preserved. Deployment made zero production business writes. See the
+[prefix maintenance record](docs/CPANEL_PREFIX_EDITS.md).
+
+The two currently reported receipts were separately proved to have changed
+their source dates Oct30→31 while retaining the SW prefix, original IDs and
+negative quantities. Their reviewed catch-up is a separate operation. A later
+Google yarn-receipt read timeout stopped acquisition before planning; subsequent
+snapshot/catch-up and actual automatic success need their own completion proof.
+Do not infer those outcomes from the runtime deployment or earlier frozen proof.
+
 ## November 1: owner-authorized movement prefix edits
 
 The owner authorized accepting the latest prefix on an existing Dispo movement.

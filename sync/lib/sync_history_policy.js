@@ -4,7 +4,7 @@ const {isoBusinessDate}=require('./sync_date_scope');
 function scopeHistory(previous,current,start,end){
  if(!isoBusinessDate(start)||!isoBusinessDate(end)||start>end)throw Error('Invalid sync date window');
  const within=d=>d>=start&&d<=end;
- const fullGroups=new Set(current.records.map(r=>r.group));
+ const fullGroups=current.fullGroups||new Set(current.records.map(r=>r.group));
  const selected=current.records.filter(r=>within(r.businessDate));
  const selectedGroups=new Set(selected.map(r=>r.group));
  const old=previous.records.filter(r=>{

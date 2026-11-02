@@ -1,5 +1,14 @@
 # cPanel migration and recurring-sync maintenance
 
+The owner-authorized [latest-prefix policy](CPANEL_PREFIX_EDITS.md) is an
+additional opt-in path for uniquely proved edits on numeric-provenance movements.
+It preserves their parent/detail IDs and full composite-key audit values.
+Structural reference changes outside that rule still require exact private
+qualification. For a reviewed full-window refresh, bind the existing frozen
+cycle exception file and hash in a job-private environment; keep those generated
+bindings out of the recurring base configuration. The ordinary worker guards,
+full dry run, backup, transactional preimages and post-verification still apply.
+
 This is the maintenance entry point for an **existing, initialized** installation. Read the [preservation requirements](CRITICAL_CPANEL_BASELINE.md), [policy specification](MANUAL_TRANSFER_POLICY.md) and [source change map](CPANEL_CHANGELOG_2026-10.md) together. Installation instructions are in [CPANEL_DEPLOYMENT.md](CPANEL_DEPLOYMENT.md).
 
 Repository work does not deploy cPanel, change a scheduler or authorize business corrections. Keep existing ERP screens, permissions, sessions, Passenger settings, database/history tools and original business records intact. A successful old migration is evidence for its frozen source snapshot, not for later edits in Sheets.

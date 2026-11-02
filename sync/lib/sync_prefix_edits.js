@@ -37,7 +37,7 @@ async function backfillSignatures(connection,profile,previous,current){
 }
 async function qualifyPrefixEdits(profile,previous,current,{csvDir,profileSpec,fullCurrent=current,fullPrevious=previous}={}){
  if(!headersByProfile[profile])return previous;
- const fullGroups=new Set(fullCurrent.records.map(r=>r.group)),occupied=new Set(fullPrevious.records.map(r=>r.group));
+ const fullGroups=fullCurrent.fullGroups||new Set(fullCurrent.records.map(r=>r.group)),occupied=new Set(fullPrevious.records.map(r=>r.group));
  const fresh=current.records.filter(r=>r.prefixMatchHash&&!occupied.has(r.group));
  const candidates=previous.records.filter(r=>!r.reviewedDigest&&!fullGroups.has(r.group)&&fresh.some(n=>prefixOnly(r.dispo,n.dispo)));
  if(!candidates.length)return previous;
