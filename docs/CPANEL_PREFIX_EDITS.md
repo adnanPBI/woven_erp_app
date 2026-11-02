@@ -27,6 +27,26 @@ separately after completion.
 
 ## Qualification and future changes
 
+Exact reviews are one-off authorizations. Their full profile/source UID and
+before/after group/digest tuple is fingerprinted as an `appliedReviewKeys`
+entry. The planner carries consumption evidence into any subsequent normal
+operation; the verified runtime saves it with the business/ledger transaction
+and retains it through later edits. This prevents a valid later date correction
+from reactivating an obsolete reference review. A new review targeting an older
+group still has a different fingerprint, and ordinary matching and duplicate
+guards continue to run. Retain-missing and superseded-revision actions keep
+their specialized validation. Legacy prefix ancestry is accepted only when it
+cannot be mistaken for a newly requested correction from the current group.
+
+For an existing stale review without this metadata, do not simply remove it.
+Qualify the completed, manifest-bound and fully mapped-verified plan: its
+operation must have consumed that review's exact destination digest and must
+match the current UID/group/digest. Under the normal locks, preserve the old
+identity metadata and record only that exact applied-review fingerprint. Keep
+the private proof and before/after metadata; this repair changes no business
+rows, skipped records or new-review permissions. A subsequent source ambiguity
+still requires normal review.
+
 The bounded planner can retain a set of every source group while materializing
 only the selected business-date records. This avoids retaining large historical
 payloads that cannot be written by the current window. It still detects missing
