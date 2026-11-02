@@ -1,5 +1,54 @@
 # Latest source prefix on an existing movement
 
+## Verified deployment on November 2, 2026
+
+PR #23 is merged as `300a03b32dba13411e32b1c0faede61609768365`.
+PR CI 41301836232 and main CI 41301952474 passed. The selected seven
+runtime modules were deployed at **03:19:29.937Z**, with their exact checksums
+verified and the owner's recurring prefix grant enabled. Other private
+environment settings, the exception policy and the ten-minute cron were
+preserved. Eight regression tests passed on hosting.
+
+A real temporary-table MySQL fixture also invoked the actual staged mapper,
+business preimage guard, child reconciler and audit writer. It proved an
+in-place composite-key prefix edit with the same numeric ID and quantity,
+complete audit before/after values, atomic rollback of business and audit
+changes, committed replay, and refusal of an ambiguous numeric ID. These
+fixture writes used temporary tables only; they are not production business
+transfers. Deployment itself made zero production business writes.
+
+The reported current receipt conflicts were separately identified as source
+dates reverting from October 30 to October 31 with an unchanged SW prefix.
+Those require their own exact source/ledger/physical review and normal backed-up
+apply. A Google source-read timeout can independently stop acquisition before
+planning. Publishing or enabling the prefix rule does not certify those later
+catch-ups or a successful fresh scheduled interval; record their actual proof
+separately after completion.
+
+## Qualification and future changes
+
+The bounded planner can retain a set of every source group while materializing
+only the selected business-date records. This avoids retaining large historical
+payloads that cannot be written by the current window. It still detects missing
+old groups and never filters the ledger by an assumed date. Legacy dependency
+exclusions and exact skipped profiles keep their full inventories. Default
+unbounded inventory callers are unchanged. Compare selected full records,
+duplicate ordinals, group presence and plans before deploying a memory change;
+a lower heap limit alone is not a repair for excessive retained objects.
+
+For an explicitly reviewed full-window refresh, the worker also requires a
+bounded manual qualification. Create a **job-private** environment that points
+`SYNC_MANUAL_SKIPS_FILE` and its exact SHA256 to the selected frozen cycle's
+existing qualified exception file, alongside the durable review path. The
+ordinary source, immutable base, retained-row and hosted-policy checks still
+run. Use that private environment with `--refresh-window` and
+`--resume-host-cycle`; validate before backup and apply. Keep generated cycle
+bindings out of the recurring base environment. A source-reference correction
+can change cumulative totals even when its own grade/receipt amount is unchanged;
+qualify those derived dependencies and verify their new mapped values. Never
+describe all derived quantities as preserved merely because the source amount
+and numeric row IDs were retained.
+
 An operator can correct a Dispo factory prefix, for example `SW/.../00123`
 to `YT/.../00123`. After explicit owner authorization, set the private
 `SYNC_ACCEPT_DISPO_PREFIX_EDITS=true` alongside `SYNC_VERIFIED_WRITES=true`.

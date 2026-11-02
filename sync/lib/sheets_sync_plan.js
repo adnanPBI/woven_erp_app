@@ -28,28 +28,37 @@ function fingerprint(headers, values, profile) {
   return hash(headers.map((h,i)=>[h,String(values[i]??'')]).filter(([h])=>fingerprintColumn(profile,h)));
 }
 async function inventory(csvDir, profiles, options = {}) {
+  const window=options.window;
+  if(window&&(!require('./sync_date_scope').isoBusinessDate(window.start)||!require('./sync_date_scope').isoBusinessDate(window.end)||window.start>window.end))throw Error('Invalid inventory date window');
   const result = {};
   for (const profile of profiles) {
-    const records = [], occurrences = new Map(); let headers;
+    const records = [], occurrences = new Map(),fullGroups=window?new Set():null; let headers;
     for await (const row of iterateCsvRows(path.join(csvDir,profile.source_file))) {
       if (row.logicalRowNumber <= Number(profile.header_row||0)) continue;
       if (!headers) { headers=dedupeHeaders(row.values); continue; }
       if (!isNonEmptyRow(row.values)) continue;
-      const digest=fingerprint(headers,row.values,profile.id), n=(occurrences.get(digest)||0)+1;
-      occurrences.set(digest,n);
       const columns=identityColumns[profile.id]||[];
       for(const column of columns)if(!headers.includes(column))throw Error('Missing identity column '+column+' for '+profile.id);
       const group=hash([profile.id,...columns.map(h=>String(row.values[headers.indexOf(h)]??'').trim().toLowerCase())]);
+      if(fullGroups)fullGroups.add(group);
+      const dateField=businessDateColumns[profile.id];
+      if(window&&!dateField)throw Error('Missing business-date policy for '+profile.id);
+      const dateIndex=dateField?headers.indexOf(dateField):-1;
+      if(dateField&&dateIndex<0)throw Error('Missing business-date column '+dateField+' for '+profile.id);
+      const businessDate=dateIndex<0?'':String(row.values[dateIndex]??'').trim();
+      // Retain every source group for missing-history checks, but materialize
+      // business records only inside the authorized window. The business date
+      // participates in the full digest, so omitted dates cannot change the
+      // duplicate occurrence number of any retained record.
+      if(window&&(businessDate<window.start||businessDate>window.end))continue;
+      const digest=fingerprint(headers,row.values,profile.id), n=(occurrences.get(digest)||0)+1;
+      occurrences.set(digest,n);
       const uid=String(row.values[headers.indexOf('__MIG_SOURCE_UID')]||'');
       // This cumulative date can change on multiple distinct receipts at once.
       // Keep an exact signature of every other field to distinguish those rows.
       const mutableMatchField={'yarn-receive':'Last Received Date','yarn-issue':'Delivery Place'}[profile.id];
       const matchHash=mutableMatchField?hash(headers.map((h,i)=>[h,String(row.values[i]??'')]).filter(([h])=>!metadata.has(h)&&h!==mutableMatchField)):null;
       const dispoHeader=['Dispo No.','Dispo No','Received GD NO','DISPO NUMBER'].find(h=>headers.includes(h));
-      const dateField=businessDateColumns[profile.id];
-      const dateIndex=dateField?headers.indexOf(dateField):-1;
-      if(dateField&&dateIndex<0)throw Error('Missing business-date column '+dateField+' for '+profile.id);
-      const businessDate=dateIndex<0?'':String(row.values[dateIndex]??'').trim();
       const amountFields=profile.id==='yarn-receive'?['Receipt Qty (Kgs)','Floor Return in kg']:profile.id==='yarn-issue'?['Out Side','Warp','Weft']:[];
       const amounts=amountFields.map(h=>{const raw=String(row.values[headers.indexOf(h)]??'').trim().replace(/,/g,'');return raw===''?null:Number(raw);});
       const entryAmounts=amounts.some(v=>v!==null)&&amounts.every(v=>v===null||Number.isFinite(v))?JSON.stringify(amounts):null;
@@ -57,7 +66,7 @@ async function inventory(csvDir, profiles, options = {}) {
       records.push({...(prefixMatchHash?{prefixMatchHash}:{}),key:hash([profile.id,digest,n]),digest,group,uid,matchHash,entryAmounts,yarnIdentity:yarnIdentity(profile.id,headers,row.values),rowNumber:row.logicalRowNumber,businessDate,dispo:dispoHeader?String(row.values[headers.indexOf(dispoHeader)]||'').trim().toLowerCase():''});
     }
     if(!headers)throw Error('Missing certified headers: '+profile.id);
-    result[profile.id]={headersHash:hash(headers.filter(h=>fingerprintColumn(profile.id,h))),records};
+    result[profile.id]={headersHash:hash(headers.filter(h=>fingerprintColumn(profile.id,h))),records,...(fullGroups?{fullGroups}: {})};
   }
   return result;
 }

@@ -1,5 +1,9 @@
 # Woven ERP and Google Sheets sync
 
+The [latest-prefix policy and deployment record](docs/CPANEL_PREFIX_EDITS.md)
+describe the explicit grant for qualified movement edits, preservation of
+original row IDs, composite-key audit handling and frozen full-window refreshes.
+
 November 1: [verified October 29–November 1 catch-up and daily MySQL/source checks](docs/CPANEL_CATCHUP_VERIFICATION_2026-11-01.md). The original September 22–October 29 migration committed business writes; later resumed cycles transferred subsequent available records. Read the [current project memory](MEMORY.md) for the active policy, runtime repairs and dated verification limits. Earlier rollout blockers are preserved as superseded history.
 
 For future cPanel changes, start with the [existing-installation operations runbook](docs/CPANEL_OPERATIONS.md), [October source/change record](docs/CPANEL_CHANGELOG_2026-10.md) and [manual/recurring policy specification](docs/MANUAL_TRANSFER_POLICY.md). These describe the authorized v2/v3 paths in addition to the legacy guard. Historical rollout notes are dated evidence, not live scheduler status.
