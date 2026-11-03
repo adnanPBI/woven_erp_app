@@ -590,6 +590,10 @@ async function connectIfPossible(ctx) {
       password: process.env.DB_PASSWORD,
       database: configuredDb,
       charset: 'utf8mb4',
+      dateStrings: true,
+      supportBigNumbers: true,
+      bigNumberStrings: true,
+      multipleStatements: false,
       waitForConnections: true,
       connectionLimit: 5,
       queueLimit: 0,
@@ -1003,9 +1007,11 @@ async function insertRow(ctx, table, data) {
   if (ctx.dryRun) return { insertId: null, action: 'previewed' };
   const columns = Object.keys(data).filter(k => data[k] !== undefined && k !== 'id');
   if (!columns.length) return { insertId: null, action: 'skipped_empty' };
+  if (ctx.sync) await ctx.sync.beforeMutation(ctx, 'insert', table, data, null);
   const sql = `INSERT INTO \`${table}\` (${columns.map(k => `\`${k}\``).join(', ')}) VALUES (${columns.map(() => '?').join(', ')})`;
   const [result] = await dbHandle(ctx).query(sql, columns.map(k => data[k]));
   await syncRowHistory.inserted(ctx, table, Object.fromEntries(columns.map(k => [k, data[k]])), result.insertId);
+  if (ctx.sync) await ctx.sync.verifyInserted(ctx, table, data, result.insertId);
   return { insertId: result.insertId || null, action: 'inserted' };
 }
 async function updateRow(ctx, table, data, where) {
@@ -1013,13 +1019,21 @@ async function updateRow(ctx, table, data, where) {
   const cols = Object.keys(data).filter(k => data[k] !== undefined && !Object.prototype.hasOwnProperty.call(where, k) && k !== 'id');
   const whereKeys = Object.keys(where).filter(k => where[k] !== null && where[k] !== undefined);
   if (!cols.length || !whereKeys.length) return { action: 'skipped_empty' };
+  if (ctx.sync) {
+    await ctx.sync.beforeMutation(ctx, 'update', table, data, where);
+    await require('./sync_write_safety').assertReferencedKeysUnchanged(ctx, table, data, where);
+  }
   const sql = `UPDATE \`${table}\` SET ${cols.map(k => `\`${k}\` = ?`).join(', ')} WHERE ${whereKeys.map(k => `\`${k}\` = ?`).join(' AND ')}`;
   const historyBefore = await syncRowHistory.before(ctx, table, Object.fromEntries(whereKeys.map(k => [k, where[k]])));
+  if (ctx.sync && (!historyBefore || historyBefore.rows.length !== 1))
+    throw Object.assign(new Error('Sync update requires one uniquely locked destination row'), {code:'SYNC_UPDATE_TARGET_NOT_UNIQUE'});
   await dbHandle(ctx).query(sql, [...cols.map(k => data[k]), ...whereKeys.map(k => where[k])]);
   await syncRowHistory.updated(ctx, table, historyBefore);
+  if (ctx.sync) await require('./sync_write_safety').assertMappedValues(ctx, table, where, data);
   return { action: 'updated' };
 }
 async function deleteChildren(ctx, table, where) {
+  if (ctx.sync) throw Object.assign(new Error('Child deletion is forbidden during synchronization'), {code:'SYNC_DELETE_FORBIDDEN'});
   if (ctx.dryRun) return;
   const keys = Object.keys(where).filter(k => where[k] !== null && where[k] !== undefined);
   if (!keys.length) return;
@@ -1070,7 +1084,15 @@ async function upsertProvenanceParent(ctx, profile, table, data) {
     }
   }
   if (ctx.dryRun || !ctx.pool) {
-    const syntheticId = `DRY-${table}-${sourceUid.slice(0, 32)}`;
+    let verifiedExisting = null;
+    if (ctx.sync && ctx.pool) {
+      const evidenceData = syncBinding ? {...data, id:syncBinding.target_primary_key} : data;
+      const evidenceKeys = syncBinding ? ['id'] : (tableContract(profile,table).natural_key||[]);
+      verifiedExisting = await ctx.sync.captureTarget(ctx, table, evidenceData, evidenceKeys);
+      if (ctx.syncOperation.action === 'insert' && verifiedExisting && !ctx.syncOperation.alreadyApplied)
+        throw Object.assign(new Error('Insert would overwrite an existing unbound provenance target'), {code:'SYNC_EXISTING_TARGET_UNBOUND'});
+    }
+    const syntheticId = verifiedExisting?.id || `DRY-${table}-${sourceUid.slice(0, 32)}`;
     ctx.preview({ profile: profile.id, table, action: 'preview_provenance_upsert', source_uid: sourceUid, data: JSON.stringify(data) });
     return { action: 'previewed', id: syntheticId };
   }
@@ -1111,9 +1133,16 @@ async function upsertRow(ctx, profile, table, data) {
     const prior = (ctx.dryRun && duplicateRule) ? ctx.dryRunNaturalKeyRows?.get(dryRunKey) : null;
     const effectiveData = (ctx.dryRun && duplicateRule) ? mergeDuplicateData(ctx, profile, table, prior, data) : data;
     if (ctx.dryRun && duplicateRule) ctx.dryRunNaturalKeyRows?.set(dryRunKey, effectiveData);
+    let verifiedExisting = null;
+    if (ctx.sync && ctx.pool) {
+      verifiedExisting = await ctx.sync.captureTarget(ctx, table, effectiveData, keyFields);
+      const isChild = Boolean(tc.parent) || (profile.repeated_groups||[]).some(g=>g.target_table===table);
+      if (!isChild && ctx.syncOperation.action === 'insert' && verifiedExisting && !ctx.syncOperation.alreadyApplied)
+        throw Object.assign(new Error('Insert would overwrite an existing business target with a different source identity'), {code:'SYNC_EXISTING_TARGET_UNBOUND'});
+    }
     ctx.preview({ profile: profile.id, table, action: ctx.dryRun ? 'preview_upsert' : 'preview_insert', key: JSON.stringify(naturalKey), data: JSON.stringify(effectiveData) });
     const syntheticSeed = Object.values(naturalKey).join('|') || JSON.stringify(data).slice(0, 80);
-    const syntheticId = `DRY-${table}-${sanitizeToken(syntheticSeed, 48)}`;
+    const syntheticId = verifiedExisting?.id || `DRY-${table}-${sanitizeToken(syntheticSeed, 48)}`;
     return { action: 'previewed', id: syntheticId };
   }
   const existing = await findOne(ctx, table, naturalKey, null);
@@ -1485,6 +1514,21 @@ async function processProfile(ctx, profile) {
       if (Object.prototype.hasOwnProperty.call(repeatedRows, table)) {
         const group = (profile.repeated_groups || []).find(g => g.target_table === table);
         const parentKeyValue = group?.parent_key_field ? sourceValueList(fileInfo, row, group.parent_key_source, 1) : null;
+        if (ctx.sync) {
+          if (!group?.parent_key_field || cleanText(parentKeyValue) === null) throw new Error('Missing verified repeated-child parent scope');
+          const scope = { [group.parent_key_field]: transformForTarget(parentKeyValue, ctx.schema[table]?.[group.parent_key_field], group.parent_key_field, { dateOrder: ctx.dateOrder }) };
+          const results = await require('./sync_write_safety').reconcileChildren(ctx, profile, table, scope, repeatedRows[table], {
+            preview: row => upsertRow(ctx, profile, table, row),
+            insert: row => insertRow(ctx, table, row),
+            update: (row, where) => updateRow(ctx, table, row, where)
+          });
+          for (const res of results) {
+            const statKey = res.action === 'inserted' ? 'inserted' : res.action === 'updated' ? 'updated' : 'previewed';
+            profileRecon.tables[table].attempted += 1;
+            profileRecon.tables[table][statKey] += 1; ctx.stat(profile.id, statKey, 1);
+          }
+          continue;
+        }
         if (ctx.pool && !ctx.dryRun && group?.parent_key_field && cleanText(parentKeyValue) !== null) await deleteChildrenOnce(ctx, table, { [group.parent_key_field]: transformForTarget(parentKeyValue, ctx.schema[table]?.[group.parent_key_field], group.parent_key_field, { dateOrder: ctx.dateOrder }) });
         for (const rr of repeatedRows[table]) {
           profileRecon.tables[table].attempted += 1;
@@ -1501,6 +1545,20 @@ async function processProfile(ctx, profile) {
         const pid = idByTable[parent.parent_table] || null;
         if (!pid) throw new Error(`Parent id unavailable for ${table}: ${parent.parent_table}`);
         data[parent.parent_id_field] = pid;
+        if (ctx.sync) {
+          const rows = await require('./sync_write_safety').reconcileChildren(ctx, profile, table, { [parent.parent_id_field]: pid }, [nonEmptyObject(data)], {
+            preview: row => upsertRow(ctx, profile, table, row),
+            insert: row => insertRow(ctx, table, row),
+            update: (row, where) => updateRow(ctx, table, row, where)
+          });
+          if (rows.length !== 1) throw new Error('Expected one reconciled child');
+          const res = rows[0];
+          if (res.id) idByTable[table] = res.id;
+          const statKey = res.action === 'inserted' ? 'inserted' : res.action === 'updated' ? 'updated' : 'previewed';
+          profileRecon.tables[table].attempted += 1;
+          profileRecon.tables[table][statKey] += 1; ctx.stat(profile.id, statKey, 1);
+          continue;
+        }
         if (ctx.pool && !ctx.dryRun) await deleteChildrenOnce(ctx, table, { [parent.parent_id_field]: pid });
       }
       profileRecon.tables[table].attempted += 1;
@@ -1557,6 +1615,7 @@ async function processProfile(ctx, profile) {
         continue;
       }
       let conn = null;
+      let restoreSyncQueryFence = null;
       let rowOutcome = ctx.dryRun ? 'previewed' : 'committed';
       let rowError = null;
       const rowKeys = sourceRowKeyContext(fileInfo, record);
@@ -1567,6 +1626,7 @@ async function processProfile(ctx, profile) {
           conn = await ctx.pool.getConnection();
           ctx.conn = conn;
           await conn.beginTransaction();
+          if (ctx.sync) restoreSyncQueryFence = require('./sync_write_safety').fenceConnection(conn);
         }
         if (!ctx.sync || await ctx.sync.begin(ctx, profile, fileInfo, record)) {
           await executeLogicalUnit(record);
@@ -1599,8 +1659,13 @@ async function processProfile(ctx, profile) {
         ctx.currentPlanOnlyDispo = false;
         ctx.currentRawDispo = null;
         ctx.currentCanonicalDispo = null;
+        if (restoreSyncQueryFence) restoreSyncQueryFence();
         if (conn) conn.release();
         resetRowScopedCaches(ctx);
+      }
+      if (ctx.sync && rowError) {
+        const fatal = new Error('Synchronization stopped after rolled-back source row: '+rowError);
+        fatal.code = 'SYNC_ROW_FAILED_STOP'; throw fatal;
       }
       const st = ctx.stats[profile.id] || {};
       ctx.writeRowProgress({ importer: profile.id, sourceRowNumber: logicalRecordNumber, profileRowNumber: rangeRowsProcessed, total: expectedProcessRows, outcome: rowOutcome, sourceKeys: rowKeys, error: rowError, inserted: st.inserted || 0, updated: st.updated || 0, rejected: st.rejected || 0, rolledBack: st.rolled_back || 0 });
@@ -1729,6 +1794,7 @@ async function runDynamicImport({ rootDir, args, logger = null, sync = null }) {
 
     await connectIfPossible(ctx);
     if (ctx.sync) await ctx.sync.initialize(ctx);
+    if (ctx.sync) await require('./sync_write_safety').assertNoUnreviewedTriggers(ctx);
     for (const finding of provenance.validateSupportSchema(ctx, ctx.provenancePolicy)) ctx.addValidation(finding);
     if (ctx.live && hasFatalValidation(ctx)) {
       const error = new Error('v3.2.3 support schema validation failed. Apply sql/v3_2_3/01_v323_support_schema.sql before live execution.');
@@ -1863,6 +1929,9 @@ function writeReports(ctx, contractPath) {
     reviewedPendingManifestSha256: ctx.reviewedPendingManifestSha256,
     approvedDryRunId: ctx.approvedDryRunId || null,
     syncPlanHash: ctx.sync?.hash || null,
+    businessPreimageSha256: ctx.sync?.business?.export()?.fingerprint || null,
+    businessTargetsVerified: ctx.sync?.business?.targetsVerified || 0,
+    businessVerificationOnly: Boolean(ctx.sync?.options?.verifyOnly),
     requestedOnly: ctx.args.only || null,
     selectedProfiles,
     allContractProfiles,
@@ -1891,6 +1960,8 @@ function writeReports(ctx, contractPath) {
     previewRowsOmitted: ctx.previewRowsOmitted,
     fkDependencyFailures: ctx.fkDependencyReport.filter(r => !r.ok).length,
     transactionScope: 'source-row/logical-unit + source-uid provenance',
+    syncChildPolicy: ctx.sync ? 'preserve-existing-keys-no-delete' : 'migration-legacy',
+    syncStopsOnFirstRejectedRow: Boolean(ctx.sync),
     provenancePolicyVersion: ctx.provenancePolicy?.policy_version || null,
     outputDir: ctx.outputDir,
   };
