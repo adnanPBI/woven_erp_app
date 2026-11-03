@@ -1,0 +1,197 @@
+/* Weaving ERP independent console windows — 2026-11-03
+ * Frontend only. No changes to authentication, SQL, worker, or server routes.
+ */
+.erp-console-workspace {
+  position:fixed; inset:0; z-index:1090;
+  pointer-events:none; isolation:isolate;
+}
+.erp-console-window {
+  --erp-console-accent:#53d4c8;
+  position:absolute; display:flex; flex-direction:column; overflow:hidden;
+  min-width:min(430px,98vw); min-height:280px;
+  max-width:100vw; max-height:100dvh;
+  background:#292c2f; color:#f2f5f8;
+  border:1px solid rgba(183,196,205,.34); border-radius:15px;
+  box-shadow:0 19px 55px rgba(0,0,0,.45),0 3px 12px rgba(0,0,0,.2);
+  pointer-events:auto; resize:both;
+  contain:layout style;
+}
+.erp-console-window[hidden], .erp-console-taskbar[hidden],
+.erp-console-taskbar button[hidden] {display:none!important;}
+.erp-console-window:not(.is-maximized) {
+  left:clamp(18px,7vw,160px); top:clamp(52px,9vh,110px);
+  width:min(1360px,88vw); height:min(820px,79dvh);
+}
+.erp-console-window[data-console-mode="history"]:not(.is-maximized) {
+  left:clamp(36px,11vw,210px); top:clamp(70px,12vh,145px);
+}
+.erp-console-window.is-maximized {
+  inset:7px 7px 57px 7px!important;
+  width:auto!important; height:auto!important; resize:none;
+  max-width:none; max-height:none; border-radius:12px;
+}
+.erp-console-titlebar {
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px; padding:13px 15px 12px;
+  flex:0 0 auto; min-height:69px;
+  background:linear-gradient(105deg,#e87458 0%,#cd9680 40%,#4fd2c7 100%);
+  color:white; touch-action:none; user-select:none;
+}
+.erp-console-window:not(.is-maximized) .erp-console-titlebar {cursor:move;}
+.erp-console-titlebar:focus-visible, .erp-console-window:focus-visible {
+  outline:2px solid #a4d7ff;outline-offset:-2px;
+}
+.erp-console-heading {min-width:0; display:flex; align-items:center; gap:11px;}
+.erp-console-heading-icon {
+  display:grid;place-items:center;flex:0 0 36px;
+  height:36px; border-radius:10px;
+  color:white;background:rgba(35,42,49,.16);font-size:17px;
+}
+.erp-console-heading h3 {
+  margin:0;font-size:clamp(17px,1.6vw,24px);line-height:1.15;
+  font-weight:750;letter-spacing:-.4px;color:#fff;
+}
+.erp-console-heading p {
+  margin:4px 0 0; font-size:12px;font-weight:600;
+  opacity:.98;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:48vw;
+}
+.erp-console-window-actions {
+  display:flex;align-items:center;gap:4px;flex:0 0 auto;
+}
+.erp-console-window-actions button {
+  border:1px solid transparent;border-radius:7px;background:transparent;
+  color:#fff;display:inline-grid;place-items:center;
+  width:34px;height:34px;cursor:pointer;font-size:15px;
+}
+.erp-console-window-actions button:hover {
+  background:rgba(22,37,50,.19);border-color:rgba(255,255,255,.19);
+}
+.erp-console-window-actions button:focus-visible,
+.erp-console-taskbar button:focus-visible {
+  outline:2px solid #fff;outline-offset:2px;
+}
+.erp-console-window-actions button[data-console-action="close"]:hover {
+  background:#b83a45;
+}
+.erp-console-control-glyph {
+  font:700 17px/1 system-ui,-apple-system,"Segoe UI",sans-serif;
+  display:inline-block;white-space:nowrap;letter-spacing:-.5px;
+}
+.erp-console-window-actions button[data-console-action^="zoom-"] .erp-console-control-glyph {font-size:14px;}
+.erp-console-window-actions button:disabled {opacity:.43;cursor:not-allowed;}
+.erp-console-zoom-level {
+  color:#fff;min-width:43px;text-align:center;
+  font:700 12px/1.2 system-ui,sans-serif;
+  font-variant-numeric:tabular-nums;
+}
+.erp-console-action-divider {
+  width:1px;height:22px;margin:0 4px;background:rgba(255,255,255,.34);
+}
+.erp-console-body {
+  flex:1;min-height:0;min-width:0;overflow:auto;
+  padding:18px 21px 24px;overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+.erp-console-scalable {min-width:0;transform-origin:top left;}
+.erp-console-body .text-muted {color:#bfcad6!important;}
+.erp-console-body p {line-height:1.48;}
+.erp-console-body .alert-danger {background:#542a34;color:#fff;border-color:#9f4c5f;}
+.erp-console-body .console-grid {
+  max-height:53dvh;overflow:auto;border:1px solid #b9c1c7;
+  border-radius:8px;background:#fff;color:#172435;
+}
+.erp-console-window.is-maximized .console-grid {max-height:63dvh;}
+.erp-console-body .console-grid table {
+  width:max-content;min-width:100%;margin-bottom:0;
+  color:#192736;background:#fff;
+}
+.erp-console-body .console-grid th {
+  position:sticky;top:0;z-index:2;
+  background:#eef2f7!important;color:#182737!important;
+  white-space:nowrap;border-color:#ccd5de;
+}
+.erp-console-body .console-grid td {
+  min-width:125px;max-width:320px;
+  white-space:normal;vertical-align:middle;
+  border-color:#dfe5eb;color:#243140;background:#fff;
+}
+.erp-console-body .console-grid tbody tr:hover td {background:#f5f9fe;}
+.erp-console-body .console-record-grid td {width:190px;}
+.erp-console-body .console-value {
+  max-height:200px;overflow:auto;white-space:pre-wrap;
+  font-size:12px;color:#1e3040;background:#f2f5f8;
+  padding:8px;border:1px solid #e1e6ec;border-radius:5px;
+}
+.erp-console-body .form-control,
+.erp-console-body .form-select {
+  background:#363b42;color:#f4f6f8;border:1px solid #48535e;
+  min-height:39px;
+}
+.erp-console-body .form-control::placeholder {color:#bec8d4;opacity:1;}
+.erp-console-body .form-select option {color:#132236;background:#fff;}
+.erp-console-body .form-control:focus,
+.erp-console-body .form-select:focus {
+  border-color:#78a9ff;box-shadow:0 0 0 2px rgba(90,151,255,.2);
+}
+.erp-console-body .btn {white-space:nowrap;}
+.erp-console-body .btn-outline-primary {border-color:#3989ff;color:#3989ff;}
+.erp-console-body .btn-outline-primary:hover {background:#0d6efd;color:white;}
+.erp-console-body .btn-outline-danger {border-color:#e15565;color:#f17680;}
+.erp-console-body .btn-outline-danger:hover {background:#d13c4f;color:white;}
+.erp-console-body .console-grid .btn-outline-primary {color:#0b67ef;}
+.erp-console-footer {
+  display:flex;flex:0 0 auto;align-items:center;
+  justify-content:space-between;gap:12px;flex-wrap:wrap;
+  min-height:47px;padding:7px 14px;border-top:1px solid #151b20;
+  color:#cbd2db;background:#202227;font-size:12px;
+}
+.erp-console-footer .console-floating-scroll {
+  display:flex;gap:12px;align-items:center;flex:1;min-width:150px;
+}
+.erp-console-footer .console-floating-scroll[hidden] {display:none!important;}
+.erp-console-footer .console-floating-scroll input {
+  flex:1;min-width:60px;accent-color:var(--erp-console-accent);
+}
+.erp-console-footer-note {white-space:nowrap;color:#a9bac9;}
+.erp-console-taskbar {
+  position:fixed;z-index:1190;left:12px;bottom:8px;
+  display:flex;align-items:center;gap:8px;
+  max-width:calc(100vw - 24px);padding:6px 8px;
+  background:rgba(23,26,32,.96);border:1px solid #46515c;
+  border-radius:12px;box-shadow:0 6px 22px rgba(0,0,0,.35);
+  pointer-events:auto;
+}
+.erp-console-taskbar button {
+  display:flex;align-items:center;gap:8px;
+  height:32px;padding:0 13px;border:1px solid #495460;
+  border-radius:8px;background:#343940;color:#dae6f0;
+  font-size:13px;font-weight:650;max-width:44vw;
+}
+.erp-console-taskbar button:hover,.erp-console-taskbar button.is-active {
+  background:#285b59;color:#fff;border-color:#4fd2c7;
+}
+.erp-console-taskbar button.is-minimized {opacity:.8;background:#252b34;}
+.erp-console-taskbar-title {white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+@media(max-width:740px){
+  .erp-console-window:not(.is-maximized) {
+    left:5px!important;top:5px!important;width:calc(100vw - 10px)!important;
+    height:calc(100dvh - 62px)!important;resize:none;
+  }
+  .erp-console-window.is-maximized {inset:4px 4px 58px 4px!important;}
+  .erp-console-titlebar {padding:9px 8px;min-height:90px;gap:7px;flex-wrap:wrap;align-content:center;}
+  .erp-console-heading {gap:6px;flex:1 1 100%;}
+  .erp-console-heading-icon {display:none;}
+  .erp-console-heading h3 {font-size:17px;}
+  .erp-console-heading p {font-size:10px;max-width:75vw;}
+  .erp-console-window-actions {gap:2px;flex:1;justify-content:flex-end;}
+  .erp-console-window-actions button {width:28px;height:30px;font-size:13px;}
+  .erp-console-zoom-level {min-width:31px;font-size:10px;}
+  .erp-console-action-divider {margin:0 1px;}
+  .erp-console-body {padding:11px 9px 15px;}
+  .erp-console-taskbar {left:4px;right:4px;max-width:none;bottom:3px;justify-content:center;}
+  .erp-console-taskbar button {flex:1;justify-content:center;padding:0 6px;max-width:none;}
+  .erp-console-footer-note {display:none;}
+}
+@media(prefers-reduced-motion:reduce){
+  .erp-console-window,.erp-console-taskbar {scroll-behavior:auto;}
+}

@@ -1008,20 +1008,8 @@
         .erp-action-controls {justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.14);}
         .header-controls .erp-action-controls .btn {min-width:150px;margin:0;}
         .header-controls .erp-user-controls .badge {margin:0!important;}
-        #databaseToolsModal .modal-dialog {max-width:min(96vw,1600px);}
-        #databaseToolsModal .text-muted {color:#bec9d4!important;}
-        #databaseToolsModal .form-control::placeholder {color:#bcc5d0;opacity:1;}
-        #databaseToolsModal .console-grid {max-height:52vh;overflow:auto;border:1px solid #ccc;}
-        #databaseToolsModal .console-grid table {width:max-content;min-width:100%;margin-bottom:0;}
-        #databaseToolsModal .console-grid th {position:sticky;top:0;z-index:2;background:#eff3f8;color:#192739;white-space:nowrap;}
-        #databaseToolsModal .console-grid td {min-width:125px;max-width:320px;white-space:normal;}
-        #databaseToolsModal .console-record-grid td {width:190px;}
-        #databaseToolsModal .console-floating-scroll {display:flex;gap:12px;align-items:center;flex:1;min-width:150px;}
-        #databaseToolsModal .console-floating-scroll[hidden] {display:none;}
-        #databaseToolsModal .console-floating-scroll input {flex:1;min-width:70px;accent-color:#55d6c7;}
-        #databaseToolsModal .console-value {max-height:200px;overflow:auto;white-space:pre-wrap;font-size:12px;color:inherit;}
-        @media(max-width:650px){.erp-header-top h1{white-space:normal;font-size:1.45rem;}.erp-action-controls .btn{flex:1 1 42%;}.erp-user-controls{gap:8px;}#databaseToolsModal .modal-dialog{max-width:98vw;margin:8px;} }
     </style>
+    <link rel="stylesheet" href="/main/erp-console-windows.css?v=20261103-windows-v1">
 </head>
 <body>
     <div class="gradient-bg"></div>
@@ -1511,15 +1499,93 @@
     </div>
 
 
-    <div class="modal fade" id="databaseToolsModal" tabindex="-1" aria-labelledby="databaseToolsTitle" aria-hidden="true">
-      <div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
-        <div class="modal-header"><div><h4 class="modal-title" id="databaseToolsTitle">Database</h4><div id="databaseToolsIdentity" class="small"></div></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-        <div class="modal-body"><div id="databaseToolsMessage" role="alert" aria-live="polite"></div><div id="databaseToolsBody"></div></div>
-        <div class="modal-footer"><div class="console-floating-scroll" id="databaseHorizontalScroll" hidden><span>Columns</span><input id="databaseColumnSlider" type="range" min="0" max="0" value="0" step="1" aria-label="Scroll table columns horizontally"></div><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
-      </div></div>
+
+    <!-- Independent, non-modal ERP consoles: each keeps its own data, zoom and scroll state. -->
+    <div id="erp-console-workspace" class="erp-console-workspace" aria-live="off">
+    <section id="erp-console-window-database" class="erp-console-window is-maximized"
+      data-console-mode="database" aria-label="Database" role="dialog" aria-modal="false"
+      aria-labelledby="erp-console-title-database" tabindex="-1" hidden>
+      <header class="erp-console-titlebar" data-console-drag-handle tabindex="0">
+        <div class="erp-console-heading">
+          <span class="erp-console-heading-icon" aria-hidden="true"><i class="fas fa-database"></i></span>
+          <div>
+            <h3 id="erp-console-title-database">Database</h3>
+            <p data-console-identity>Weaving ERP · Secure console</p>
+          </div>
+        </div>
+        <div class="erp-console-window-actions" aria-label="Database controls">
+          <button type="button" data-console-action="zoom-out" aria-label="Zoom out Database" title="Zoom out"><span class="erp-console-control-glyph" aria-hidden="true">A−</span></button>
+          <output data-console-zoom aria-label="Current content zoom">100%</output>
+          <button type="button" data-console-action="zoom-in" aria-label="Zoom in Database" title="Zoom in"><span class="erp-console-control-glyph" aria-hidden="true">A+</span></button>
+          <button type="button" data-console-action="zoom-reset" aria-label="Reset zoom Database" title="Reset zoom to 100%"><span class="erp-console-control-glyph" aria-hidden="true">↺</span></button>
+          <span class="erp-console-action-divider" aria-hidden="true"></span>
+          <button type="button" data-console-action="minimize" aria-label="Minimize Database" title="Minimize to ERP taskbar"><span class="erp-console-control-glyph" aria-hidden="true">—</span></button>
+          <button type="button" data-console-action="maximize" aria-label="Restore window size Database" title="Restore window size"><span class="erp-console-control-glyph" aria-hidden="true">▣</span></button>
+          <button type="button" data-console-action="close" aria-label="Close Database" title="Close window"><span class="erp-console-control-glyph" aria-hidden="true">×</span></button>
+        </div>
+      </header>
+      <div class="erp-console-body" data-console-scroll>
+        <div class="erp-console-scalable" data-console-scalable>
+          <div data-console-message role="alert" aria-live="polite"></div>
+          <div data-console-content></div>
+        </div>
+      </div>
+      <footer class="erp-console-footer">
+        <div class="console-floating-scroll" data-console-horizontal-scroll hidden>
+          <span>Columns</span>
+          <input data-console-column-slider type="range" min="0" max="0" value="0" step="1" aria-label="Scroll Database table horizontally"/>
+        </div>
+        <span class="erp-console-footer-note">Independent ERP window · Ctrl+0 resets zoom</span>
+      </footer>
+    </section>
+    <section id="erp-console-window-history" class="erp-console-window is-maximized"
+      data-console-mode="history" aria-label="Sync history" role="dialog" aria-modal="false"
+      aria-labelledby="erp-console-title-history" tabindex="-1" hidden>
+      <header class="erp-console-titlebar" data-console-drag-handle tabindex="0">
+        <div class="erp-console-heading">
+          <span class="erp-console-heading-icon" aria-hidden="true"><i class="fas fa-history"></i></span>
+          <div>
+            <h3 id="erp-console-title-history">Sync history</h3>
+            <p data-console-identity>Weaving ERP · Secure console</p>
+          </div>
+        </div>
+        <div class="erp-console-window-actions" aria-label="Sync history controls">
+          <button type="button" data-console-action="zoom-out" aria-label="Zoom out Sync history" title="Zoom out"><span class="erp-console-control-glyph" aria-hidden="true">A−</span></button>
+          <output data-console-zoom aria-label="Current content zoom">100%</output>
+          <button type="button" data-console-action="zoom-in" aria-label="Zoom in Sync history" title="Zoom in"><span class="erp-console-control-glyph" aria-hidden="true">A+</span></button>
+          <button type="button" data-console-action="zoom-reset" aria-label="Reset zoom Sync history" title="Reset zoom to 100%"><span class="erp-console-control-glyph" aria-hidden="true">↺</span></button>
+          <span class="erp-console-action-divider" aria-hidden="true"></span>
+          <button type="button" data-console-action="minimize" aria-label="Minimize Sync history" title="Minimize to ERP taskbar"><span class="erp-console-control-glyph" aria-hidden="true">—</span></button>
+          <button type="button" data-console-action="maximize" aria-label="Restore window size Sync history" title="Restore window size"><span class="erp-console-control-glyph" aria-hidden="true">▣</span></button>
+          <button type="button" data-console-action="close" aria-label="Close Sync history" title="Close window"><span class="erp-console-control-glyph" aria-hidden="true">×</span></button>
+        </div>
+      </header>
+      <div class="erp-console-body" data-console-scroll>
+        <div class="erp-console-scalable" data-console-scalable>
+          <div data-console-message role="alert" aria-live="polite"></div>
+          <div data-console-content></div>
+        </div>
+      </div>
+      <footer class="erp-console-footer">
+        <div class="console-floating-scroll" data-console-horizontal-scroll hidden>
+          <span>Columns</span>
+          <input data-console-column-slider type="range" min="0" max="0" value="0" step="1" aria-label="Scroll Sync history table horizontally"/>
+        </div>
+        <span class="erp-console-footer-note">Independent ERP window · Ctrl+0 resets zoom</span>
+      </footer>
+    </section>
     </div>
+    <nav id="erp-console-taskbar" class="erp-console-taskbar" aria-label="ERP window taskbar" hidden>
+      <button id="erp-console-task-database" type="button" data-console-task="database" aria-label="Switch to Database" aria-pressed="false" hidden>
+        <i class="fas fa-database" aria-hidden="true"></i><span class="erp-console-taskbar-title">Database</span>
+      </button>
+      <button id="erp-console-task-history" type="button" data-console-task="history" aria-label="Switch to Sync history" aria-pressed="false" hidden>
+        <i class="fas fa-history" aria-hidden="true"></i><span class="erp-console-taskbar-title">Sync history</span>
+      </button>
+    </nav>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/main/main.js?v=20261012-db-tools-2"></script>
+    <script src="/main/erp-console-windows.js?v=20261103-windows-v1"></script>
+    <script src="/main/main.js?v=20261103-windows-v1"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const tabBtns = document.querySelectorAll('.tab-btn');
