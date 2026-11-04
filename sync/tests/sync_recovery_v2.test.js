@@ -35,6 +35,17 @@ test('72-hour outage is detected and unchanged source reconciliation advances la
   assert.equal(v2.publicView(f.root).catchUpNeeded,false);
  }finally{f.clear();}
 });
+test('first v2 cycle catches up after a failed legacy fetch and retries transport deadlines',async()=>{
+ const f=fixture();
+ try{
+  const s=v2.begin(f.root,{cycle:f.cycle,previousStatus:{status:'failed',cycle:f.cycle,
+    error:'fetch_google_sheets.js failed'},now:'2026-11-04T04:20:00.000Z'});
+  assert.equal(s.current.catchUp,true);
+  assert.equal(v2.categorize(Error('fetch_google_sheets.js failed'),'fetch-retry'),'source-download');
+  assert.equal(v2.transientSourceError(Error('fetch failed'), 'google-read-retry reason: deadline-or-abort'),true);
+  assert.equal(v2.transientSourceError(Error('HTTP 403'),'deadline-or-abort'),false);
+ }finally{f.clear();}
+});
 test('SQL-completed checkpoint requires matching frozen plan and independent readback receipt',()=>{
  const f=fixture({plan:{ok:true,added:1,updated:0,refreshed:0,
    operations:{po:[{action:'insert'}]},conflicts:[]}});

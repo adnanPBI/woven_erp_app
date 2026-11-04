@@ -91,7 +91,8 @@ function begin(dataDir,{cycle,previousStatus,intervalMs=DEFAULT_INTERVAL_MS,pend
   }
   const gap=s.lastVerified?Math.max(0,t-Date.parse(s.lastVerified.at)):null;
   const missedIntervals=gap===null?null:Math.max(0,Math.floor(gap/intervalMs)-1);
-  const catchUp=!!pending||!!prior||s.consecutiveFailures>0||
+  const previousFailed=previousStatus?.status==='failed';
+  const catchUp=!!pending||!!prior||previousFailed||s.consecutiveFailures>0||
     (gap!==null&&gap>intervalMs*2);
   s.current={cycle,startedAt:now,updatedAt:now,phase:'starting',
     state:'running',catchUp,missedIntervals,
@@ -153,7 +154,7 @@ function categorize(error,phase='',tail=''){
  if(/invalid_grant|invalid credentials|401|403|permission denied|unauthorized service.account/.test(t))return 'source-auth';
  if(/ambiguous.*edit|reviewed.*reassignment|identity.*conflict|matching.*conflict|changed keys/.test(t))return 'source-identity';
  if(/conflict.*plan|planner|unknown missing.row|conflict.*unresolved/.test(t))return 'planning-conflict';
- if(phase==='fetching'||/google.*(?:fetch|download)|source.*download/.test(t))return 'source-download';
+ if(['fetching','fetch-retry','source-preparation'].includes(phase)||/fetch_google_sheets|google.*(?:fetch|download)|source.*download|deadline-or-abort/.test(t))return 'source-download';
  if(phase==='backing-up'||/pre.sync backup|mysqldump/.test(t))return 'backup';
  if(phase==='applying'||/sql.*execution|deadlock|lock wait timeout/.test(t))return 'sql-execution';
  if(phase==='verifying'||/verify.*business|independent readback|readback/.test(t))return 'verification';
@@ -208,7 +209,7 @@ function transientSourceError(error,logTail){
  // Never retry identity drift, denied permissions, missing sheets, invalid manifests,
  // parse errors, malformed source IDs or other nontransient conditions.
  if(/\b401\b|\b403\b|\b404\b|invalid_grant|permission denied|invalid credentials|source identity|spreadsheetid.*placeholder|invalid header|configured header/.test(text))return false;
- return /econnreset|econnrefused|eai_again|enotfound|etimedout|timeout|socket hang up|\b429\b|\b500\b|\b502\b|\b503\b|\b504\b|temporarily unavailable|network is unreachable/.test(text);
+ return /econnreset|econnrefused|eai_again|enotfound|etimedout|timeout|deadline-or-abort|socket hang up|\b429\b|\b500\b|\b502\b|\b503\b|\b504\b|temporarily unavailable|network is unreachable/.test(text);
 }
 async function fetchWithRetries(fn,{logFile,backoffs=MAX_BACKOFFS_MS,onRetry=()=>{},sleep=ms=>new Promise(r=>setTimeout(r,ms))}={}){
  if(typeof fn!=='function')throw Error('Missing guarded source fetch callback');
