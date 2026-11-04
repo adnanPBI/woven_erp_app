@@ -6,9 +6,15 @@ const ROOT=path.resolve(__dirname,'../..');
 const args=Object.fromEntries(process.argv.slice(2).filter(a=>a.startsWith('--')).map(a=>{const i=a.indexOf('=');return i<0?[a.slice(2),true]:[a.slice(2,i),a.slice(i+1)];}));
 const stamp=()=>new Date().toISOString().replace(/[:.]/g,'-');
 const storage=require('../../lib/sync_storage');
+const recovery=require('../../lib/sync_recovery_v2');
 const {ensureIdentityColumn,hydrateIdentities,saveHydratedIdentities}=require('../../lib/yarn_sync_identity');
 let lockHeartbeat;
 let connection,lockName,dataDir,storageConfig,activeCycle,hasLock=false,storageReady=false;
+let recoveryActive=false,recoveryPhase='preflight';
+function recoveryStage(phase,extra={}){
+ recoveryPhase=phase;
+ if(recoveryActive)recovery.stage(dataDir,phase,extra);
+}
 async function handshake(type,reply,details={}) {
  if(!process.send)throw Error('Use scripts/sync/run.js so storage supervision is active');
  await new Promise((resolve,reject)=>{
@@ -163,7 +169,10 @@ async function main(){
  if(!path.resolve(cycle).startsWith(path.resolve(dataDir,'cycles')+path.sep))throw Error('Cycle must be within sync data directory');
  activeCycle=cycle;
  fs.mkdirSync(cycle,{recursive:true});
+ recovery.begin(dataDir,{cycle,previousStatus,pending:!!pending||!!resume});
+ recoveryActive=true;
  const log=path.join(cycle,'worker.log');
+ recoveryStage('fetching');
  // Explicit child environment prevents production reuse of local rehearsal paths/settings.
  const childEnv={...process.env,...env,LOCAL_DATA_ROOT:cycle,LOCAL_CUTOFF_START:'2024-01-01',LOCAL_CUTOFF_END:date,GOOGLE_AUTH_MODE:'service-account',GOOGLE_SERVICE_ACCOUNT_JSON:env.GOOGLE_SERVICE_ACCOUNT_JSON_PATH||'',GOOGLE_SNAPSHOT_DIR:'',PREPARE_REVIEWER:'AUTHORIZED_SCHEDULED_SHEETS_SYNC',CSV_DATE_ORDER:'dmy',IMPORT_VALIDATION_MODE:'strict',LOCAL_PRESERVE_RETAINED:'false',DB_NAME:expected,IMPORT_EXPECTED_DB:expected,REQUIRE_DB_GUARD:'true',PRODUCTION_DB_NAME:expected,ALLOW_PRODUCTION_DB:'true',PRODUCTION_APPROVAL_TOKEN:crypto.randomBytes(24).toString('hex')};
  json(path.join(dataDir,'status.json'),{status:'fetching',database:expected,cycle,at:new Date().toISOString()});
@@ -173,10 +182,17 @@ async function main(){
   await command('scripts/local/download_public_sources.js',[],childEnv,log);
   childEnv.GOOGLE_SNAPSHOT_DIR=JSON.parse(fs.readFileSync(path.join(cycle,'latest_sheet_snapshot.json'))).dir;
  }
- await command('scripts/local/fetch_google_sheets.js',[],childEnv,log);
- await command('scripts/local/prepare_sources.js',[],childEnv,log);
+   await recovery.fetchWithRetries(
+    ()=>command('scripts/local/fetch_google_sheets.js',[],childEnv,log),
+    {logFile:log,onRetry:async retry=>{
+      recoveryStage('fetch-retry',{fetchRetries:retry});
+      console.log(JSON.stringify({kind:'recovery-v2-transient-source-retry',retry,maxRetries:2}));
+    }});
+   recoveryStage('source-preparation');
+   await command('scripts/local/prepare_sources.js',[],childEnv,log);
  }
  const prepared=JSON.parse(fs.readFileSync(path.join(cycle,'local_state.json')));
+ recoveryStage('planning',{manifestHash:prepared.latestSourceManifestSha256});
  json(path.join(dataDir,'status.json'),{status:'planning',database:expected,cycle,at:new Date().toISOString()});
  const {inventory,planEdits,applyReviewedReassignments}=require('../../lib/sheets_sync_plan');
  const reviewed=env.SYNC_REVIEWED_REASSIGNMENTS?JSON.parse(fs.readFileSync(path.resolve(env.SYNC_REVIEWED_REASSIGNMENTS))):[];
@@ -289,7 +305,14 @@ async function main(){
   json(path.join(dataDir,'conflict-review.json'),{at:new Date().toISOString(),cycle,conflicts:plan.conflicts});
   throw Error('Ambiguous edits/deletions or changed keys require review: '+path.join(cycle,'plan.json'));
  }
- if(args.plan||(!args['dry-run']&&plan.added+plan.updated+(plan.refreshed||0)===0)){json(path.join(dataDir,'status.json'),{status:args.plan?'planned':'unchanged',database:expected,cycle,at:new Date().toISOString(),added:plan.added,updated:plan.updated});console.log(JSON.stringify({readOnly:!!args.plan,added:plan.added,updated:plan.updated,cycle}));return;}
+ if(args.plan||(!args['dry-run']&&plan.added+plan.updated+(plan.refreshed||0)===0)){
+  const result=args.plan?'planned':'unchanged';
+  json(path.join(dataDir,'status.json'),{status:result,database:expected,cycle,at:new Date().toISOString(),added:plan.added,updated:plan.updated});
+  if(args.plan)recovery.observed(dataDir,'plan-only');
+  else recovery.success(dataDir,{cycle,sourceManifest:prepared.latestSourceManifest,
+     planFile:path.join(cycle,'plan.json'),result:'unchanged',verified:true});
+  console.log(JSON.stringify({readOnly:!!args.plan,added:plan.added,updated:plan.updated,cycle}));return;
+ }
  storage.assertCapacity(dataDir,storageConfig);
  const {sha256File}=require('../local/common');
  const {SheetsSyncRuntime}=require(repairMode?'../../lib/sheets_sync_runtime.repair':'../../lib/sheets_sync_runtime');
@@ -298,6 +321,7 @@ async function main(){
  const hash=sha256File(prepared.latestSourceManifest);
  const planHash=sha256File(path.join(cycle,'plan.json'));
  if(pending&&(pending.manifestHash!==hash||pending.planHash!==planHash||pending.database!==expected))throw Error('Pending sync evidence changed');
+ recoveryStage('validating');
  const dryId='sync_dry_'+stamp();
  json(path.join(dataDir,'status.json'),{status:'validating',database:expected,cycle,dryId,at:new Date().toISOString(),added:plan.added,updated:plan.updated,refreshed:plan.refreshed});
  const drySync=new SheetsSyncRuntime(plan,bundle.protectedMasters,hash);
@@ -308,9 +332,11 @@ async function main(){
  if(preimages)json(path.join(cycle,'business-preimages.json'),preimages);
  if(args['dry-run']){
   json(path.join(dataDir,'status.json'),{status:'dry-run-completed',database:expected,cycle,dryId,at:new Date().toISOString(),added:plan.added,updated:plan.updated,refreshed:plan.refreshed});
+  recovery.observed(dataDir,'dry-run-completed');
   console.log(JSON.stringify({status:'dry-run-completed',dryId,cycle}));return;
  }
- json(path.join(dataDir,'status.json'),{status:'backing-up',database:expected,cycle,dryId,at:new Date().toISOString()});
+  recoveryStage('backing-up');
+  json(path.join(dataDir,'status.json'),{status:'backing-up',database:expected,cycle,dryId,at:new Date().toISOString()});
  const backupFile=await backup(env,cycle);
  if(repairMode&&local)await connection.query(`CREATE TABLE IF NOT EXISTS erp_sync_row_changes (
  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,run_id VARCHAR(120),profile VARCHAR(40),source_uid VARCHAR(64),
@@ -323,22 +349,34 @@ async function main(){
  json(pendingFile,{cycle,database:expected,manifestHash:hash,planHash,backupFile});
  if(manualSkips)await require('../../lib/sync_manual_conflict_skips').verifyRetained(connection,manualSkips);
  const liveId='sync_live_'+stamp();
- json(path.join(dataDir,'status.json'),{status:'applying',database:expected,cycle,liveId,backupFile,at:new Date().toISOString()});
+  recoveryStage('applying');
+  json(path.join(dataDir,'status.json'),{status:'applying',database:expected,cycle,liveId,backupFile,at:new Date().toISOString()});
  await runDynamicImport({rootDir:ROOT,args:{live:true,yes:true,'backup-confirmed':true,'approved-dry-run':dryId,'run-id':liveId,'output-dir':path.join(cycle,'runs',liveId),'production-approval':childEnv.PRODUCTION_APPROVAL_TOKEN},sync:new SheetsSyncRuntime(plan,bundle.protectedMasters,hash,repairMode?{businessPreimages:preimages}:{})});
- if(repairMode){
-  const verifyId='sync_verify_'+stamp(),verifySync=new SheetsSyncRuntime(plan,bundle.protectedMasters,hash,{verifyOnly:true});
+  if(repairMode){
+   recoveryStage('verifying');
+   const verifyId='sync_verify_'+stamp(),verifySync=new SheetsSyncRuntime(plan,bundle.protectedMasters,hash,{verifyOnly:true});
   await runDynamicImport({rootDir:ROOT,args:{'dry-run':true,'run-id':verifyId,'output-dir':path.join(cycle,'runs',verifyId)},sync:verifySync});
   const createdCostingMasters=await require('../../lib/sync_business_evidence').verifyCapturedCostingMasters(connection,preimages);
   json(path.join(cycle,'business-verification.json'),{ok:true,verifyId,manifestHash:hash,planHash,targetsVerified:verifySync.business.targetsVerified,createdCostingMasters,sharedMasterReuses:verifySync.sharedMasterReuses||[],retainedBlankAmounts:verifySync.retainedBlankAmounts||[],retainedChildren:verifySync.retainedChildren||[]});
  }
  if(manualSkips)json(path.join(cycle,'manual-skips-verification.json'),await require('../../lib/sync_manual_conflict_skips').verifyRetained(connection,manualSkips));
  json(path.join(dataDir,'status.json'),{status:'completed',database:expected,cycle,backupFile,at:new Date().toISOString(),added:plan.added,updated:plan.updated});
- fs.unlinkSync(pendingFile);
-
- console.log(JSON.stringify({status:'completed',added:plan.added,updated:plan.updated,cycle}));
+  fs.unlinkSync(pendingFile);
+  recovery.success(dataDir,{cycle,sourceManifest:prepared.latestSourceManifest,
+   planFile:path.join(cycle,'plan.json'),result:'completed',verified:repairMode&&
+   fs.existsSync(path.join(cycle,'business-verification.json'))});
+  console.log(JSON.stringify({status:'completed',added:plan.added,updated:plan.updated,cycle}));
 }
 main().catch(e=>{
- if(hasLock)json(path.join(dataDir,'status.json'),{status:'failed',cycle:activeCycle,at:new Date().toISOString(),error:e.message});
+  if(hasLock){
+   const category=recovery.categorize(e,recoveryPhase);
+   json(path.join(dataDir,'status.json'),{status:'failed',cycle:activeCycle,at:new Date().toISOString(),error:e.message,errorCategory:category});
+   if(recoveryActive){
+    try{recovery.failure(dataDir,{error:e,phase:recoveryPhase,
+     pending:fs.existsSync(path.join(dataDir,'pending.json'))});}
+    catch(recoveryError){console.error('Recovery v2 failure metadata write refused: '+recoveryError.message);}
+   }
+  }
  console.error(e.stack);process.exitCode=1;
 }).finally(async()=>{
  try {

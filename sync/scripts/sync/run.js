@@ -102,6 +102,16 @@ async function scheduled(argv=process.argv.slice(2),options={}) {
   event('START');let owned=false,code;
   try {code=await supervise(argv,{...options,onOwnership:()=>{owned=true;options.onOwnership?.();}});}
   catch(e){console.error(e.message);code=1;}
+  if(code!==0&&owned){
+    // A killed/OOM-terminated worker cannot execute its own catch block.
+    // Record an interrupted attempt without promoting its SQL/source checkpoint.
+    try {
+      const env=require('dotenv').parse(fs.readFileSync(path.resolve(envArg.slice(6))));
+      const dataDir=path.resolve(env.SYNC_DATA_DIR||path.join(__dirname,'../../sync_data'));
+      require('../../lib/sync_recovery_v2').unexpected(dataDir,{
+        pending:fs.existsSync(path.join(dataDir,'pending.json'))});
+    }catch(e){console.error('Recovery v2 supervisor metadata unavailable: '+e.message);}
+  }
   event(code===0?(owned?'SUCCESS':'SKIPPED'):'FAILURE',code===0?'':' exit_code='+code);
   return code;
 }

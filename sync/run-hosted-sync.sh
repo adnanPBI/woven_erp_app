@@ -11,12 +11,29 @@ exec 9>"$ROOT/scheduler.lock"
 # successfully without starting work; exit 0 alone is not a completed cycle.
 /usr/bin/flock -n 9 || exit 0
 cd "$ROOT"
-sha256sum -c protection.sha256 >/dev/null
+LOG="$ROOT/scheduler.log"
+recovery_preflight_failure() {
+  kind="$1"
+  printf 'SYNC_PREFLIGHT_FAILURE %s category=%s\n' "$(date -u +%FT%TZ)" "$kind" >> "$LOG"
+  # Run this recorder only after the integrity manifest has passed.
+  if [ "$kind" = hosting-capacity ]; then
+    node scripts/sync/recovery_status.js --env="$ROOT/.env.sync" --preflight-failed=hosting-capacity >/dev/null 2>&1 || true
+  fi
+  exit 1
+}
+if ! sha256sum -c protection.sha256 >/dev/null; then
+  printf 'SYNC_PREFLIGHT_FAILURE %s category=integrity\n' "$(date -u +%FT%TZ)" >> "$LOG"
+  exit 1
+fi
 # Never rebuild this manifest to accept unknown changes. Update only authorized
 # source/config fingerprints while preserving the remaining policy/data pins.
 # The hosting quota is separate from the filesystem reserve checked by the worker.
-quota_json=$(/usr/bin/uapi --output=json Quota get_quota_info)
-printf '%s' "$quota_json" | node -e 'let s="";process.stdin.setEncoding("utf8");process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{const r=JSON.parse(s).result,q=r.data;if(r.status!==1||String(q.under_quota_overall)!=="1"||Number(q.megabytes_remain)<=3072)throw Error("Hosting account has insufficient sync reserve");}catch(e){console.error(e.message);process.exitCode=1;}});'
+if ! quota_json=$(/usr/bin/uapi --output=json Quota get_quota_info); then
+  recovery_preflight_failure hosting-capacity
+fi
+if ! printf '%s' "$quota_json" | node -e 'let s="";process.stdin.setEncoding("utf8");process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{try{const r=JSON.parse(s).result,q=r.data;if(r.status!==1||String(q.under_quota_overall)!=="1"||Number(q.megabytes_remain)<=3072)throw Error("Hosting account has insufficient sync reserve");}catch(e){console.error(e.message);process.exitCode=1;}});'; then
+  recovery_preflight_failure hosting-capacity
+fi
 if [ "${1:-}" = "--check" ]; then
   printf 'Scheduler preflight passed.\n'
   exit 0
