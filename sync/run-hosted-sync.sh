@@ -14,15 +14,16 @@ cd "$ROOT"
 LOG="$ROOT/scheduler.log"
 recovery_preflight_failure() {
   kind="$1"
-  printf 'SYNC_PREFLIGHT_FAILURE %s category=%s\n' "$(date -u +%FT%TZ)" "$kind" >> "$LOG"
-  # Run this recorder only after the integrity manifest has passed.
-  if [ "$kind" = hosting-capacity ]; then
+  # Preserve cron stderr visibility without creating a fake scheduler cycle.
+  printf 'SYNC_PREFLIGHT_FAILURE %s category=%s\n' "$(date -u +%FT%TZ)" "$kind" >&2
+  # Metadata is optional and must never bypass protected source/config checks.
+  if [ "$kind" = hosting-capacity ] && [ -f "$ROOT/.env.sync" ] && [ -f "$ROOT/scripts/sync/recovery_status.js" ]; then
     node scripts/sync/recovery_status.js --env="$ROOT/.env.sync" --preflight-failed=hosting-capacity >/dev/null 2>&1 || true
   fi
   exit 1
 }
 if ! sha256sum -c protection.sha256 >/dev/null; then
-  printf 'SYNC_PREFLIGHT_FAILURE %s category=integrity\n' "$(date -u +%FT%TZ)" >> "$LOG"
+  printf 'SYNC_PREFLIGHT_FAILURE %s category=integrity\n' "$(date -u +%FT%TZ)" >&2
   exit 1
 fi
 # Never rebuild this manifest to accept unknown changes. Update only authorized
