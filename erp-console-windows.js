@@ -212,6 +212,28 @@ document.addEventListener('DOMContentLoaded', function () {
             const clear=button('Clear my displayed history',async()=>{if(!confirm('Clear this time range from your history view? Database records, source logs and the audit trail will remain.'))return;await api('/history/clear',{period:select.value,confirm:'CLEAR_HISTORY_ONLY'});await history();},'outline-danger');clear.disabled=!info.historyClearEnabled;controls.append(select,clear);
         }
         body.append(controls,el('p',data.retention,'small text-muted'));
+        if(data.recovery&&data.recovery.version===2){
+          const r=data.recovery;
+          const section=el('section',undefined,'mb-3 p-3 rounded border');
+          section.style.background='rgba(93,208,197,.07)';
+          section.style.borderColor='rgba(93,208,197,.38)';
+          section.append(el('h5','Auto-Sync Recovery v2'));
+          const last=r.lastVerifiedAt?date(r.lastVerifiedAt):'Awaiting first v2 verified cycle';
+          const state=r.currentState==='failed'?'Failed; will retry at next eligible cron':
+            r.currentState==='running'?'Running: '+(r.currentPhase||'working'):
+            r.currentState==='verified'?'Last cycle verified':
+            'No active recovery worker';
+          section.append(el('p','Last verified: '+last+' | Recovery: '+state,'mb-2'));
+          const parts=['Missed intervals: '+(r.missedIntervals===null?'Not determined':r.missedIntervals),
+            'Transient fetch retries: '+r.fetchRetries,
+            'Consecutive failures: '+r.consecutiveFailures];
+          section.append(el('p',parts.join(' | '),'small mb-1'));
+          if(r.catchUpNeeded)section.append(el('p','Catch-up is required or in progress. The worker will compare the latest source against MySQL; it will not replay duplicate inserts.','small'));
+          if(r.lastFailureCategory)section.append(el('p','Last failure category: '+r.lastFailureCategory,'small'));
+          if(r.lastRecoveryHadBacklog&&r.lastRecoveryAt)
+            section.append(el('p','Last catch-up verified: '+date(r.lastRecoveryAt),'small'));
+          body.append(section);
+        }
         const labels={success:'Completed',unchanged:'Completed • no changes',failed:'Failed',skipped:'Skipped • sync already active',running:'Running / awaiting completion',unconfirmed:'Completion not confirmed'};
         body.append(el('p',data.captureStartedAt?'Detailed database-row capture began '+date(data.captureStartedAt)+'. Earlier row-level details are unavailable. Child-detail replacement deletes are labeled separately.':'Detailed database-row capture is not available yet.','small text-muted'));
         const table=grid(['Started','Finished','Result','Reason / details','Source rows new','Source rows changed','MySQL rows added','MySQL rows updated','MySQL rows deleted','Row details','Gap (minutes)'],data.runs.map(r=>[date(r.startedAt),date(r.endedAt),labels[r.status]+(r.workerReported&&r.status==='unconfirmed'?' • worker reported results':''),r.failureReason||(r.status==='failed'?'Worker failed'+(r.exitCode?' (exit '+r.exitCode+')':'')+'. Review current sync evidence.':'—'),r.added??'—',r.updated??'—',r.rowCounts?.added??'—',r.rowCounts?.updated??'—',r.rowCounts?.deleted??'—',r.detailsAvailable?button('View changed rows',()=>changedRows(r,0)): 'Not captured',r.gapMinutes??'—']));body.append(table);floatingScroll(table);
