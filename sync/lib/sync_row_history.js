@@ -45,10 +45,12 @@ async function updated(ctx,table,capture){
   if(capture.rows.length!==1||Object.keys(capture.where).join(',')!=='id'||String(capture.rows[0].id)!==String(capture.where.id))throw Error('Prefix audit requires the original unique numeric child ID');
   const after=await snapshot(ctx,table,capture.where),before=capture.rows[0],normal=x=>String(x??'').trim().toLowerCase(),change=ctx.syncOperation.prefixChange;
   if(after.length!==1||String(after[0].id)!==String(before.id)||normal(before.dispo_number)!==normal(change.oldDispo)||normal(after[0].dispo_number)!==normal(change.newDispo))throw Error('Prefix audit before/after identity does not match qualification');
+  if(change.version===2&&Number(before.id)!==change.targetChildId)throw Error('Same-PO Dispo edit audit child identity drift');
   // The old composite PK no longer selects this row. Record its current PK,
   // retaining the entire old key and payload in before_json in the SAME tx.
   const key=Object.fromEntries(capture.pk.map(k=>[k,after[0][k]]));
-  await record(ctx,table,'updated',key,before,after[0],'unique-row',1,'Qualified Dispo prefix edit; original numeric child ID preserved.');return;
+  await record(ctx,table,'updated',key,before,after[0],'unique-row',1,
+   change.version===2?'Qualified same-PO full-inverse Dispo edit; original numeric child ID preserved.':'Qualified Dispo prefix edit; original numeric child ID preserved.');return;
  }
  for(const row of capture.rows){const key=Object.fromEntries(capture.pk.map(k=>[k,row[k]]));const after=await snapshot(ctx,table,key);if(after.length!==1)throw Error('Updated audit row is not unique');await record(ctx,table,'updated',key,row,after[0],'unique-row',1);}
 }

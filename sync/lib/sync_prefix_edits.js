@@ -73,6 +73,27 @@ async function qualifyPrefixEdits(profile,previous,current,{csvDir,profileSpec,f
 }
 function validatePrefixOperation(profile,op,env=process.env){
  const p=op.prefixChange;if(!p)return;
- if(env.SYNC_ACCEPT_DISPO_PREFIX_EDITS!=='true'||!headersByProfile[profile]||op.action!=='update'||p.version!==1||p.policy!=='latest-source-prefix-v1'||!['business-signature','full-inverse'].includes(p.proof)||!prefixOnly(p.oldDispo,p.newDispo)||normalized(p.oldDispo)!==normalized(op.previousDispo)||normalized(p.newDispo)!==normalized(op.dispo)||p.oldDigest!==op.previousDigest||!/^[a-f0-9]{64}$/.test(p.matchHash)||p.matchHash!==op.prefixMatchHash)throw Error('Unqualified or disabled Dispo prefix edit');
+ if(env.SYNC_ACCEPT_DISPO_PREFIX_EDITS!=='true'||!headersByProfile[profile]||op.action!=='update'||
+   normalized(p.oldDispo)!==normalized(op.previousDispo)||normalized(p.newDispo)!==normalized(op.dispo)||
+   p.oldDigest!==op.previousDigest||!/^[a-f0-9]{64}$/.test(p.matchHash)||p.matchHash!==op.prefixMatchHash)
+   throw Error('Unqualified or disabled Dispo edit');
+ if(p.version===1){
+  if(p.policy!=='latest-source-prefix-v1'||!['business-signature','full-inverse'].includes(p.proof)||
+     !prefixOnly(p.oldDispo,p.newDispo))
+    throw Error('Invalid factory prefix edit proof');
+  return;
+ }
+ if(p.version===2){
+  const {sameParentPath}=require('./sync_same_po_yarn_dispo');
+  if(profile!=='yarn-issue'||p.policy!=='source-full-inverse-same-po-v1'||p.proof!=='full-inverse'||
+    !sameParentPath(p.oldDispo,p.newDispo)||!Number.isSafeInteger(p.targetParentId)||
+    !Number.isSafeInteger(p.targetChildId)||p.targetParentId<=0||p.targetChildId<=0||
+    p.newGroup!==op.group||p.newDigest!==op.digest||p.sourceRow!==op.rowNumber||
+    !/^[a-f0-9]{64}$/.test(p.oldGroup||'')||!/^[a-f0-9]{64}$/.test(p.sourceManifestSha256||'')||
+    !/^[a-f0-9]{64}$/.test(p.newDigest||'')||!p.poNo)
+    throw Error('Unqualified same-PO exact Dispo edit');
+  return;
+ }
+ throw Error('Unknown Dispo correction proof version');
 }
 module.exports={parts,prefixOnly,prefixFingerprint,backfillSignatures,qualifyPrefixEdits,validatePrefixOperation};

@@ -1180,6 +1180,24 @@ async function upsertRow(ctx, profile, table, data) {
     ctx.reject({ profile: profile.id, table, reason: 'missing_natural_key', required_key: keyFields.join(','), data: JSON.stringify(data) });
     return { action: 'rejected', id: null };
   }
+  // A source-ledger 'update' is never authority to insert a different parent
+  // merely because a mutable natural key no longer matches. In particular,
+  // folding Dispo -1 => -2 must preserve the approved original parent/child IDs.
+  // The importer is not yet equipped with a verified stable-ID folding binding;
+  // refuse both dry-run and live apply instead of emitting a false green
+  // checkpoint and double-counting the historical movement.
+  if (ctx.sync && profile.id === 'folding' && table === 'folding_production_form' &&
+      ctx.syncOperation?.action === 'update' &&
+      !ctx.syncOperation?.alreadyApplied) {
+    const norm = value => String(value ?? '').trim().toLowerCase();
+    const original = norm(ctx.syncOperation.previousDispo);
+    const incoming = norm(ctx.syncOperation.dispo || data.dispo_number);
+    if (!original || !incoming || original !== incoming) {
+      const issue = new Error('SYNC_FOLDING_REKEY_UNBOUND: source UID update cannot insert or re-key a folding parent without independently verified stable original IDs.');
+      issue.code = 'SYNC_FOLDING_REKEY_UNBOUND';
+      throw issue;
+    }
+  }
   if (!ctx.pool || ctx.dryRun || !keyFields.length) {
     const duplicateRule = ctx.duplicateAggregation?.profiles?.[profile.id]?.tables?.[table] || null;
     const dryRunKey = `${table}|${JSON.stringify(naturalKey)}`;
@@ -1190,6 +1208,18 @@ async function upsertRow(ctx, profile, table, data) {
     if (ctx.sync && ctx.pool) {
       verifiedExisting = await ctx.sync.captureTarget(ctx, table, effectiveData, keyFields);
       const isChild = Boolean(tc.parent) || (profile.repeated_groups||[]).some(g=>g.target_table===table);
+      // An update with no bound physical parent is not a previewable insert.
+      // Fail during qualification, never after a completed dry run.
+      if (!isChild && !verifiedExisting && ctx.syncOperation?.action === 'update' &&
+          !ctx.syncOperation?.alreadyApplied) {
+        if (profile.id === 'dispo' && table === 'dispo_form_data' && ctx.syncOperation?.promotionAuthorized)
+          await require('./sync_dispo_promotion').assertTarget(ctx,table,effectiveData);
+        else {
+          const issue = new Error('SYNC_UPDATE_TARGET_MISSING: source update has no verified existing business parent; refusing dry-run success.');
+          issue.code = 'SYNC_UPDATE_TARGET_MISSING';
+          throw issue;
+        }
+      }
       const identicalCost = sharedCost && verifiedExisting && Object.keys(effectiveData).every(k =>
         require('./sync_write_safety').equal(verifiedExisting[k],effectiveData[k],ctx.schema?.[table]?.[k]));
       if (!isChild && ctx.syncOperation.action === 'insert' && verifiedExisting && !ctx.syncOperation.alreadyApplied && !identicalCost)
@@ -1204,6 +1234,19 @@ async function upsertRow(ctx, profile, table, data) {
   if (existing) {
     await updateRow(ctx, table, mergeDuplicateData(ctx, profile, table, existing, data), naturalKey);
     return { action: 'updated', id: existing.id || null };
+  }
+  // No ordinary source UPDATE is permitted to materialize an unbound new
+  // non-provenance parent. Existing natural-key updates are allowed; inserts
+  // require an actual source insert or explicit stable-ID reconciliation.
+  if (ctx.sync && !tc.parent && ctx.syncOperation?.action === 'update' &&
+      !ctx.syncOperation?.alreadyApplied) {
+    if (profile.id === 'dispo' && table === 'dispo_form_data' && ctx.syncOperation?.promotionAuthorized)
+      await require('./sync_dispo_promotion').assertTarget(ctx,table,data);
+    else {
+      const issue = new Error('SYNC_UPDATE_TARGET_MISSING: source update resolves to no existing business parent; refusing replacement insert.');
+      issue.code = 'SYNC_UPDATE_TARGET_MISSING';
+      throw issue;
+    }
   }
   const result = await insertRow(ctx, table, data);
   return { action: 'inserted', id: result.insertId || null };

@@ -9,6 +9,8 @@ class SheetsSyncRuntime{
   if(!plan.ok||!protectedMasters)throw Error('Conflicted or unprotected synchronization plan');
   this.plan=plan;this.hash=hash({plan,manifestHash});this.manifestHash=manifestHash;
   this.protectedMasters=protectedMasters;this.options=options;this.selected=new Map();
+  this.approvedDispoPromotions=options.approvedDispoPromotions||new Map();
+  if(!(this.approvedDispoPromotions instanceof Map))throw Error('Approved Dispo promotion map must be verified');
   for(const [profile,rows]of Object.entries(plan.operations)){
    const map=new Map(),uids=new Set();
    for(const r of rows){
@@ -40,6 +42,7 @@ class SheetsSyncRuntime{
    }
   }
   for(const [profile,ops]of this.selected)for(const op of ops.values())prefixPolicy.validatePrefixOperation(profile,op);
+  for(const ops of this.selected.values())for(const op of ops.values())if(op.prefixChange?.version===2&&op.prefixChange.sourceManifestSha256!==this.manifestHash)throw Error('Exact Dispo source snapshot drift');
   const mode=ctx.dryRun?(this.options.verifyOnly?'verify':'capture'):'apply';
   this.business=new BusinessEvidence(this.hash,this.manifestHash,mode,this.options.businessPreimages||null);
   ctx.localRetainedMasters=Object.fromEntries(Object.entries(this.protectedMasters).map(([t,s])=>[t,{key:s.key,values:new Set(s.values)}]));
@@ -49,10 +52,22 @@ class SheetsSyncRuntime{
   if(!op||fingerprint(fileInfo.headers,values,profile.id)!==op.digest)throw Error('Sync source differs from reviewed plan');
   if(op.prefixChange&&prefixPolicy.prefixFingerprint(profile.id,fileInfo.headers,values)!==op.prefixMatchHash)throw Error('Prefix business signature changed');
   ctx.syncOperation={...op,yarnIdentity:yarnIdentity(profile.id,fileInfo.headers,values)};
+  const promotion=this.approvedDispoPromotions.get(op.uid);
+  if(promotion){
+   if(profile.id!=='dispo'||op.action!=='update'||!promotion.ownerVerified||
+      op.rowNumber!==promotion.sourceRow||op.dispo!==promotion.dispo||
+      op.previousDispo!==promotion.dispo||op.previousDigest!==promotion.previousDigest||
+      op.digest!==promotion.proposedDigest)throw Error('Dispo promotion grant no longer matches exact source');
+   ctx.syncOperation.promotionAuthorized=true;
+   ctx.syncOperation.promotionApprovedDispo=promotion.dispo;
+  }
   this.business.begin(profile.id,op.uid);
   const [rows]=await (ctx.conn||ctx.pool).query('SELECT digest,group_key,yarn_identity FROM sheets_sync_events WHERE profile=? AND source_uid=?'+(ctx.dryRun?'':' FOR UPDATE'),[profile.id,op.uid]);
   if(rows.length>1)throw Error('Ledger event is not unique');
   const actual=rows[0]?.digest||null;
+  if(op.prefixChange?.version===2&&rows[0]&&actual!==op.digest&&
+    (rows[0].group_key!==op.prefixChange.oldGroup||actual!==op.prefixChange.oldDigest))
+   throw Error('Exact Dispo historical ledger preimage drift');
   ctx.syncOperation.previousIdentity=require('./yarn_sync_identity').parseIdentity(rows[0]?.yarn_identity);
   ctx.syncOperation.previousGroup=rows[0]?.group_key;
   ctx.syncOperation.alreadyApplied=actual===op.digest&&op.action!=='refresh';

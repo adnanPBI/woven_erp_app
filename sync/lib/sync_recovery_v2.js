@@ -152,6 +152,12 @@ function categorize(error,phase='',tail=''){
  if(/insufficient.*(?:space|quota)|storage budget|disk reserve|enospc|hosting account|exceeded quota/.test(t))return 'hosting-capacity';
  if(/checksum|integrity|sha256|signature.*mismatch|protection.*manifest/.test(t))return 'integrity';
  if(/invalid_grant|invalid credentials|401|403|permission denied|unauthorized service.account/.test(t))return 'source-auth';
+ // Approved historical peer-retention reviews can fail on a cumulative source
+ // date change. This is an identity qualification failure, not an unknown crash.
+ if(/historical peer receipt retention|peer receipt.*source peer|source peer changed or disappeared/.test(t))return 'source-identity';
+ // A plan-only Dispo whose full parent is not yet qualified is not a generic
+ // SQL outage. Preserve the explicit missing-target evidence for the operator.
+ if(/sync_update_target_missing|source update has no verified existing business parent|source update resolves to no existing business parent/.test(t))return 'planning-conflict';
  if(/ambiguous.*edit|reviewed.*reassignment|identity.*conflict|matching.*conflict|changed keys/.test(t))return 'source-identity';
  if(/conflict.*plan|planner|unknown missing.row|conflict.*unresolved/.test(t))return 'planning-conflict';
  if(['fetching','fetch-retry','source-preparation'].includes(phase)||/fetch_google_sheets|google.*(?:fetch|download)|source.*download|deadline-or-abort/.test(t))return 'source-download';

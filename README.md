@@ -4,13 +4,13 @@ The [latest-prefix policy and deployment record](docs/CPANEL_PREFIX_EDITS.md)
 describe the explicit grant for qualified movement edits, preservation of
 original row IDs, composite-key audit handling and frozen full-window refreshes.
 
-November 1: [verified October 29–November 1 catch-up and daily MySQL/source checks](docs/CPANEL_CATCHUP_VERIFICATION_2026-11-01.md). The original September 22–October 29 migration committed business writes; later resumed cycles transferred subsequent available records. Read the [current project memory](MEMORY.md) for the active policy, runtime repairs and dated verification limits. Earlier rollout blockers are preserved as superseded history.
+November 1: [verified October 29â€“November 1 catch-up and daily MySQL/source checks](docs/CPANEL_CATCHUP_VERIFICATION_2026-11-01.md). The original September 22â€“October 29 migration committed business writes; later resumed cycles transferred subsequent available records. Read the [current project memory](MEMORY.md) for the active policy, runtime repairs and dated verification limits. Earlier rollout blockers are preserved as superseded history.
 
 For future cPanel changes, start with the [existing-installation operations runbook](docs/CPANEL_OPERATIONS.md), [October source/change record](docs/CPANEL_CHANGELOG_2026-10.md) and [manual/recurring policy specification](docs/MANUAL_TRANSFER_POLICY.md). These describe the authorized v2/v3 paths in addition to the legacy guard. Historical rollout notes are dated evidence, not live scheduler status.
 
 October 25: [verified sync fixes and the separate-entry challan rule](docs/SYNC_RECOVERY_2026-10.md). Existing cPanel installations require the documented schema/ledger review and a verified hosted cycle; pulling this repository is not a deployment or reconciliation approval.
 
-> **CRITICAL — deployed cPanel baseline:** Read [the preservation note](docs/CRITICAL_CPANEL_BASELINE.md) before modifying or deploying this repository. The owner requires the database/history features, right-aligned two-row header and sync protections to remain intact during security fixes. Git publication does not authorize overwriting the live installation.
+> **CRITICAL â€” deployed cPanel baseline:** Read [the preservation note](docs/CRITICAL_CPANEL_BASELINE.md) before modifying or deploying this repository. The owner requires the database/history features, right-aligned two-row header and sync protections to remain intact during security fixes. Git publication does not authorize overwriting the live installation.
 
 Node.js/MySQL weaving ERP, including the updated search dropdowns and a separate scheduled Google Sheets importer. The ERP is served under `/main`. The importer adds records and applies edits to tracked records from 2024 onward while preserving retained historical data.
 
@@ -51,3 +51,8 @@ The tracking baseline contains business identifiers and is deliberately not publ
 Local MySQL tests verified inserts, edits, identity corrections, replay protection, transaction rollback, a complete scheduled cycle, a later automatic no-op and preservation of original fingerprints across 22 tables. The local ERP was tested with Bun; the hosted worker uses Node.js. Local checks do not establish hosted deployment success.
 
 Source deletions do not delete ERP business records. Ambiguous identity changes stop for review; exact reviewed corrections reuse tracked identities. Scheduled sync never performs a truncated-table reload.
+
+
+### November 9 source continuity
+
+Published the reviewed November auto-sync and identity-rule amendments with synthetic regressions and private-config promotion adapters. See [the rule and acceptance notes](docs/AUTO_SYNC_RULES_2026_11.md). This is repository publication only; production was not redeployed or replayed.

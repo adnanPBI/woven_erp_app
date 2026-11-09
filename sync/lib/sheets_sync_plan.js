@@ -173,6 +173,44 @@ function applyReviewedReassignments(profile,previous,current,reviews){
    previous.records=previous.records.filter(r=>r.uid!==review.sourceUid);
    continue;
   }
+  if(review.action==='retain-missing-peer'){
+   // Explicitly preserve one missing historical CHALLAN as its own MySQL
+   // event when another independently proven event with the SAME identity
+   // group remains in the current source. This is matching-only: ledger and
+   // business records are NEVER deleted, merged, rebound or altered here.
+   // Reappearance or a new edited peer must be re-qualified, fail closed.
+   const sameGroup=previous.records.filter(r=>r.group===review.oldGroup);
+   const peer=sameGroup.find(r=>r.uid===review.peerSourceUid);
+   const historicalReturned=current.records.filter(r=>r.group===old.group&&r.digest===old.digest);
+   if(historicalReturned.length===1)continue; // normal exact match can resume
+   // The exact owner-approved historical receipt is immutable. Its
+   // CURRENT peer may change only the cumulative Last Received Date.
+   // Its stored matchHash contains every non-generated source field except
+   // that date. A pinned, provenance-verified matchHash keeps this guard
+   // stable across repeated date updates without relaxing quantity/identity.
+   const hashOk=typeof review.peerMatchHash==='string'&&/^[a-f0-9]{64}$/.test(review.peerMatchHash);
+   const firstUse=peer?.digest===review.peerOldDigest;
+   const priorDateOnly=hashOk&&peer?.matchHash===review.peerMatchHash;
+   const originalProof=firstUse||priorDateOnly;
+   if(old.group!==review.oldGroup||!approvedDigests.includes(old.digest)||
+      review.peerGroup!==old.group||review.oldDispo!==old.dispo||
+      !peer||peer===old||peer.group!==review.peerGroup||
+      sameGroup.length!==2||historicalReturned.length>1||
+      !review.allowPeerLastReceivedDateDrift||!hashOk||!originalProof||
+      !Number.isSafeInteger(review.oldTargetPrimaryKey)||!Number.isSafeInteger(review.peerTargetPrimaryKey)||
+      review.oldTargetPrimaryKey===review.peerTargetPrimaryKey)
+     throw Error('Historical peer receipt retention: old business identity changed');
+   const fresh=current.records.filter(r=>r.group===review.peerGroup);
+   if(fresh.length!==1||
+      peer.matchHash!==review.peerMatchHash||
+      fresh[0].matchHash!==review.peerMatchHash||
+      fresh[0].entryAmounts!==JSON.stringify([review.peerQtyKg,null])||
+      fresh[0].dispo!==review.oldDispo||
+      current.records.some(r=>r.digest===old.digest))
+     throw Error('Historical peer receipt retention: source peer changed or disappeared');
+   previous.records=previous.records.filter(r=>r!==old);
+   continue;
+  }
   if(review.action==='retain-missing'){
    // Explicitly reviewed source removals retain ERP business rows. If the key
    // reappears, normal matching resumes instead of silently ignoring its edit.
