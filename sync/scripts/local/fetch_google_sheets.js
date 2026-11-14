@@ -38,6 +38,7 @@ function inWindow(d){ return d && d >= start && d <= end; }
 
 async function fetchProfile(profile) {
   if (isPlaceholderId(profile.spreadsheetId)) throw new Error(`${profile.label}: spreadsheetId is still a placeholder.`);
+  if(profile.id==='yarn-receive') console.log(JSON.stringify({stage:'google-yarn-receive-phase',phase:'metadata-start',at:new Date().toISOString()}));
   const meta = await getSpreadsheetMetadata(profile.spreadsheetId);
   const sheet = require('../../lib/google_source_sheet').resolveSourceSheet(profile,meta,{snapshot:!!process.env.GOOGLE_SNAPSHOT_DIR});
   const sourceTitle=sheet.properties.title;
@@ -46,13 +47,15 @@ async function fetchProfile(profile) {
   const headerRow = Math.max(1, Number(profile.headerRow || 1));
   const fullLastCol = columnLetter(Math.max(1, colCount));
   const headerRange = `${quoteSheetName(sourceTitle)}!A${headerRow}:${fullLastCol}${headerRow}`;
+  if(profile.id==='yarn-receive') console.log(JSON.stringify({stage:'google-yarn-receive-phase',phase:'header-start',at:new Date().toISOString()}));
   const headerResp = await getValues(profile.spreadsheetId, headerRange);
   const rawHeaders = (headerResp.values?.[0] || []).map(v => String(v ?? '').replace(/\u00a0/g,' ').trim());
   let lastHeader = rawHeaders.length - 1; while (lastHeader >= 0 && !rawHeaders[lastHeader]) lastHeader -= 1;
   if (lastHeader < 0) throw new Error(`${profile.label}: configured header row ${headerRow} is empty.`);
   const headers = rawHeaders.slice(0, lastHeader + 1);
   const lastCol = columnLetter(headers.length);
-  const chunkRows=boundedChunkRows(configuredChunkRows,headers.length,{snapshot:!!process.env.GOOGLE_SNAPSHOT_DIR});
+  const chunkRows=boundedChunkRows(profile.id==='yarn-receive'?Math.min(configuredChunkRows,750):configuredChunkRows,headers.length,{snapshot:!!process.env.GOOGLE_SNAPSHOT_DIR});
+  if(profile.id==='yarn-receive') console.log(JSON.stringify({stage:'google-yarn-receive-phase',phase:'header-completed',chunkRows,columns:headers.length,at:new Date().toISOString()}));
   const headerIndex = new Map(); headers.forEach((h,i)=>{ const n=normalizeHeader(h); if(n&&!headerIndex.has(n))headerIndex.set(n,i); });
   const dateIndexes = (profile.dateColumns || []).map(name => ({ name, idx: headerIndex.get(normalizeHeader(name)) })).filter(x => Number.isInteger(x.idx));
   if (!dateIndexes.length) throw new Error(`${profile.label}: none of configured date columns found: ${(profile.dateColumns||[]).join(', ')}`);
@@ -69,6 +72,7 @@ async function fetchProfile(profile) {
   for (let from=dataStart; from<=rowCount; from+=chunkRows) {
     const to = Math.min(rowCount, from + chunkRows - 1);
     const range = `${quoteSheetName(sourceTitle)}!A${from}:${lastCol}${to}`;
+    if(profile.id==='yarn-receive' && from===dataStart) console.log(JSON.stringify({stage:'google-yarn-receive-phase',phase:'first-page-start',from,to,at:new Date().toISOString()}));
     const resp = await getValues(profile.spreadsheetId, range);
     const rows = resp.values || [];
     for (let i=0;i<rows.length;i++) {

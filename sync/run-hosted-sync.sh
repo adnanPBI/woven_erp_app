@@ -26,6 +26,13 @@ if ! sha256sum -c protection.sha256 >/dev/null; then
   printf 'SYNC_PREFLIGHT_FAILURE %s category=integrity\n' "$(date -u +%FT%TZ)" >&2
   exit 1
 fi
+# A previously verified source checkpoint cannot override an independently
+# confirmed physical duplicate. The pinned critical hold blocks both --check
+# and live cron starts until an exact owner-reviewed correction is audited.
+if [ -f "$ROOT/auto_sync_data/critical-incident-hold.json" ]; then
+  printf 'SYNC_PREFLIGHT_FAILURE %s category=source-identity-incident-hold\n' "$(date -u +%FT%TZ)" >&2
+  exit 1
+fi
 # Never rebuild this manifest to accept unknown changes. Update only authorized
 # source/config fingerprints while preserving the remaining policy/data pins.
 # The hosting quota is separate from the filesystem reserve checked by the worker.

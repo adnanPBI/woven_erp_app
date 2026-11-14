@@ -205,6 +205,7 @@ async function main(){
  const prefixEdits=env.SYNC_ACCEPT_DISPO_PREFIX_EDITS==='true';
  if(prefixEdits&&!repairMode)throw Error('Prefix edits require verified writes');
  const prefixPolicy=require('../../lib/sync_prefix_edits');
+ const samePoDispoPolicy=require('../../lib/sync_same_po_yarn_dispo');
  const windowStart=env.SYNC_START_DATE||null;
  if(args['refresh-window']&&(!windowStart||(!local&&!env.SYNC_MANUAL_SKIPS_FILE)))throw Error('Full-window refresh requires a bounded local or qualified manual run');
  if(windowStart&&!repairMode)throw Error('A bounded sync window requires verified writes');
@@ -262,6 +263,7 @@ async function main(){
   const bounded=scoped(profile.id,previous,current[profile.id]);previous=bounded.previous;current[profile.id]=bounded.current;
   if(prefixEdits)await prefixPolicy.backfillSignatures(connection,profile.id,previous,current[profile.id]);
   if(prefixEdits)previous=await prefixPolicy.qualifyPrefixEdits(profile.id,previous,current[profile.id],{csvDir:prepared.latestCertifiedDir,profileSpec:profile,fullCurrent:exclusionCurrent,fullPrevious:exclusionPrevious});
+  if(prefixEdits&&profile.id==='yarn-issue')previous=await samePoDispoPolicy.qualifySamePoYarnDispoEdits(profile.id,previous,current[profile.id],{connection,csvDir:prepared.latestCertifiedDir,profileSpec:profile,fullCurrent:exclusionCurrent,fullPrevious:exclusionPrevious,sourceManifestSha256:prepared.latestSourceManifestSha256});
   const partial=historyPlan(profile.id,previous,current[profile.id]);
   if(profile.id==='yarn-receive'){
    const old=new Map(events.map(r=>[r.uid,r]));
@@ -291,6 +293,7 @@ async function main(){
    const fullPrevious=previous,fullCurrent=current[profile.id];
    const bounded=scoped(profile.id,previous,current[profile.id]);previous=bounded.previous;current[profile.id]=bounded.current;
    if(prefixEdits)previous=await prefixPolicy.qualifyPrefixEdits(profile.id,previous,current[profile.id],{csvDir:prepared.latestCertifiedDir,profileSpec:profile,fullCurrent,fullPrevious});
+   if(prefixEdits&&profile.id==='yarn-issue')previous=await samePoDispoPolicy.qualifySamePoYarnDispoEdits(profile.id,previous,current[profile.id],{connection,csvDir:prepared.latestCertifiedDir,profileSpec:profile,fullCurrent,fullPrevious,sourceManifestSha256:prepared.latestSourceManifestSha256});
    const partial=historyPlan(profile.id,previous,current[profile.id],[...affected]);
    plan.ok=plan.ok&&partial.ok;Object.assign(plan.operations,partial.operations);plan.conflicts.push(...partial.conflicts);
   }
@@ -302,7 +305,31 @@ async function main(){
  }
  if(protection)require('../../lib/hosted_protection_guard').assertProtected(plan,protection,{manualSkips,env});
  if(!plan.ok){
-  json(path.join(dataDir,'conflict-review.json'),{at:new Date().toISOString(),cycle,conflicts:plan.conflicts});
+  // Diagnostically qualify exact Folding source-identity changes without
+  // permitting an update, insert, deletion, retention or owner-review bypass.
+  // A missing source event remains a blocking conflict until separately
+  // re-established or explicitly owner-reviewed.
+  let diagnostics=[];
+  if(plan.conflicts.some(c=>c.profile==='folding')){
+   try{
+    const foldingSpec=contract.profiles.find(p=>p.id==='folding');
+    const explained=await require('../../lib/sync_folding_conflict_diagnostics').diagnoseFoldingConflicts(
+      plan,{connection,csvDir:prepared.latestCertifiedDir,profileSpec:foldingSpec});
+    if(explained.evidence.length){
+     plan.conflicts=explained.conflicts;
+     diagnostics=explained.evidence;
+     json(path.join(cycle,'plan.json'),plan);
+     json(path.join(cycle,'source-identity-diagnostics.json'),{
+      at:new Date().toISOString(),sourceManifestSha256:prepared.latestSourceManifestSha256,
+      writesAuthorized:false,diagnostics});
+    }
+   }catch(e){
+    // Diagnostics must never change the result of a failed write plan.
+    console.error('Folding conflict diagnostics unavailable: '+e.message);
+   }
+  }
+  json(path.join(dataDir,'conflict-review.json'),{at:new Date().toISOString(),cycle,
+   conflicts:plan.conflicts,diagnostics});
   throw Error('Ambiguous edits/deletions or changed keys require review: '+path.join(cycle,'plan.json'));
  }
  if(args.plan||(!args['dry-run']&&plan.added+plan.updated+(plan.refreshed||0)===0)){
@@ -320,11 +347,19 @@ async function main(){
  const {runDynamicImport}=require(repairMode?'../../lib/mapping_contract_runtime.repair':'../../lib/mapping_contract_runtime');
  const hash=sha256File(prepared.latestSourceManifest);
  const planHash=sha256File(path.join(cycle,'plan.json'));
+ const approvedDispoPromotions=repairMode?await require('../../lib/sync_dispo_promotion').qualify(plan,connection,pending):new Map();
+ if(repairMode){
+  const five=await require('../../lib/sync_dispo_five_promotion').qualify(plan,connection);
+  for(const [uid,permit] of five){
+   if(approvedDispoPromotions.has(uid))throw Error('Duplicate five-Dispo promotion approval');
+   approvedDispoPromotions.set(uid,permit);
+  }
+ }
  if(pending&&(pending.manifestHash!==hash||pending.planHash!==planHash||pending.database!==expected))throw Error('Pending sync evidence changed');
  recoveryStage('validating');
  const dryId='sync_dry_'+stamp();
  json(path.join(dataDir,'status.json'),{status:'validating',database:expected,cycle,dryId,at:new Date().toISOString(),added:plan.added,updated:plan.updated,refreshed:plan.refreshed});
- const drySync=new SheetsSyncRuntime(plan,bundle.protectedMasters,hash);
+ const drySync=new SheetsSyncRuntime(plan,bundle.protectedMasters,hash,{approvedDispoPromotions});
  await runDynamicImport({rootDir:ROOT,args:{'dry-run':true,'run-id':dryId,'output-dir':path.join(cycle,'runs',dryId)},sync:drySync});
  // Capture against the actual target schema. Apply checks these business
  // preimages inside row transactions; a dry-run success is not a write receipt.
@@ -351,10 +386,10 @@ async function main(){
  const liveId='sync_live_'+stamp();
   recoveryStage('applying');
   json(path.join(dataDir,'status.json'),{status:'applying',database:expected,cycle,liveId,backupFile,at:new Date().toISOString()});
- await runDynamicImport({rootDir:ROOT,args:{live:true,yes:true,'backup-confirmed':true,'approved-dry-run':dryId,'run-id':liveId,'output-dir':path.join(cycle,'runs',liveId),'production-approval':childEnv.PRODUCTION_APPROVAL_TOKEN},sync:new SheetsSyncRuntime(plan,bundle.protectedMasters,hash,repairMode?{businessPreimages:preimages}:{})});
+ await runDynamicImport({rootDir:ROOT,args:{live:true,yes:true,'backup-confirmed':true,'approved-dry-run':dryId,'run-id':liveId,'output-dir':path.join(cycle,'runs',liveId),'production-approval':childEnv.PRODUCTION_APPROVAL_TOKEN},sync:new SheetsSyncRuntime(plan,bundle.protectedMasters,hash,repairMode?{businessPreimages:preimages,approvedDispoPromotions}:{})});
   if(repairMode){
    recoveryStage('verifying');
-   const verifyId='sync_verify_'+stamp(),verifySync=new SheetsSyncRuntime(plan,bundle.protectedMasters,hash,{verifyOnly:true});
+   const verifyId='sync_verify_'+stamp(),verifySync=new SheetsSyncRuntime(plan,bundle.protectedMasters,hash,{verifyOnly:true,approvedDispoPromotions});
   await runDynamicImport({rootDir:ROOT,args:{'dry-run':true,'run-id':verifyId,'output-dir':path.join(cycle,'runs',verifyId)},sync:verifySync});
   const createdCostingMasters=await require('../../lib/sync_business_evidence').verifyCapturedCostingMasters(connection,preimages);
   json(path.join(cycle,'business-verification.json'),{ok:true,verifyId,manifestHash:hash,planHash,targetsVerified:verifySync.business.targetsVerified,createdCostingMasters,sharedMasterReuses:verifySync.sharedMasterReuses||[],retainedBlankAmounts:verifySync.retainedBlankAmounts||[],retainedChildren:verifySync.retainedChildren||[]});
@@ -388,6 +423,7 @@ main().catch(e=>{
  finally {
   clearInterval(lockHeartbeat);
   if(connection){if(hasLock)await connection.query('SELECT RELEASE_LOCK(?)',[lockName]).catch(()=>{});await connection.end();}
+  if(hasLock)require('./movement_pilot_hook').launch(ROOT);
   if(process.connected)process.disconnect();
  }
 });

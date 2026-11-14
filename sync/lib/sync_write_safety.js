@@ -96,6 +96,8 @@ async function reconcileChildren(ctx,profile,table,scope,desiredRows,callbacks){
      ![normal(change.oldDispo),normal(change.newDispo)].includes(normal(before[0].dispo_number))||
      normal(desired[0].dispo_number)!==normal(change.newDispo))
    throw error('SYNC_PREFIX_CHILD_AMBIGUOUS','Prefix edit requires one original child under its provenance parent');
+  if(change.version===2&&(Number(scope[fk])!==change.targetParentId||Number(before[0].id)!==change.targetChildId))
+   throw error('SYNC_EXACT_DISPO_PROVENANCE_DRIFT','Exact same-PO Dispo correction has lost its verified parent/child identity');
   const where={id:before[0].id};
   const unique=await lockedRows(ctx,table,where,3);
   if(unique.length!==1||!equal(unique[0][fk],scope[fk],schema[fk]))

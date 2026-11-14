@@ -1,0 +1,95 @@
+{
+  "scope": "Code-only source continuity; public promotion adapters replace private release bindings. No deployment implied.",
+  "files": [
+    {
+      "file": "sync/lib/mapping_contract_runtime.repair.js",
+      "hostedSourceSha256": "af97611bc0f0edb4788a679ba504adc688c69ec802889e709a8232175c84333d",
+      "publicSourceSha256": "af97611bc0f0edb4788a679ba504adc688c69ec802889e709a8232175c84333d"
+    },
+    {
+      "file": "sync/lib/sheets_sync_plan.js",
+      "hostedSourceSha256": "f96cfa13cfcf19d51dbdbc997ccced930ea9b1fd6ff9f6ea18cf60a3d119bc78",
+      "publicSourceSha256": "a94fe085dad2160250ff4889a4ccbcabd17f1a3f48431494227c63c0365dccf2"
+    },
+    {
+      "file": "sync/lib/sheets_sync_runtime.repair.js",
+      "hostedSourceSha256": "9ffa796dba677a167a5a01e67b2c8ab1a7e1c036098b0e32b8aaec5dfedb5cf9",
+      "publicSourceSha256": "9ffa796dba677a167a5a01e67b2c8ab1a7e1c036098b0e32b8aaec5dfedb5cf9"
+    },
+    {
+      "file": "sync/lib/sync_prefix_edits.js",
+      "hostedSourceSha256": "f7aa59c1406b1b8e8e50e6bfaf64010cb2b8935f81fd0801f93f27f40e0ea2fa",
+      "publicSourceSha256": "f7aa59c1406b1b8e8e50e6bfaf64010cb2b8935f81fd0801f93f27f40e0ea2fa"
+    },
+    {
+      "file": "sync/lib/sync_recovery_v2.js",
+      "hostedSourceSha256": "036c8be6d6d332b4cc46553c5e3fdec9ab4a56cf99b2d05dacecb9f39ee1f368",
+      "publicSourceSha256": "036c8be6d6d332b4cc46553c5e3fdec9ab4a56cf99b2d05dacecb9f39ee1f368"
+    },
+    {
+      "file": "sync/lib/sync_row_history.js",
+      "hostedSourceSha256": "eb861515275bc34a57ed572372217f91dbf41aa0fd1ff9461b26ce37087c0d83",
+      "publicSourceSha256": "eb861515275bc34a57ed572372217f91dbf41aa0fd1ff9461b26ce37087c0d83"
+    },
+    {
+      "file": "sync/lib/sync_write_safety.js",
+      "hostedSourceSha256": "63a62fab6c11ee9e23dcf5c1052d1780944476df48c50183387c3a55d975533e",
+      "publicSourceSha256": "63a62fab6c11ee9e23dcf5c1052d1780944476df48c50183387c3a55d975533e"
+    },
+    {
+      "file": "sync/lib/yarn_sync_match.js",
+      "hostedSourceSha256": "8ff2acd23f880b90830526b0e6fb108bcb45e17d3e0c304255acf035ad0f8c4e",
+      "publicSourceSha256": "8ff2acd23f880b90830526b0e6fb108bcb45e17d3e0c304255acf035ad0f8c4e"
+    },
+    {
+      "file": "sync/run-hosted-sync.sh",
+      "hostedSourceSha256": "aa64474b2d94a2f9f31ce885ac774994190bd26938d60b668481231fb6b84c32",
+      "publicSourceSha256": "aa64474b2d94a2f9f31ce885ac774994190bd26938d60b668481231fb6b84c32"
+    },
+    {
+      "file": "sync/scripts/local/fetch_google_sheets.js",
+      "hostedSourceSha256": "13ef223defc806928128e2240d5ac65c10925fbb79aaf567517fe21f0d6ddc12",
+      "publicSourceSha256": "13ef223defc806928128e2240d5ac65c10925fbb79aaf567517fe21f0d6ddc12"
+    },
+    {
+      "file": "sync/scripts/sync/worker.js",
+      "hostedSourceSha256": "5255806b4382f86f087786b4e8105fd6d8550d9ff8bc3d70e3779c43fdaec335",
+      "publicSourceSha256": "5255806b4382f86f087786b4e8105fd6d8550d9ff8bc3d70e3779c43fdaec335"
+    },
+    {
+      "file": "sync/lib/sync_dispo_five_promotion.js",
+      "hostedSourceSha256": "e3f6b5032313081db77637164cd97a7c06e5f3f350571900067dd6568be74f67",
+      "publicSourceSha256": "8bb7dce4c6c58cae5c7e0dba57088c6db7c1ec837669643c697c77f579e1ba52"
+    },
+    {
+      "file": "sync/lib/sync_dispo_promotion.js",
+      "hostedSourceSha256": "c37bbadc269ca9b4c688d4de7a63ab090cc4aafc3eebda84816ad7c10f921cde",
+      "publicSourceSha256": "0a8cdafca5b48527ade30a13494410629b8b95f9d9c4f212c8724a7e7c7ea9c8"
+    },
+    {
+      "file": "sync/lib/sync_folding_conflict_diagnostics.js",
+      "hostedSourceSha256": "a2301e399ea657ddb9d823a98af45d022ee915867c392856a888cf756d07960c",
+      "publicSourceSha256": "a2301e399ea657ddb9d823a98af45d022ee915867c392856a888cf756d07960c"
+    },
+    {
+      "file": "sync/lib/sync_same_po_yarn_dispo.js",
+      "hostedSourceSha256": "5bf3dd2a21725dc4de9a5d5193e9b3045ab16a80b397123bd7ad985deab9cbac",
+      "publicSourceSha256": "5bf3dd2a21725dc4de9a5d5193e9b3045ab16a80b397123bd7ad985deab9cbac"
+    },
+    {
+      "file": "sync/tests/sync_folding_identity_no_duplicate.test.js",
+      "hostedSourceSha256": "9ee3949fd2a21135b33583f221c15d3f257d541bcb8b3f3c98a60fc3abadd086",
+      "publicSourceSha256": "85be6db4a5f6b348904b589ab002f4a7674ad699a4901fd8b5ff7f955d6b90c3"
+    },
+    {
+      "file": "sync/tests/sync_recovery_v2_blackout.test.js",
+      "hostedSourceSha256": "fbf359ba09ff94ba03fc5e335d8b0fe6249826735465480a27627cfe8a32fc6e",
+      "publicSourceSha256": "fbf359ba09ff94ba03fc5e335d8b0fe6249826735465480a27627cfe8a32fc6e"
+    },
+    {
+      "file": "sync/tests/sync_same_po_yarn_dispo.test.js",
+      "hostedSourceSha256": "21d2cfb4e04150ecb975b6c0d01898de184fff3f4f2110c00f2086bf6cb39480",
+      "publicSourceSha256": "0d633eeedec7f1a261de7f192c1efcfae67aedf0f28d7e5ca4245912278c9e4d"
+    }
+  ]
+}

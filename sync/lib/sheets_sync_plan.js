@@ -11,7 +11,7 @@ function appliedReviewKeys(value){
  if(!Array.isArray(keys)||keys.some(k=>!/^[a-f0-9]{64}$/.test(k)))throw Error('Invalid applied-review metadata');
  return [...new Set(keys)];
 }
-const reviewEvidence=before=>before.appliedReviewKeys?.length?{appliedReviewKeys:before.appliedReviewKeys}:{};
+const reviewEvidence=before=>({...before.appliedReviewKeys?.length?{appliedReviewKeys:before.appliedReviewKeys}:{},...(before.canonicalReferenceRefresh?{canonicalReferenceRefresh:true}:{})});
 // Run/file/row-position metadata changes on every export and is not an event ID.
 const metadata = new Set(['__MIG_SOURCE_UID', '__MIG_SOURCE_ROW', '__MIG_SOURCE_ROW_COUNT', '__MIG_ACTION', '__MIG_BRIDGE_SOURCE']);
 const businessDateColumns={
@@ -130,7 +130,9 @@ function planEdits(previous,current, upstreamChanges = [], options = {}) {
    }
    if(old.length===1&&fresh.length===1){operations[profile].push({...fresh[0],...reviewEvidence(old[0]),uid:old[0].uid,previousDigest:old[0].digest,previousDispo:old[0].dispo,action:'update'});updated++;}
    else if(old.length===0){for(const r of fresh){operations[profile].push({...r,uid:hash(['sync',profile,r.key]),previousDigest:null,action:'insert'});added++;}}
-   else conflicts.push({profile,group,reason:'ambiguous_edit_key_change_or_deletion',previousUnmatched:old.length,currentUnmatched:fresh.length});
+   else conflicts.push({profile,group,reason:'ambiguous_edit_key_change_or_deletion',previousUnmatched:old.length,currentUnmatched:fresh.length,
+    ...(old.length===1?{sourceUid:old[0].uid,previousDispo:old[0].dispo,previousDigest:old[0].digest}:{}),
+    ...(fresh.length===1?{currentSourceRow:fresh[0].rowNumber,currentDispo:fresh[0].dispo,currentDigest:fresh[0].digest}:{})});
   }
  }
  for(const profile of Object.keys(previous))if(!current[profile])conflicts.push({profile,reason:'source_profile_missing'});
@@ -140,7 +142,7 @@ function planEdits(previous,current, upstreamChanges = [], options = {}) {
  const refreshLots=new Set(options.refreshLots||[]);
  for(const [profile,rows]of Object.entries(matched))for(const r of rows){
   const lot=profile==='yarn-issue'?require('./source_index').normalizeYarnLotIdentity(r.yarnIdentity?.lot):'';
-  if(options.refreshAll||(lot&&refreshLots.has(lot))||(r.dispo&&affected.has(r.dispo)&&order.indexOf(profile)>affected.get(r.dispo))){operations[profile].push({...r,action:'refresh'});refreshed++;}
+  if(r.canonicalReferenceRefresh||options.refreshAll||(lot&&refreshLots.has(lot))||(r.dispo&&affected.has(r.dispo)&&order.indexOf(profile)>affected.get(r.dispo))){operations[profile].push({...r,action:'refresh'});refreshed++;}
  }
  // Freeze the source cohort for shared references. This permits a new audit
  // entry to coexist with a peer's proven provenance target, even when the
@@ -160,6 +162,17 @@ function applyReviewedReassignments(profile,previous,current,reviews){
   if(!old&&review.introducedAfterBaseline===true)continue;
   if(!old)throw Error('Reviewed source UID not found: '+profile);
   const approvedDigests=[review.oldDigest,...(review.previousApprovedDigests||[])];
+  if(review.action==='refresh-canonical-reference'){
+   const key=reviewedReassignmentKey(review);
+   if(appliedReviewKeys(old.yarnIdentity).includes(key))continue;
+   const currentRows=current.records.filter(r=>r.group===review.newGroup&&r.digest===review.newDigest);
+   if(profile!=='po'||review.oldGroup!==review.newGroup||old.group!==review.oldGroup||!approvedDigests.includes(old.digest)||currentRows.length!==1)
+    throw Error('Canonical PO reference refresh is stale or ambiguous');
+   old.canonicalReferenceRefresh=true;
+   old.appliedReviewKeys=[...new Set([...(old.appliedReviewKeys||[]),key])];
+   continue;
+  }
+
   if(review.action==='superseded-revision'){
    const {eventKey,parseIdentity}=require('./yarn_sync_identity');
    const identity=parseIdentity(old.yarnIdentity);
@@ -171,6 +184,44 @@ function applyReviewedReassignments(profile,previous,current,reviews){
       !previous.records.some(r=>r.uid===review.survivorUid&&eventKey(r.yarnIdentity)===key))
     throw Error('Superseded revision evidence is stale or ambiguous: '+profile);
    previous.records=previous.records.filter(r=>r.uid!==review.sourceUid);
+   continue;
+  }
+  if(review.action==='retain-missing-peer'){
+   // Explicitly preserve one missing historical CHALLAN as its own MySQL
+   // event when another independently proven event with the SAME identity
+   // group remains in the current source. This is matching-only: ledger and
+   // business records are NEVER deleted, merged, rebound or altered here.
+   // Reappearance or a new edited peer must be re-qualified, fail closed.
+   const sameGroup=previous.records.filter(r=>r.group===review.oldGroup);
+   const peer=sameGroup.find(r=>r.uid===review.peerSourceUid);
+   const historicalReturned=current.records.filter(r=>r.group===old.group&&r.digest===old.digest);
+   if(historicalReturned.length===1)continue; // normal exact match can resume
+   // The exact owner-approved historical receipt is immutable. Its
+   // CURRENT peer may change only the cumulative Last Received Date.
+   // Its stored matchHash contains every non-generated source field except
+   // that date. A pinned, provenance-verified matchHash keeps this guard
+   // stable across repeated date updates without relaxing quantity/identity.
+   const hashOk=typeof review.peerMatchHash==='string'&&/^[a-f0-9]{64}$/.test(review.peerMatchHash);
+   const firstUse=peer?.digest===review.peerOldDigest;
+   const priorDateOnly=hashOk&&peer?.matchHash===review.peerMatchHash;
+   const originalProof=firstUse||priorDateOnly;
+   if(old.group!==review.oldGroup||!approvedDigests.includes(old.digest)||
+      review.peerGroup!==old.group||review.oldDispo!==old.dispo||
+      !peer||peer===old||peer.group!==review.peerGroup||
+      sameGroup.length!==2||historicalReturned.length>1||
+      !review.allowPeerLastReceivedDateDrift||!hashOk||!originalProof||
+      !Number.isSafeInteger(review.oldTargetPrimaryKey)||!Number.isSafeInteger(review.peerTargetPrimaryKey)||
+      review.oldTargetPrimaryKey===review.peerTargetPrimaryKey)
+     throw Error('Historical peer receipt retention: old business identity changed');
+   const fresh=current.records.filter(r=>r.group===review.peerGroup);
+   if(fresh.length!==1||
+      peer.matchHash!==review.peerMatchHash||
+      fresh[0].matchHash!==review.peerMatchHash||
+      fresh[0].entryAmounts!==JSON.stringify([review.peerQtyKg,null])||
+      fresh[0].dispo!==review.oldDispo||
+      current.records.some(r=>r.digest===old.digest))
+     throw Error('Historical peer receipt retention: source peer changed or disappeared');
+   previous.records=previous.records.filter(r=>r!==old);
    continue;
   }
   if(review.action==='retain-missing'){

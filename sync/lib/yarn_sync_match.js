@@ -71,7 +71,45 @@ function matchYarn(previous, current) {
     return yarnKey(y) && y.date && y.challan ? JSON.stringify([y.dispo, y.date, y.challan]) : null;
   }, (a, b) => ['count', 'lot', 'direction'].filter(k => a.yarnIdentity[k] !== b.yarnIdentity[k]).length === 1);
 
-  for (const row of old) conflicts.push({reason: row.yarnIdentity ? 'ambiguous_yarn_edit_or_removal' : 'yarn_identity_backfill_required', sourceUid: row.uid, group: row.group});
+  // A challan is a persistent business reference, not an expendable row ID.
+  // Ordinary one-to-one amount edits were paired above using eventKey().
+  // A split or reallocation must not silently delete, reinsert, or rebind an
+  // existing ERP yarn movement; report precise evidence for owner review.
+  const stableLineage = row => {
+    const y=row.yarnIdentity;
+    return y && y.challan && y.date && y.count && y.lot && y.direction
+      ? JSON.stringify([y.challan,y.date,y.count,y.lot,y.direction]) : null;
+  };
+  for (const row of old) {
+    if (!row.yarnIdentity) {
+      conflicts.push({reason:'yarn_identity_backfill_required',sourceUid:row.uid,group:row.group});
+      continue;
+    }
+    const identity=row.yarnIdentity,identityKey=stableLineage(row);
+    const sameChallan=current.records.filter(r=>r.yarnIdentity?.challan===identity.challan&&identity.challan);
+    const event=eventKey(identity);
+    const sameEvent=event?[...fresh].filter(r=>eventKey(r.yarnIdentity)===event):[];
+    const sameLineage=identityKey?[...fresh].filter(r=>stableLineage(r)===identityKey):[];
+    const previousLineage=identityKey?[...old].filter(r=>stableLineage(r)===identityKey):[];
+    const base={sourceUid:row.uid,group:row.group,challan:identity.challan,
+      originalDispo:identity.dispo,previousDigest:row.digest};
+    if(sameEvent.length>1 && previousLineage.length===1){
+      conflicts.push({...base,reason:'yarn_challan_quantity_distribution_requires_exact_review',
+        candidateRowNumbers:sameEvent.map(r=>r.rowNumber),
+        candidateAmounts:sameEvent.map(r=>r.entryAmounts||null)});
+    }else if(sameLineage.length===1&&previousLineage.length===1 &&
+      sameLineage[0].yarnIdentity.dispo!==identity.dispo){
+      const candidate=sameLineage[0];
+      conflicts.push({...base,reason:'yarn_challan_dispo_reassignment_requires_exact_review',
+        currentDispo:candidate.yarnIdentity.dispo,currentSourceRow:candidate.rowNumber,
+        currentDigest:candidate.digest,currentGroup:candidate.group});
+    }else if(sameChallan.length===0){
+      conflicts.push({...base,reason:'yarn_challan_absent_from_current_source_requires_review'});
+    }else {
+      conflicts.push({...base,reason:'yarn_challan_line_item_changed_or_ambiguous_requires_review',
+        matchingChallanRowCount:sameChallan.length});
+    }
+  }
   const inserts = [];
   const collisionKey = row => {
     const y = row.yarnIdentity, key = yarnKey(y);

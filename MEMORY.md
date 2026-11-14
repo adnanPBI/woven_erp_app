@@ -1,11 +1,22 @@
 # Project memory and maintenance journal
 
+## November 14: source continuity for completed November 10-12 repairs
+
+Published reusable exact identity bindings and transactional composite-key audit, canonical PO/costing reference guards, distinct-cause conflict diagnostics and the bounded Yarn Movement UID observation pilot. Warping/Sizing preserve original parent/child IDs during exact approved key changes. Public configuration interfaces replace private operational record selections. Earlier November9 amendments in this branch are preserved. See [identity updates and acceptance limits](docs/AUTO_SYNC_IDENTITY_UPDATES_2026_11_12.md) and [the observation pilot](docs/MOVEMENT_IDENTITY_OBSERVATION_PILOT.md).
+
+The dated November12 production repair independently qualified sixteen exact reassignments and completed full restored QA, autonomous apply,9944 mapped-target checks, independent SQL and actual identical-source production replay with zero additional writes. The sixteen identities account for34 existing-row updates and no inserts/deletions. Historical evidence is retained privately; this is not a fresh live-health check or a deployment from Git.
+
+Movement UUIDs remain provisional and observation-only (100 Receive/100 Issue). No source UID backfill, source-column writes or movement-UUID business enforcement is enabled. Different ambiguous changes still require qualification. Retain historical data, five intentional source exclusions, QA/backups, ten-minute cron and the existing3GiB floor. Full enforcement remains proposed, subject to source access, protected binding/readback, cross-system crash safety, compatibility/QA and independent acceptance. A UUID proves identity, not business correctness or permission.
+
+Private journals, selected business records, source dumps, signed approvals, runtime policies and credentials are deliberately not published. Repository publication does not merge into main, deploy cPanel, rerun repairs or establish current production health.
+
+
 ## November 2: applied-review lifecycle correction
 
 The verified full-window recovery committed 73 physical inserts and 488 updates,
 zero deletes, plus two separately audited reference updates, and verified 31,473
 mapped targets. An independent read-only daily check matched 1,154 eligible
-October 29–November 2 records and 2,304 targets; the whole recovery window
+October 29â€“November 2 records and 2,304 targets; the whole recovery window
 matched 15,487 eligible records, zero missing. This remains a frozen-source claim.
 
 A later real scheduled cycle found one stale review after an already applied
@@ -52,7 +63,7 @@ preserved. Deployment made zero production business writes. See the
 [prefix maintenance record](docs/CPANEL_PREFIX_EDITS.md).
 
 The two currently reported receipts were separately proved to have changed
-their source dates Oct30→31 while retaining the SW prefix, original IDs and
+their source dates Oct30â†’31 while retaining the SW prefix, original IDs and
 negative quantities. Their reviewed catch-up is a separate operation. A later
 Google yarn-receipt read timeout stopped acquisition before planning; subsequent
 snapshot/catch-up and actual automatic success need their own completion proof.
@@ -115,7 +126,7 @@ A completed historical migration and an enabled timer do not guarantee that the 
 - A separately qualified morning manual catch-up completed 83 insert / 5 update / 759 refresh profile operations; its normal business audit recorded 166 physical inserts and 5 updates, plus one separately audited identity update, with zero deletes. It verified 1,697 mapped targets. An independent check then matched all 15,118 eligible profile records in that snapshot.
 - After the bounded native HTTPS transport was deployed, the actual **04:10:24Z to 04:18:43Z** scheduled cycle completed 9 insert / 4 update / 310 refresh profile operations. Its physical audit recorded **22 inserts / 32 updates / zero deletes** and verified 650 mapped targets. Independent verification at 04:19Z matched **15,191 / 15,191** eligible profile records. This is dated source-ledger parity plus that cycle's mapped-target verification, not an assertion that every historical field was re-audited.
 - The next scheduled cycle succeeded. A later fetch failed safely on a bounded transient request; subsequent certified source revealed two newer folding identity changes. Each was qualified using a unique complete inverse source fingerprint, the original ledger event and physical before-images. The same original parent/detail IDs, business dates and grade quantities must be preserved. An older already-applied review for one event is archived and superseded by its newly qualified current review; appending contradictory review chains would block later source changes.
-- **Final missing-day audit PASSED at 2026-11-01T05:09:36.006Z:** all 969 eligible October 29–November 1 source-profile records matched, zero unmatched; a fresh read-only mapper pass verified 1,930 business targets, with zero audit writes and zero validation/reject/lookup errors. The full September 22–November 1 ledger check then matched 15,299/15,299. Catch-up completed 104 insert / 6 update / 738 refresh profile operations, with 210 physical inserts and 64 normal updates, plus four separately audited identity updates; zero deletes. Original IDs/date/grade/detail-quantity checks, policy, backup, pins, cron, quota and real history/HTTP/auth checks passed. No November 1 business-date source rows were available in this certified snapshot. That is zero available to transfer, not a claim about rows added later today. See the dated verification document for day/profile/table counts and cutoff limits.
+- **Final missing-day audit PASSED at 2026-11-01T05:09:36.006Z:** all 969 eligible October 29â€“November 1 source-profile records matched, zero unmatched; a fresh read-only mapper pass verified 1,930 business targets, with zero audit writes and zero validation/reject/lookup errors. The full September 22â€“November 1 ledger check then matched 15,299/15,299. Catch-up completed 104 insert / 6 update / 738 refresh profile operations, with 210 physical inserts and 64 normal updates, plus four separately audited identity updates; zero deletes. Original IDs/date/grade/detail-quantity checks, policy, backup, pins, cron, quota and real history/HTTP/auth checks passed. No November 1 business-date source rows were available in this certified snapshot. That is zero available to transfer, not a claim about rows added later today. See the dated verification document for day/profile/table counts and cutoff limits.
 
 ## Current architecture and implemented repairs
 
@@ -151,7 +162,7 @@ Reviewed narrow schema changes preserve values, including the qualified longer c
 
 ## Publication and validation history
 
-PRs #4–#8 introduced qualified manual/recurring policy modes, narrower bounded windows, exact skip preservation and cumulative receipt date handling. PR #9 added qualified exact reassignment support. The following repair publications added truthful active-directory history, Node-owned terminal events, safe complete CSV publication, source-tab identity/API acquisition, bounded memory, qualified duplicate retirement, narrow composition capacity, preserved resume retention, public asset maintenance and paced native HTTPS reads. PRs #10 and #12–#19 were merged after their checks; PR #11 was closed unmerged and must not be reopened unchanged.
+PRs #4â€“#8 introduced qualified manual/recurring policy modes, narrower bounded windows, exact skip preservation and cumulative receipt date handling. PR #9 added qualified exact reassignment support. The following repair publications added truthful active-directory history, Node-owned terminal events, safe complete CSV publication, source-tab identity/API acquisition, bounded memory, qualified duplicate retirement, narrow composition capacity, preserved resume retention, public asset maintenance and paced native HTTPS reads. PRs #10 and #12â€“#19 were merged after their checks; PR #11 was closed unmerged and must not be reopened unchanged.
 
 The last deployed runtime release for this journal is **`80dcc24be0cfbcfdf1ad4c56869769995697b00f`**, PR #21, with main CI **41289016412 passed**. It fixes explicit outside-issue amount handling and adds the selected implementation module to the existing checksum coverage. The native HTTPS reader components remain the previously verified `9de15a1321a66d9733624afc8b59a425097e42a6` implementation. Private configuration, key, original exception scope and cron were preserved. This subsequent documentation publication changes no deployed code or schedule; private case selections and one-off controllers stay outside Git.
 
@@ -164,3 +175,8 @@ Meaningful automated checks cover HTTP/auth boundaries, history coverage, hosted
 3. If blocked, preserve the failure report and qualify its exact current source/target cause. No blanket skip, source deletion, ledger reset, backup deletion or weakened quota/policy guard is an acceptable recovery shortcut.
 4. Preserve selected-file before-images, run relevant tests/CI, deploy only reviewed files, refresh selective pins and check real HTTP/auth behavior. A GitHub commit is not proof of deployment or database writes.
 5. Keep private durable run identifiers and safe resume instructions in the operator journal; publish only reusable procedures and verified aggregates here. Update the current outcome with a timestamp and its limits.
+
+
+### November 9 source continuity
+
+Published the reviewed November auto-sync and identity-rule amendments with synthetic regressions and private-config promotion adapters. See [the rule and acceptance notes](docs/AUTO_SYNC_RULES_2026_11.md). This is repository publication only; production was not redeployed or replayed.

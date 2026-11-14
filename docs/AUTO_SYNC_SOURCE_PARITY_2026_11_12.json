@@ -1,0 +1,104 @@
+{
+  "scope": "November 10-12 reviewed source continuity; publication does not deploy production or enable source UID enforcement. Private approval/policy selections are excluded.",
+  "files": [
+    {
+      "file": "sync/lib/mapping_contract_runtime.repair.js",
+      "publicSha256": "20f4f8489e098f4f8ef4471a4413a94b140134673da0edf6eb0bdcf5ce6f4460",
+      "reviewedHostedSnapshotSha256": "6de8b8d7bb0eaf9e2d53d62ae3e364a1e2411267c511f94bae9133a103940e22"
+    },
+    {
+      "file": "sync/lib/sync_exact_identity_bindings.js",
+      "publicSha256": "5bdaf39ae1403a70fc6a350533040de7126b1cf675f00508233806549922e61c",
+      "reviewedHostedSnapshotSha256": "a3a9da2088d47d244acffebd6bcb73c6a5b474a4ba993cfeeb16368ba81c711f"
+    },
+    {
+      "file": "sync/lib/sync_exact_identity_row_history.js",
+      "publicSha256": "ba52f4df013a2f974106ae06996f60c8d03b9fd12ddbb0ea7faf8628775211f1",
+      "reviewedHostedSnapshotSha256": "9935704f5e04bb7f60fd207053fc818badbf42bb3bcf54cb107c660b46632701"
+    },
+    {
+      "file": "sync/lib/sync_exact_costing_reference.js",
+      "publicSha256": "8fdb574bb6f3d7d57225ae57e543029ddb045e2f7da93d8bd4efa27df52e5b39",
+      "reviewedHostedSnapshotSha256": "8fdb574bb6f3d7d57225ae57e543029ddb045e2f7da93d8bd4efa27df52e5b39"
+    },
+    {
+      "file": "sync/lib/sync_movement_identity.js",
+      "publicSha256": "1759dcdd490cafe00986b6d67724c74e8da5270eb1a79f28c5adfd8f979a5437",
+      "reviewedHostedSnapshotSha256": "1759dcdd490cafe00986b6d67724c74e8da5270eb1a79f28c5adfd8f979a5437"
+    },
+    {
+      "file": "sync/lib/sync_movement_shadow.js",
+      "publicSha256": "4493d3de464cf54e7e22f902cd722b30d33bb6f72c533b711dcbf3ed7edcb1ef",
+      "reviewedHostedSnapshotSha256": "4493d3de464cf54e7e22f902cd722b30d33bb6f72c533b711dcbf3ed7edcb1ef"
+    },
+    {
+      "file": "sync/lib/sync_movement_registry.js",
+      "publicSha256": "66943d86b4f65ddc94ae3f9f7ef974cc63acbfe4b65d3e886bb24a9298fe3ba4",
+      "reviewedHostedSnapshotSha256": "66943d86b4f65ddc94ae3f9f7ef974cc63acbfe4b65d3e886bb24a9298fe3ba4"
+    },
+    {
+      "file": "sync/scripts/sync/movement_pilot_hook.js",
+      "publicSha256": "b96dd6c4fecc656412b02c8509f70d816b4875af581f2e3401c1defe5c06e101",
+      "reviewedHostedSnapshotSha256": "b96dd6c4fecc656412b02c8509f70d816b4875af581f2e3401c1defe5c06e101"
+    },
+    {
+      "file": "sync/scripts/sync/movement_pilot_observe.js",
+      "publicSha256": "8777b150455cf54690ed19db9a8c852642116a28daa87c6edbeff0646d212def",
+      "reviewedHostedSnapshotSha256": "8777b150455cf54690ed19db9a8c852642116a28daa87c6edbeff0646d212def"
+    },
+    {
+      "file": "sync/scripts/sync/worker.js",
+      "publicSha256": "3314e5b898c69e60c292edc144c31f3b4180af3f9c91f544758099dd98953136",
+      "reviewedHostedSnapshotSha256": "3314e5b898c69e60c292edc144c31f3b4180af3f9c91f544758099dd98953136"
+    },
+    {
+      "file": "sync/lib/sheets_sync_plan.js",
+      "publicSha256": "f23b59f56a950ee73e4b73696b73978361627ed8415dc2cef702e558b5df018c",
+      "reviewedHostedSnapshotSha256": "64bc3c9ecc0cef4907c3f57a5c3b7b66960e91c8320047ffb27c074111c69d19"
+    },
+    {
+      "file": "sync/tests/sync_exact_identity_bindings.test.js",
+      "publicSha256": "80d468db4d68f0268c21fcbd09a4398af804139688e65fbecd22f8b49506235a"
+    },
+    {
+      "file": "sync/tests/sync_exact_identity_row_history.test.js",
+      "publicSha256": "ac753dff4a217484d187c5878a6fd0a406e622497691f35ad36accbee20b986c"
+    },
+    {
+      "file": "sync/tests/sync_exact_costing_reference.test.js",
+      "publicSha256": "37de28a0dc9d1d9725e7d0db5048d0e8c1dbca847b8ad291b4d2d414a7750f9b"
+    },
+    {
+      "file": "sync/tests/sync_exact_identity_capacity.test.js",
+      "publicSha256": "7b5e7c0f385aa114f0f1a7a1e8f7cb527c5bd3c7b4c3249edc40fbc8dba6380a"
+    },
+    {
+      "file": "sync/tests/sync_movement_identity.test.js",
+      "publicSha256": "be99e5a41de2e66180bc3e540487eac86a3b27fef2ee66dbcf147ae4fffda62b"
+    },
+    {
+      "file": "sync/tests/movement_pilot_hook.test.js",
+      "publicSha256": "f14ea53ab9b88f34b5bbb64e75d095bf8320bc2fc30a32a8774f97592330514c"
+    },
+    {
+      "file": "sync/tests/sync_canonical_po_reference.test.js",
+      "publicSha256": "1bfa12996ec6cd54b67e43f844faadcf00b7900d5842e33d0a9ff886c3e99cf4"
+    },
+    {
+      "file": "sync/tests/sync_planner_diagnostics.test.js",
+      "publicSha256": "f8a33998ae14cf417c044fe580bfa9181f278685f9b35842de7469ddb33c8aeb"
+    },
+    {
+      "file": "lib/sync-conflict-diagnostics.js",
+      "publicSha256": "6cdb4b2a60c5a38834f363311c85d63ca34a9a80c5ff192468c7137116434ffd"
+    },
+    {
+      "file": "tests/sync-conflict-diagnostics.test.js",
+      "publicSha256": "ebafbbd5afe01fe0f2ba579cf6ba3a3ba7f39ddbce9b7bb6916199936b1d4ca9"
+    },
+    {
+      "file": "lib/database-console.js",
+      "publicSha256": "b4540bff96f903356b6ad495e66022e536615dcce56efdff14ef9339e7e08bb7"
+    }
+  ]
+}
