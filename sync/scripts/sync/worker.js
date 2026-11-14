@@ -423,6 +423,7 @@ main().catch(e=>{
  finally {
   clearInterval(lockHeartbeat);
   if(connection){if(hasLock)await connection.query('SELECT RELEASE_LOCK(?)',[lockName]).catch(()=>{});await connection.end();}
+  if(hasLock)require('./movement_pilot_hook').launch(ROOT);
   if(process.connected)process.disconnect();
  }
 });

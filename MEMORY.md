@@ -1,5 +1,16 @@
 # Project memory and maintenance journal
 
+## November 14: source continuity for completed November 10-12 repairs
+
+Published reusable exact identity bindings and transactional composite-key audit, canonical PO/costing reference guards, distinct-cause conflict diagnostics and the bounded Yarn Movement UID observation pilot. Warping/Sizing preserve original parent/child IDs during exact approved key changes. Public configuration interfaces replace private operational record selections. Earlier November9 amendments in this branch are preserved. See [identity updates and acceptance limits](docs/AUTO_SYNC_IDENTITY_UPDATES_2026_11_12.md) and [the observation pilot](docs/MOVEMENT_IDENTITY_OBSERVATION_PILOT.md).
+
+The dated November12 production repair independently qualified sixteen exact reassignments and completed full restored QA, autonomous apply,9944 mapped-target checks, independent SQL and actual identical-source production replay with zero additional writes. The sixteen identities account for34 existing-row updates and no inserts/deletions. Historical evidence is retained privately; this is not a fresh live-health check or a deployment from Git.
+
+Movement UUIDs remain provisional and observation-only (100 Receive/100 Issue). No source UID backfill, source-column writes or movement-UUID business enforcement is enabled. Different ambiguous changes still require qualification. Retain historical data, five intentional source exclusions, QA/backups, ten-minute cron and the existing3GiB floor. Full enforcement remains proposed, subject to source access, protected binding/readback, cross-system crash safety, compatibility/QA and independent acceptance. A UUID proves identity, not business correctness or permission.
+
+Private journals, selected business records, source dumps, signed approvals, runtime policies and credentials are deliberately not published. Repository publication does not merge into main, deploy cPanel, rerun repairs or establish current production health.
+
+
 ## November 2: applied-review lifecycle correction
 
 The verified full-window recovery committed 73 physical inserts and 488 updates,

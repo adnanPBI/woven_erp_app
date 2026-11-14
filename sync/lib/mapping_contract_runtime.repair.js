@@ -1,5 +1,5 @@
 'use strict';
-const syncRowHistory = require('./sync_row_history');
+const syncRowHistory = require('./sync_exact_identity_row_history');
 
 const fs = require('fs');
 const path = require('path');
@@ -1154,8 +1154,28 @@ async function previewPrefixChild(ctx,profile,table,data,where){
   return {action:'previewed',id:where.id};
 }
 
+async function exactStableChildren(ctx,profile,table,desired){
+  if (!ctx.pool || !await require('./sync_exact_identity_bindings').assertChildSet(ctx,profile,table,desired)) return null;
+  const results=[];
+  for (const data of desired) results.push(await upsertRow(ctx,profile,table,data));
+  return results;
+}
+
 async function upsertRow(ctx, profile, table, data) {
   if (ctx.localRetainedMasters && require('../scripts/local/protect_retained_rows').isRetainedMaster(ctx.localRetainedMasters, table, data)) return {action:'preserved', id:null};
+  if (ctx.sync && ctx.pool && (['dispo','folding','warping','sizing'].includes(profile.id)||(profile.id==='greige-delivery'&&table==='greige_delivery_breakdown'))) {
+    const bound = await require('./sync_exact_identity_bindings').resolve(ctx,profile,table,data);
+    if (bound) {
+      if (ctx.dryRun) {
+        const existing = await ctx.sync.captureTarget(ctx,table,{...data,...bound.selector},Object.keys(bound.selector));
+        if (!existing) throw Error('Qualified stable identity target disappeared');
+        ctx.preview({profile:profile.id,table,action:'preview_exact_stable_identity_update',key:JSON.stringify(bound.selector),data:JSON.stringify(data)});
+        return {action:'previewed',id:bound.id};
+      }
+      await updateRow(ctx,table,data,bound.selector);
+      return {action:'updated',id:bound.id};
+    }
+  }
   if (provenance.isProvenanceTable(ctx.provenancePolicy, profile.id, table)) return upsertProvenanceParent(ctx, profile, table, data);
   const tc = tableContract(profile, table);
   const keyFields = tc.natural_key || [];
@@ -1214,7 +1234,9 @@ async function upsertRow(ctx, profile, table, data) {
           !ctx.syncOperation?.alreadyApplied) {
         if (profile.id === 'dispo' && table === 'dispo_form_data' && ctx.syncOperation?.promotionAuthorized)
           await require('./sync_dispo_promotion').assertTarget(ctx,table,effectiveData);
-        else {
+        else if (await require('./sync_exact_costing_reference').allowMissing(ctx,profile,table,effectiveData)) {
+          // Exact synthetic-to-real reference retains the historical master.
+        } else {
           const issue = new Error('SYNC_UPDATE_TARGET_MISSING: source update has no verified existing business parent; refusing dry-run success.');
           issue.code = 'SYNC_UPDATE_TARGET_MISSING';
           throw issue;
@@ -1242,7 +1264,9 @@ async function upsertRow(ctx, profile, table, data) {
       !ctx.syncOperation?.alreadyApplied) {
     if (profile.id === 'dispo' && table === 'dispo_form_data' && ctx.syncOperation?.promotionAuthorized)
       await require('./sync_dispo_promotion').assertTarget(ctx,table,data);
-    else {
+    else if (await require('./sync_exact_costing_reference').allowMissing(ctx,profile,table,data)) {
+      // Same exact source and SQL preimages as dry qualification.
+    } else {
       const issue = new Error('SYNC_UPDATE_TARGET_MISSING: source update resolves to no existing business parent; refusing replacement insert.');
       issue.code = 'SYNC_UPDATE_TARGET_MISSING';
       throw issue;
@@ -1501,6 +1525,12 @@ function applyCanonicalDispo(rowsByTable, repeatedRows, canonicalDispo) {
 async function resolveLogicalUnitDispoBeforeMappings(ctx, profile, fileInfo, row) {
   ctx.currentRawDispo = null;
   ctx.currentCanonicalDispo = null;
+  if (ctx.sync && profile.id === 'po') {
+    const raw = rawDispoFromSource(profile,fileInfo,row);
+    const po = firstSourceValue(fileInfo,row,['PO NO','PO No.','PO NUMBER']);
+    const canonical = require('./sync_exact_identity_bindings').canonicalPoAlias(ctx,profile,raw,po);
+    if (canonical) { ctx.currentRawDispo=raw;ctx.currentCanonicalDispo=canonical;ctx.currentPlanOnlyDispo=false;return; }
+  }
   if (!ctx.dispoResolver?.shouldResolve(profile.id)) return;
   const rawDispo = rawDispoFromSource(profile, fileInfo, row);
   if (['yarn-receive', 'yarn-issue'].includes(profile.id)) {
@@ -1660,7 +1690,7 @@ async function processProfile(ctx, profile) {
         if (ctx.sync) {
           if (!scopeField || cleanText(parentKeyValue) === null) throw new Error('Missing verified repeated-child parent scope');
           const scope = { [scopeField]: transformForTarget(parentKeyValue, ctx.schema[table]?.[scopeField], scopeField, { dateOrder: ctx.dateOrder }) };
-          const results = await require('./sync_write_safety').reconcileChildren(ctx, profile, table, scope, repeatedRows[table], {
+          const results = await exactStableChildren(ctx,profile,table,repeatedRows[table]) ?? await require('./sync_write_safety').reconcileChildren(ctx, profile, table, scope, repeatedRows[table], {
             preview: row => upsertRow(ctx, profile, table, row),
             previewPrefix: (row,where) => previewPrefixChild(ctx,profile,table,row,where),
             insert: row => insertRow(ctx, table, row),
@@ -1690,7 +1720,7 @@ async function processProfile(ctx, profile) {
         if (!pid) throw new Error(`Parent id unavailable for ${table}: ${parent.parent_table}`);
         data[parent.parent_id_field] = pid;
         if (ctx.sync) {
-          const rows = await require('./sync_write_safety').reconcileChildren(ctx, profile, table, { [parent.parent_id_field]: pid }, [nonEmptyObject(data)], {
+          const rows = await exactStableChildren(ctx,profile,table,[nonEmptyObject(data)]) ?? await require('./sync_write_safety').reconcileChildren(ctx, profile, table, { [parent.parent_id_field]: pid }, [nonEmptyObject(data)], {
             preview: row => upsertRow(ctx, profile, table, row),
             previewPrefix: (row,where) => previewPrefixChild(ctx,profile,table,row,where),
             insert: row => insertRow(ctx, table, row),

@@ -56,3 +56,8 @@ Source deletions do not delete ERP business records. Ambiguous identity changes 
 ### November 9 source continuity
 
 Published the reviewed November auto-sync and identity-rule amendments with synthetic regressions and private-config promotion adapters. See [the rule and acceptance notes](docs/AUTO_SYNC_RULES_2026_11.md). This is repository publication only; production was not redeployed or replayed.
+
+
+### November 14 sync source continuity
+
+The reviewed [exact identity and diagnostic improvements](docs/AUTO_SYNC_IDENTITY_UPDATES_2026_11_12.md) preserve original SQL identities and consumed approvals. The [Yarn Movement UID pilot](docs/MOVEMENT_IDENTITY_OBSERVATION_PILOT.md) is observation-only; immutable source UID backfill and business enforcement are deferred. Private approvals, operational journals, source snapshots and SQL backups stay outside Git. Publishing source does not deploy or repeat a production repair.
